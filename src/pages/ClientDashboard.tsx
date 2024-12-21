@@ -2,96 +2,106 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  Instagram,
+  BarChart3,
+  FileText,
+  Settings,
+  Store,
+  Users,
   LogOut,
   PlusCircle,
-  Building2,
-  BarChart3,
-  Settings,
 } from "lucide-react";
 
 const ClientDashboard = () => {
-  const [isInstagramConnected, setIsInstagramConnected] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
 
-  const menuItems = [
-    {
-      icon: PlusCircle,
-      title: "Create Collaboration",
-      description: "Start a new influencer campaign",
-    },
-    {
-      icon: Building2,
-      title: "Manage Business",
-      description: "Update your business details",
-    },
-    {
-      icon: BarChart3,
-      title: "Metrics",
-      description: "View campaign performance",
-    },
-    {
-      icon: Settings,
-      title: "Settings",
-      description: "Manage your account",
-    },
+  const sidebarItems = [
+    { id: "overview", label: "Overview", icon: FileText },
+    { id: "businesses", label: "Manage Business", icon: Store },
+    { id: "collaborations", label: "Create Collaboration", icon: PlusCircle },
+    { id: "metrics", label: "Metrics", icon: BarChart3 },
+    { id: "influencers", label: "Influencers", icon: Users },
+    { id: "settings", label: "Settings", icon: Settings },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Business Dashboard</h1>
-          <div className="flex items-center gap-4">
-            {!isInstagramConnected && (
-              <Button
-                onClick={() => setIsInstagramConnected(true)}
-                className="flex items-center gap-2"
-              >
-                <Instagram className="w-4 h-4" />
-                Connect Instagram
-              </Button>
-            )}
-            <Button variant="outline" className="flex items-center gap-2">
-              <LogOut className="w-4 h-4" />
-              Logout
-            </Button>
-          </div>
+    <div className="min-h-screen flex bg-gray-50">
+      {/* Sidebar */}
+      <aside className="w-64 bg-white border-r">
+        <div className="p-6">
+          <h1 className="text-2xl font-bold text-primary">Hikayat</h1>
         </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
-        {!isInstagramConnected ? (
-          <div className="text-center py-12">
-            <h2 className="text-xl font-semibold mb-4">Connect Your Instagram Account</h2>
-            <p className="text-gray-600 mb-6">
-              To start creating collaborations, you need to connect your Instagram account first.
-            </p>
-            <Button
-              onClick={() => setIsInstagramConnected(true)}
-              className="flex items-center gap-2 mx-auto"
+        <nav className="px-4 py-2">
+          {sidebarItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                activeTab === item.id
+                  ? "bg-primary/10 text-primary"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
             >
-              <Instagram className="w-4 h-4" />
-              Connect Instagram
-            </Button>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {menuItems.map((item) => (
-              <Card
-                key={item.title}
-                className="hover:shadow-lg transition-shadow cursor-pointer"
-              >
-                <CardHeader>
-                  <item.icon className="w-8 h-8 text-accent mb-2" />
-                  <CardTitle className="text-xl">{item.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">{item.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+              <item.icon className="w-5 h-5" />
+              {item.label}
+            </button>
+          ))}
+          <Button variant="outline" className="w-full mt-4 flex items-center gap-2">
+            <LogOut className="w-4 h-4" />
+            Logout
+          </Button>
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 p-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">ROI Budget</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">$2,500</p>
+              <p className="text-sm text-gray-600 mt-1">Monthly budget</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Live Campaigns</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">4</p>
+              <p className="text-sm text-gray-600 mt-1">Active collaborations</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Total Reach</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">25.4K</p>
+              <p className="text-sm text-gray-600 mt-1">Audience reached</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium">@foodie_influencer_{i}</p>
+                    <p className="text-sm text-gray-600">Completed campaign for Summer Menu</p>
+                  </div>
+                  <span className="text-sm text-gray-500">2 days ago</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </main>
     </div>
   );
