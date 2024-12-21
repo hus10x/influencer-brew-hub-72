@@ -6,6 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
+import { LogIn, UserPlus } from "lucide-react";
 
 export const Navbar = () => {
   const navigate = useNavigate();
@@ -14,22 +15,33 @@ export const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="text-2xl font-bold text-primary">Hikayat</div>
+          <div 
+            className="text-2xl font-bold text-primary cursor-pointer" 
+            onClick={() => navigate("/")}
+          >
+            Hikayat
+          </div>
           <div className="flex items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline">Login</Button>
+                <Button variant="outline">
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Login
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => navigate("/influencer")}>
-                  Influencer Login
+                <DropdownMenuItem onClick={() => navigate("/login")}>
+                  Login as Influencer
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/client")}>
-                  Business Login
+                <DropdownMenuItem onClick={() => navigate("/login")}>
+                  Login as Business
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button onClick={() => navigate("/signup")}>Sign Up</Button>
+            <Button onClick={() => navigate("/signup")}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              Sign Up
+            </Button>
           </div>
         </div>
       </div>
