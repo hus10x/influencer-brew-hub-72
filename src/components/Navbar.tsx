@@ -1,10 +1,4 @@
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { LogIn, UserPlus, Moon, Sun, LogOut } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
@@ -57,22 +51,10 @@ export const Navbar = () => {
           <div className="flex items-center gap-4">
             {!isLoggedIn ? (
               <>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline">
-                      <LogIn className="mr-2 h-4 w-4" />
-                      Login
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-48 bg-background border">
-                    <DropdownMenuItem onClick={() => navigate("/login")}>
-                      Login as Influencer
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/login")}>
-                      Login as Business
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <Button variant="outline" onClick={() => navigate("/login")}>
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Login
+                </Button>
                 <Button onClick={() => navigate("/signup")} className="bg-primary hover:bg-primary/90">
                   <UserPlus className="mr-2 h-4 w-4" />
                   Sign Up
