@@ -190,6 +190,8 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          instagram_access_token: string | null
+          instagram_business_account: boolean | null
           instagram_connected: boolean | null
           instagram_handle: string | null
           updated_at: string | null
@@ -201,6 +203,8 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          instagram_access_token?: string | null
+          instagram_business_account?: boolean | null
           instagram_connected?: boolean | null
           instagram_handle?: string | null
           updated_at?: string | null
@@ -212,12 +216,61 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          instagram_access_token?: string | null
+          instagram_business_account?: boolean | null
           instagram_connected?: boolean | null
           instagram_handle?: string | null
           updated_at?: string | null
           user_type?: string
         }
         Relationships: []
+      }
+      story_verifications: {
+        Row: {
+          collaboration_submission_id: string | null
+          created_at: string | null
+          id: string
+          posted_at: string | null
+          story_id: string | null
+          story_url: string | null
+          updated_at: string | null
+          verification_details: Json | null
+          verification_status: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          collaboration_submission_id?: string | null
+          created_at?: string | null
+          id?: string
+          posted_at?: string | null
+          story_id?: string | null
+          story_url?: string | null
+          updated_at?: string | null
+          verification_details?: Json | null
+          verification_status?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          collaboration_submission_id?: string | null
+          created_at?: string | null
+          id?: string
+          posted_at?: string | null
+          story_id?: string | null
+          story_url?: string | null
+          updated_at?: string | null
+          verification_details?: Json | null
+          verification_status?: string | null
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_verifications_collaboration_submission_id_fkey"
+            columns: ["collaboration_submission_id"]
+            isOneToOne: false
+            referencedRelation: "collaboration_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
