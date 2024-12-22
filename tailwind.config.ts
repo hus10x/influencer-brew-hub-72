@@ -33,7 +33,7 @@ export default {
           foreground: "#221F26",
         },
         accent: {
-          DEFAULT: "#D6BCFA",
+          DEFAULT: "#FDE1D3", // Peach color
           foreground: "#221F26",
         },
         muted: {

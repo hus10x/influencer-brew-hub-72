@@ -20,14 +20,14 @@ const steps = [
 
 export const HowItWorks = () => {
   return (
-    <section className="py-24 bg-white px-6">
+    <section className="py-24 bg-accent/20 px-6">
       <div className="container mx-auto">
         <div className="text-center max-w-3xl mx-auto mb-16 animate-fade-up">
           <span className="px-3 py-1 text-sm font-medium bg-primary/10 text-primary rounded-full">
             Simple Process
           </span>
-          <h2 className="mt-6 text-4xl font-bold text-gray-900">How It Works</h2>
-          <p className="mt-4 text-lg text-gray-600">
+          <h2 className="mt-6 text-4xl font-bold text-foreground">How It Works</h2>
+          <p className="mt-4 text-lg text-muted-foreground">
             Get started in minutes and begin collaborating with influencers
           </p>
         </div>
@@ -35,7 +35,7 @@ export const HowItWorks = () => {
           {steps.map((step, index) => (
             <div
               key={step.number}
-              className="relative p-8 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow animate-fade-up"
+              className="relative p-8 bg-background border rounded-2xl shadow-sm hover:shadow-md transition-shadow animate-fade-up"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <div className="flex items-center mb-4">
@@ -46,8 +46,8 @@ export const HowItWorks = () => {
                   <Check className="w-5 h-5 text-primary" />
                 </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">{step.title}</h3>
-              <p className="text-gray-600">{step.description}</p>
+              <h3 className="text-xl font-semibold text-foreground mb-2">{step.title}</h3>
+              <p className="text-muted-foreground">{step.description}</p>
             </div>
           ))}
         </div>

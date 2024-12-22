@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Instagram, LogOut } from "lucide-react";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 
 interface Collaboration {
   id: string;
@@ -67,36 +69,18 @@ const InfluencerDashboard = () => {
   const [isInstagramConnected, setIsInstagramConnected] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Collab Now ✨</h1>
-            <p className="text-gray-600 mt-1">Find your next exciting collaboration</p>
-          </div>
-          <div className="flex items-center gap-4">
-            {!isInstagramConnected && (
-              <Button
-                onClick={() => setIsInstagramConnected(true)}
-                className="flex items-center gap-2"
-              >
-                <Instagram className="w-4 h-4" />
-                Connect Instagram
-              </Button>
-            )}
-            <Button variant="outline" className="flex items-center gap-2">
-              <LogOut className="w-4 h-4" />
-              Logout
-            </Button>
-          </div>
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <main className="container mx-auto px-4 py-24">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-foreground">Collab Now ✨</h1>
+          <p className="text-lg text-muted-foreground mt-2">Find your next exciting collaboration</p>
         </div>
-      </header>
 
-      <main className="container mx-auto px-4 py-8">
         {!isInstagramConnected ? (
           <div className="text-center py-12">
             <h2 className="text-xl font-semibold mb-4">Connect Your Instagram Account</h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-muted-foreground mb-6">
               To start collaborating with brands, you need to connect your Instagram account first.
             </p>
             <Button
@@ -122,7 +106,7 @@ const InfluencerDashboard = () => {
                   <CardTitle className="text-xl">{collab.businessName}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600 mb-4">{collab.description}</p>
+                  <p className="text-muted-foreground mb-4">{collab.description}</p>
                   <div className="space-y-2">
                     <p className="text-sm">
                       <strong>Requirements:</strong> {collab.requirements}
@@ -138,6 +122,7 @@ const InfluencerDashboard = () => {
           </div>
         )}
       </main>
+      <Footer />
     </div>
   );
 };
