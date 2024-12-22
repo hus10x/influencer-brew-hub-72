@@ -10,17 +10,17 @@ export const Hero = () => {
   return (
     <>
       <Navbar />
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-gray-50 to-white px-6 pt-20">
+      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-background to-background/80 px-6 pt-20">
         <div className="container mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8 animate-fade-up">
             <div>
               <span className="px-3 py-1 text-sm font-medium bg-primary/10 text-primary rounded-full">
                 Launch Your Social Journey
               </span>
-              <h1 className="mt-6 text-4xl sm:text-5xl md:text-6xl font-bold leading-tight text-gray-900">
+              <h1 className="mt-6 text-4xl sm:text-5xl md:text-6xl font-bold leading-tight text-foreground">
                 Connect Food Influencers with Restaurants Instantly
               </h1>
-              <p className="mt-6 text-lg text-gray-600 leading-relaxed">
+              <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
                 Whether you're a food influencer looking for exciting collaborations or a restaurant wanting to boost your social presence, we've got you covered.
               </p>
             </div>

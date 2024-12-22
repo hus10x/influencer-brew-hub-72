@@ -25,16 +25,16 @@ const features = [
 
 export const Features = () => {
   return (
-    <section className="py-24 bg-gray-50 px-6">
+    <section className="py-24 bg-muted/50 dark:bg-background/95 px-6">
       <div className="container mx-auto">
         <div className="text-center max-w-3xl mx-auto mb-16 animate-fade-up">
           <span className="px-3 py-1 text-sm font-medium bg-primary/10 text-primary rounded-full">
             Why Choose Us
           </span>
-          <h2 className="mt-6 text-4xl font-bold text-gray-900">
+          <h2 className="mt-6 text-4xl font-bold text-foreground">
             Everything You Need to Grow Your Restaurant
           </h2>
-          <p className="mt-4 text-lg text-gray-600">
+          <p className="mt-4 text-lg text-muted-foreground">
             Simple tools to manage your influencer collaborations and grow your social presence
           </p>
         </div>
@@ -42,12 +42,12 @@ export const Features = () => {
           {features.map((feature, index) => (
             <div
               key={feature.title}
-              className="p-6 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow animate-fade-up"
+              className="p-6 rounded-2xl bg-background border border-border shadow-sm hover:shadow-md transition-shadow animate-fade-up"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <feature.icon className="w-12 h-12 text-primary mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">{feature.title}</h3>
-              <p className="text-gray-600">{feature.description}</p>
+              <h3 className="text-xl font-semibold text-foreground mb-2">{feature.title}</h3>
+              <p className="text-muted-foreground">{feature.description}</p>
             </div>
           ))}
         </div>

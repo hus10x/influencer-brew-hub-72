@@ -20,7 +20,7 @@ const steps = [
 
 export const HowItWorks = () => {
   return (
-    <section className="py-24 bg-accent/20 px-6">
+    <section className="py-24 bg-accent/5 dark:bg-accent/10 px-6">
       <div className="container mx-auto">
         <div className="text-center max-w-3xl mx-auto mb-16 animate-fade-up">
           <span className="px-3 py-1 text-sm font-medium bg-primary/10 text-primary rounded-full">
@@ -35,7 +35,7 @@ export const HowItWorks = () => {
           {steps.map((step, index) => (
             <div
               key={step.number}
-              className="relative p-8 bg-background border rounded-2xl shadow-sm hover:shadow-md transition-shadow animate-fade-up"
+              className="relative p-8 bg-background border border-border rounded-2xl shadow-sm hover:shadow-md transition-shadow animate-fade-up"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <div className="flex items-center mb-4">
