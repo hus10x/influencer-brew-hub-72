@@ -2,23 +2,39 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 const SignUp = () => {
   const navigate = useNavigate();
+  const [userType, setUserType] = useState<'influencer' | 'business'>('influencer');
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        // Redirect based on user type after signup
-        navigate("/influencer");
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        try {
+          const { error } = await supabase
+            .from('profiles')
+            .update({ user_type: userType })
+            .eq('id', session.user.id);
+
+          if (error) throw error;
+
+          // Redirect based on user type
+          navigate(userType === 'influencer' ? '/influencer' : '/client');
+        } catch (error) {
+          console.error('Error updating profile:', error);
+          toast.error('Failed to complete signup. Please try again.');
+        }
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, userType]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col py-12 px-6 lg:px-8">
@@ -38,6 +54,23 @@ const SignUp = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-6 shadow-md rounded-lg sm:px-10">
+          <div className="mb-6">
+            <RadioGroup
+              defaultValue={userType}
+              onValueChange={(value) => setUserType(value as 'influencer' | 'business')}
+              className="flex gap-4"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="influencer" id="influencer" />
+                <Label htmlFor="influencer">Influencer</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="business" id="business" />
+                <Label htmlFor="business">Business</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
           <Auth
             supabaseClient={supabase}
             appearance={{
@@ -50,18 +83,6 @@ const SignUp = () => {
                   },
                 },
               },
-              className: {
-                button: 'custom-button-class',
-                anchor: 'custom-anchor-class'
-              }
-            }}
-            localization={{
-              variables: {
-                sign_up: {
-                  button_label: 'Sign Up',
-                  link_text: 'Sign Up'
-                }
-              }
             }}
             theme="light"
             providers={[]}
