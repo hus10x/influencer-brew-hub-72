@@ -50,21 +50,23 @@ const SignUp = () => {
                   },
                 },
               },
+              style: {
+                button: {
+                  signUp: {
+                    text: 'Sign Up'
+                  }
+                },
+                anchor: {
+                  signUp: {
+                    text: 'Sign Up'
+                  }
+                }
+              }
             }}
             theme="light"
             providers={[]}
             view="sign_up"
             redirectTo={window.location.origin}
-            options={{
-              signUpFields: [
-                {
-                  name: 'username',
-                  label: 'Username',
-                  type: 'text',
-                  required: true,
-                },
-              ],
-            }}
           />
         </div>
       </div>
