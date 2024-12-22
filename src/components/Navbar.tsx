@@ -10,10 +10,27 @@ import { LogIn, UserPlus, Moon, Sun, LogOut } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useEffect, useState } from "react";
 
 export const Navbar = () => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsLoggedIn(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -38,6 +55,39 @@ export const Navbar = () => {
             Hikayat
           </div>
           <div className="flex items-center gap-4">
+            {!isLoggedIn ? (
+              <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline">
+                      <LogIn className="mr-2 h-4 w-4" />
+                      Login
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-48 bg-background border">
+                    <DropdownMenuItem onClick={() => navigate("/login")}>
+                      Login as Influencer
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/login")}>
+                      Login as Business
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button onClick={() => navigate("/signup")} className="bg-primary hover:bg-primary/90">
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Sign Up
+                </Button>
+              </>
+            ) : (
+              <Button 
+                variant="outline" 
+                onClick={handleLogout}
+                className="flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -48,34 +98,6 @@ export const Navbar = () => {
               ) : (
                 <Moon className="h-5 w-5" />
               )}
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  <LogIn className="mr-2 h-4 w-4" />
-                  Login
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-background border shadow-lg">
-                <DropdownMenuItem onClick={() => navigate("/login")}>
-                  Login as Influencer
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/login")}>
-                  Login as Business
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button onClick={() => navigate("/signup")} className="bg-primary hover:bg-primary/90">
-              <UserPlus className="mr-2 h-4 w-4" />
-              Sign Up
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={handleLogout}
-              className="flex items-center gap-2"
-            >
-              <LogOut className="h-4 w-4" />
-              Logout
             </Button>
           </div>
         </div>

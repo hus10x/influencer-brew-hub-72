@@ -29,12 +29,12 @@ export default {
           foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "#FFDEE2",
-          foreground: "#221F26",
+          DEFAULT: "#7E69AB",
+          foreground: "#FFFFFF",
         },
         accent: {
-          DEFAULT: "#FDE1D3", // Peach color
-          foreground: "#221F26",
+          DEFAULT: "#6E59A5",
+          foreground: "#FFFFFF",
         },
         muted: {
           DEFAULT: "#E5DEFF",

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Instagram, LogOut } from "lucide-react";
+import { Instagram } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
@@ -72,17 +72,8 @@ const InfluencerDashboard = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="container mx-auto px-4 py-24">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-foreground">Collab Now ✨</h1>
-          <p className="text-lg text-muted-foreground mt-2">Find your next exciting collaboration</p>
-        </div>
-
         {!isInstagramConnected ? (
           <div className="text-center py-12">
-            <h2 className="text-xl font-semibold mb-4">Connect Your Instagram Account</h2>
-            <p className="text-muted-foreground mb-6">
-              To start collaborating with brands, you need to connect your Instagram account first.
-            </p>
             <Button
               onClick={() => setIsInstagramConnected(true)}
               className="flex items-center gap-2 mx-auto"
@@ -92,34 +83,39 @@ const InfluencerDashboard = () => {
             </Button>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockCollaborations.map((collab) => (
-              <Card key={collab.id} className="hover:shadow-lg transition-shadow">
-                <div className="relative h-48 overflow-hidden rounded-t-lg">
-                  <img
-                    src={collab.image}
-                    alt={collab.businessName}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <CardHeader>
-                  <CardTitle className="text-xl">{collab.businessName}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-4">{collab.description}</p>
-                  <div className="space-y-2">
-                    <p className="text-sm">
-                      <strong>Requirements:</strong> {collab.requirements}
-                    </p>
-                    <p className="text-sm">
-                      <strong>Compensation:</strong> {collab.compensation}
-                    </p>
+          <>
+            <div className="text-center mb-12">
+              <h1 className="text-4xl font-bold text-foreground">Available Collaborations</h1>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {mockCollaborations.map((collab) => (
+                <Card key={collab.id} className="hover:shadow-lg transition-shadow">
+                  <div className="relative h-48 overflow-hidden rounded-t-lg">
+                    <img
+                      src={collab.image}
+                      alt={collab.businessName}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <Button className="w-full mt-4">Join Collaboration</Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  <CardHeader>
+                    <CardTitle className="text-xl">{collab.businessName}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground mb-4">{collab.description}</p>
+                    <div className="space-y-2">
+                      <p className="text-sm">
+                        <strong>Requirements:</strong> {collab.requirements}
+                      </p>
+                      <p className="text-sm">
+                        <strong>Compensation:</strong> {collab.compensation}
+                      </p>
+                    </div>
+                    <Button className="w-full mt-4">Join Collaboration</Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </>
         )}
       </main>
       <Footer />
