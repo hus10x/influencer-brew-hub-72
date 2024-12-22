@@ -50,16 +50,16 @@ const SignUp = () => {
                   },
                 },
               },
-              style: {
-                button: {
-                  signUp: {
-                    text: 'Sign Up'
-                  }
-                },
-                anchor: {
-                  signUp: {
-                    text: 'Sign Up'
-                  }
+              className: {
+                button: 'custom-button-class',
+                anchor: 'custom-anchor-class'
+              }
+            }}
+            localization={{
+              variables: {
+                sign_up: {
+                  button_label: 'Sign Up',
+                  link_text: 'Sign Up'
                 }
               }
             }}

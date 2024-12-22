@@ -50,9 +50,15 @@ const Login = () => {
                   },
                 },
               },
-              style: {
-                input: {
-                  labelText: 'Username or Email Address'
+              className: {
+                input: 'custom-input-class',
+                label: 'custom-label-class',
+              }
+            }}
+            localization={{
+              variables: {
+                sign_in: {
+                  email_label: 'Username or Email Address'
                 }
               }
             }}
