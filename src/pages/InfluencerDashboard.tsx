@@ -69,11 +69,11 @@ const InfluencerDashboard = () => {
   const [isInstagramConnected, setIsInstagramConnected] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      <main className="container mx-auto px-4 py-24">
+      <main className="flex-1 container mx-auto px-4 flex items-center justify-center">
         {!isInstagramConnected ? (
-          <div className="relative isolate overflow-hidden bg-muted/50 dark:bg-background/95 py-24 sm:py-32 rounded-3xl">
+          <div className="relative isolate overflow-hidden bg-muted/50 dark:bg-background/95 py-16 sm:py-24 rounded-3xl w-full my-8">
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
               <div className="mx-auto max-w-2xl text-center">
                 <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
@@ -82,7 +82,7 @@ const InfluencerDashboard = () => {
                 <p className="mt-6 text-lg leading-8 text-muted-foreground">
                   Link your Instagram account to unlock exclusive collaboration opportunities with top brands. Start earning from your influence today.
                 </p>
-                <div className="mt-10 flex items-center justify-center gap-x-6">
+                <div className="mt-10">
                   <Button
                     onClick={() => setIsInstagramConnected(true)}
                     className="group relative flex items-center gap-2 overflow-hidden px-6 transition-all duration-300 hover:bg-primary/90"
@@ -91,13 +91,6 @@ const InfluencerDashboard = () => {
                     <Instagram className="w-5 h-5 transition-transform group-hover:scale-110" />
                     Connect Instagram
                     <span className="absolute -right-8 -top-8 aspect-square w-16 translate-x-full translate-y-full rounded-full bg-white/20 transition-transform group-hover:translate-x-0 group-hover:translate-y-0" />
-                  </Button>
-                  <Button
-                    variant="link"
-                    className="text-foreground hover:text-primary"
-                    onClick={() => window.open('https://help.instagram.com/372819389498306', '_blank')}
-                  >
-                    Learn more
                   </Button>
                 </div>
               </div>
