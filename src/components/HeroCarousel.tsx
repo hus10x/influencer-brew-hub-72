@@ -15,7 +15,7 @@ const images = [
 
 export const HeroCarousel = () => {
   return (
-    <Carousel className="relative w-full">
+    <Carousel className="relative w-full" opts={{ loop: true }}>
       <CarouselContent>
         {images.map((image, index) => (
           <CarouselItem key={index}>

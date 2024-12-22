@@ -25,7 +25,7 @@ const Login = () => {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Button
           variant="ghost"
-          className="mb-6"
+          className="mb-6 text-primary hover:text-primary/90"
           onClick={() => navigate("/")}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -37,10 +37,20 @@ const Login = () => {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 shadow rounded-lg sm:px-10">
+        <div className="bg-white py-8 px-6 shadow-md rounded-lg sm:px-10">
           <Auth
             supabaseClient={supabase}
-            appearance={{ theme: ThemeSupa }}
+            appearance={{
+              theme: ThemeSupa,
+              variables: {
+                default: {
+                  colors: {
+                    brand: '#9b87f5',
+                    brandAccent: '#7E69AB',
+                  },
+                },
+              },
+            }}
             theme="light"
             providers={[]}
             view="sign_in"
