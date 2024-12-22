@@ -10,14 +10,14 @@ export const Hero = () => {
   return (
     <>
       <Navbar />
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-primary/10 to-white px-6 pt-20">
+      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-gray-50 to-white px-6 pt-20">
         <div className="container mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8 animate-fade-up">
             <div>
-              <span className="px-3 py-1 text-sm font-medium bg-secondary/30 rounded-full">
+              <span className="px-3 py-1 text-sm font-medium bg-primary/10 text-primary rounded-full">
                 Launch Your Social Journey
               </span>
-              <h1 className="mt-6 text-5xl md:text-6xl font-bold leading-tight">
+              <h1 className="mt-6 text-4xl sm:text-5xl md:text-6xl font-bold leading-tight text-gray-900">
                 Connect Food Influencers with Restaurants Instantly
               </h1>
               <p className="mt-6 text-lg text-gray-600 leading-relaxed">

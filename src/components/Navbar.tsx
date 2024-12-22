@@ -16,7 +16,7 @@ export const Navbar = () => {
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div 
-            className="text-2xl font-bold text-primary cursor-pointer" 
+            className="text-2xl font-bold text-gray-900 cursor-pointer" 
             onClick={() => navigate("/")}
           >
             Hikayat
@@ -38,7 +38,7 @@ export const Navbar = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button onClick={() => navigate("/signup")}>
+            <Button onClick={() => navigate("/signup")} className="bg-primary hover:bg-primary/90">
               <UserPlus className="mr-2 h-4 w-4" />
               Sign Up
             </Button>

@@ -19,14 +19,11 @@ export const HeroCarousel = () => {
       <CarouselContent>
         {images.map((image, index) => (
           <CarouselItem key={index}>
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-secondary/20 rounded-3xl z-10" />
-              <img
-                src={image}
-                alt={`Slide ${index + 1}`}
-                className="rounded-3xl shadow-xl w-full object-cover aspect-[4/3]"
-              />
-            </div>
+            <img
+              src={image}
+              alt={`Slide ${index + 1}`}
+              className="rounded-3xl shadow-xl w-full object-cover aspect-[4/3]"
+            />
           </CarouselItem>
         ))}
       </CarouselContent>
