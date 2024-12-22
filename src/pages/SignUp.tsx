@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -23,11 +23,7 @@ const SignUp = () => {
             .eq('id', session.user.id);
 
           if (error) {
-            toast({
-              variant: "destructive",
-              title: "Error updating profile",
-              description: error.message
-            });
+            toast.error("Error updating profile: " + error.message);
             return;
           }
 
@@ -35,11 +31,7 @@ const SignUp = () => {
           navigate(userType === 'influencer' ? '/influencer' : '/client');
         } catch (error: any) {
           console.error('Error updating profile:', error);
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to complete signup. Please try again."
-          });
+          toast.error('Failed to complete signup. Please try again.');
         }
       }
     });
@@ -107,13 +99,6 @@ const SignUp = () => {
             providers={[]}
             view="sign_up"
             redirectTo={window.location.origin}
-            onError={(error) => {
-              toast({
-                variant: "destructive",
-                title: "Error",
-                description: error.message
-              });
-            }}
           />
         </div>
       </div>

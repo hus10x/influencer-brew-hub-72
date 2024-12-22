@@ -24,9 +24,15 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
           .from('profiles')
           .select('user_type')
           .eq('id', session.user.id)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
+
+        if (!profile) {
+          toast.error("Profile not found");
+          navigate("/");
+          return;
+        }
 
         // Check if user has permission to access the route
         const isInfluencerRoute = location.pathname === '/influencer';
