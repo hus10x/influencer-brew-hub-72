@@ -34,31 +34,37 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        if (!profile) {
-          // If no profile exists, use upsert to safely create/update it
-          const { error: upsertError } = await supabase
-            .from('profiles')
-            .upsert({
-              id: session.user.id,
-              email: session.user.email,
-              user_type: 'business' // Default to business if no profile exists
-            }, {
-              onConflict: 'id'
-            });
-
-          if (upsertError) {
-            console.error('Error upserting profile:', upsertError);
-            toast.error('Error creating user profile');
-            setIsAuthenticated(false);
-            setIsLoading(false);
-            return;
-          }
-
-          setUserType('business');
-        } else {
+        // If profile exists, use its user_type
+        if (profile) {
+          console.log('Found profile with user_type:', profile.user_type);
           setUserType(profile.user_type);
+          setIsAuthenticated(true);
+          setIsLoading(false);
+          return;
         }
 
+        // If no profile exists, create one with the user_type from URL
+        const desiredUserType = window.location.pathname.includes('influencer') ? 'influencer' : 'business';
+        
+        const { error: upsertError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: session.user.id,
+            email: session.user.email,
+            user_type: desiredUserType
+          }, {
+            onConflict: 'id'
+          });
+
+        if (upsertError) {
+          console.error('Error upserting profile:', upsertError);
+          toast.error('Error creating user profile');
+          setIsAuthenticated(false);
+          setIsLoading(false);
+          return;
+        }
+
+        setUserType(desiredUserType);
         setIsAuthenticated(true);
         setIsLoading(false);
       } catch (error) {
@@ -80,12 +86,14 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/login" replace />;
   }
 
-  // Redirect business users trying to access influencer dashboard and vice versa
+  // Redirect based on user type
   if (userType === 'business' && window.location.pathname === '/influencer') {
+    console.log('Redirecting business user from influencer to client dashboard');
     return <Navigate to="/client" replace />;
   }
   
   if (userType === 'influencer' && window.location.pathname === '/client') {
+    console.log('Redirecting influencer from client to influencer dashboard');
     return <Navigate to="/influencer" replace />;
   }
 
