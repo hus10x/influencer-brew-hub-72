@@ -19,14 +19,15 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        const { data: profile, error } = await supabase
+        // First try to get the existing profile
+        const { data: profile, error: fetchError } = await supabase
           .from('profiles')
           .select('user_type')
           .eq('id', session.user.id)
           .maybeSingle();
 
-        if (error) {
-          console.error('Error fetching profile:', error);
+        if (fetchError) {
+          console.error('Error fetching profile:', fetchError);
           toast.error('Error fetching user profile');
           setIsAuthenticated(false);
           setIsLoading(false);
@@ -34,19 +35,19 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         }
 
         if (!profile) {
-          // If no profile exists, create one
-          const { error: insertError } = await supabase
+          // If no profile exists, use upsert to safely create/update it
+          const { error: upsertError } = await supabase
             .from('profiles')
-            .insert([
-              {
-                id: session.user.id,
-                email: session.user.email,
-                user_type: 'business' // Default to business if no profile exists
-              }
-            ]);
+            .upsert({
+              id: session.user.id,
+              email: session.user.email,
+              user_type: 'business' // Default to business if no profile exists
+            }, {
+              onConflict: 'id'
+            });
 
-          if (insertError) {
-            console.error('Error creating profile:', insertError);
+          if (upsertError) {
+            console.error('Error upserting profile:', upsertError);
             toast.error('Error creating user profile');
             setIsAuthenticated(false);
             setIsLoading(false);
