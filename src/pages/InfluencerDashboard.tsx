@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Instagram } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 
 interface Collaboration {
   id: string;
@@ -140,7 +139,6 @@ const InfluencerDashboard = () => {
           </>
         )}
       </main>
-      <Footer />
     </div>
   );
 };
