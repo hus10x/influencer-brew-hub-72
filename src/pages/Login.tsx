@@ -48,6 +48,9 @@ const Login = () => {
                     brand: '#9b87f5',
                     brandAccent: '#7E69AB',
                   },
+                  labels: {
+                    emailLabel: 'Username or Email Address',
+                  },
                 },
               },
             }}
