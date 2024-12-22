@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "./Navbar";
+import { HeroCarousel } from "./HeroCarousel";
 
 export const Hero = () => {
   const navigate = useNavigate();
@@ -41,12 +42,7 @@ export const Hero = () => {
             </div>
           </div>
           <div className="relative animate-fade-in lg:block">
-            <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-secondary/20 rounded-3xl" />
-            <img
-              src="https://images.unsplash.com/photo-1516321497487-e288fb19713f"
-              alt="People collaborating"
-              className="rounded-3xl shadow-xl w-full object-cover aspect-[4/3]"
-            />
+            <HeroCarousel />
           </div>
         </div>
       </section>
