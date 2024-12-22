@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -22,13 +22,24 @@ const SignUp = () => {
             .update({ user_type: userType })
             .eq('id', session.user.id);
 
-          if (error) throw error;
+          if (error) {
+            toast({
+              variant: "destructive",
+              title: "Error updating profile",
+              description: error.message
+            });
+            return;
+          }
 
           // Redirect based on user type
           navigate(userType === 'influencer' ? '/influencer' : '/client');
-        } catch (error) {
+        } catch (error: any) {
           console.error('Error updating profile:', error);
-          toast.error('Failed to complete signup. Please try again.');
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to complete signup. Please try again."
+          });
         }
       }
     });
@@ -71,6 +82,14 @@ const SignUp = () => {
             </RadioGroup>
           </div>
 
+          <div className="mb-4 p-4 bg-gray-50 rounded-md text-sm text-gray-600">
+            <p className="font-medium mb-2">Password Requirements:</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Minimum 6 characters long</li>
+              <li>Combination of letters, numbers, or special characters recommended</li>
+            </ul>
+          </div>
+
           <Auth
             supabaseClient={supabase}
             appearance={{
@@ -88,6 +107,13 @@ const SignUp = () => {
             providers={[]}
             view="sign_up"
             redirectTo={window.location.origin}
+            onError={(error) => {
+              toast({
+                variant: "destructive",
+                title: "Error",
+                description: error.message
+              });
+            }}
           />
         </div>
       </div>
