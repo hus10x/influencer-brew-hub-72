@@ -86,7 +86,7 @@ const Login = () => {
               }
             }}
             theme="light"
-            providers={[]}
+            providers={["facebook"]}
             view="sign_in"
             redirectTo={window.location.origin}
           />
