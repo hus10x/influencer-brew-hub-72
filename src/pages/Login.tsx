@@ -96,7 +96,6 @@ const Login = () => {
             onlyThirdPartyProviders={false}
             socialLayout="horizontal"
             showLinks={true}
-            afterSignInUrl="/signup"
           />
           <div className="mt-4 text-center">
             <Button
