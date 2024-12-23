@@ -3,6 +3,8 @@ import { CampaignCard } from "./CampaignCard";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface Campaign {
   id: string;
@@ -87,49 +89,79 @@ export const KanbanBoard = () => {
     completed: campaigns?.filter((c) => c.status === "completed") ?? [],
   };
 
+  if (!campaigns?.length) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[400px] space-y-4 text-center">
+        <h3 className="text-xl font-semibold">No campaigns yet</h3>
+        <p className="text-muted-foreground max-w-md">
+          Create your first campaign to start managing your collaborations
+        </p>
+        <Button className="mt-4">
+          <Plus className="w-4 h-4 mr-2" />
+          New Campaign
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4">
         {Object.entries(columns).map(([status, items]) => (
           <Droppable key={status} droppableId={status}>
-            {(provided) => (
+            {(provided, snapshot) => (
               <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                className="space-y-4"
+                className={`space-y-4 p-4 rounded-lg ${
+                  snapshot.isDraggingOver ? "bg-muted/50" : "bg-muted/30"
+                }`}
               >
-                <h3 className="font-semibold capitalize text-lg">{status}</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold capitalize text-lg">{status}</h3>
+                  <span className="text-sm text-muted-foreground">
+                    {items.length} campaign{items.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
                 <div className="space-y-4 min-h-[200px]">
-                  {items.map((campaign, index) => (
-                    <Draggable
-                      key={campaign.id}
-                      draggableId={campaign.id}
-                      index={index}
-                    >
-                      {(provided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                        >
-                          <CampaignCard
-                            title={campaign.title}
-                            description={campaign.description}
-                            startDate={new Date(campaign.start_date)}
-                            endDate={new Date(campaign.end_date)}
-                            collaborationsCount={0}
-                            onAddCollaboration={() => {
-                              // TODO: Implement add collaboration
-                              console.log(
-                                "Add collaboration to campaign:",
-                                campaign.id
-                              );
-                            }}
-                          />
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
+                  {items.length === 0 ? (
+                    <div className="flex items-center justify-center h-[200px] border-2 border-dashed border-muted rounded-lg">
+                      <p className="text-sm text-muted-foreground">
+                        Drop campaigns here
+                      </p>
+                    </div>
+                  ) : (
+                    items.map((campaign, index) => (
+                      <Draggable
+                        key={campaign.id}
+                        draggableId={campaign.id}
+                        index={index}
+                      >
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                          >
+                            <CampaignCard
+                              title={campaign.title}
+                              description={campaign.description}
+                              startDate={new Date(campaign.start_date)}
+                              endDate={new Date(campaign.end_date)}
+                              collaborationsCount={0}
+                              onAddCollaboration={() => {
+                                // TODO: Implement add collaboration
+                                console.log(
+                                  "Add collaboration to campaign:",
+                                  campaign.id
+                                );
+                              }}
+                            />
+                          </div>
+                        )}
+                      </Draggable>
+                    ))
+                  )}
                   {provided.placeholder}
                 </div>
               </div>

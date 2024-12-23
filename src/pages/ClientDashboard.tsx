@@ -32,7 +32,18 @@ const ClientDashboard = () => {
       case "businesses":
         return <BusinessList />;
       case "campaigns":
-        return <KanbanBoard />;
+        return (
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold tracking-tight">Manage Your Campaigns</h1>
+              <p className="text-muted-foreground">
+                Drag and drop campaigns between columns to update their status
+              </p>
+            </div>
+            <QuickActions />
+            <KanbanBoard />
+          </div>
+        );
       case "overview":
       default:
         return (

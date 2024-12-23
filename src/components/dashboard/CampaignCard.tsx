@@ -1,4 +1,4 @@
-import { CalendarDays, Users, Plus } from "lucide-react";
+import { CalendarDays, Users, Plus, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -26,10 +26,13 @@ export const CampaignCard = ({
   onAddCollaboration,
 }: CampaignCardProps) => {
   return (
-    <Card className="w-full bg-card hover:shadow-md transition-shadow">
+    <Card className="w-full bg-card hover:shadow-md transition-shadow group">
       <CardHeader className="space-y-1">
         <div className="flex items-start justify-between">
-          <CardTitle className="text-xl">{title}</CardTitle>
+          <div className="flex items-center gap-2">
+            <GripVertical className="w-4 h-4 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <CardTitle className="text-xl">{title}</CardTitle>
+          </div>
           <Button
             variant="ghost"
             size="icon"
@@ -52,7 +55,7 @@ export const CampaignCard = ({
           </div>
           <div className="flex items-center text-sm text-muted-foreground">
             <Users className="mr-2 h-4 w-4" />
-            <span>{collaborationsCount} collaborations</span>
+            <span>{collaborationsCount} collaboration{collaborationsCount !== 1 ? 's' : ''}</span>
           </div>
         </div>
       </CardContent>
