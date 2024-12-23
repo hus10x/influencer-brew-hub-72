@@ -2,27 +2,44 @@ import { Button } from "@/components/ui/button";
 import { Instagram } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const InstagramConnect = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleInstagramConnect = async () => {
     try {
-      console.log('Starting Instagram connection process...');
       setIsLoading(true);
+      console.log('Simulating Instagram connection for development...');
       
-      // Instagram Graph API OAuth URL
-      const instagramUrl = "https://www.facebook.com/v19.0/dialog/oauth" + 
-        "?client_id=2261088610942492" +
-        "&redirect_uri=https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth" +
-        "&response_type=code" +
-        "&scope=instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement,instagram_manage_insights" +
-        "&state=instagram";
+      // Get the current user's ID
+      const { data: { user } } = await supabase.auth.getUser();
       
-      console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
-      window.location.href = instagramUrl;
+      if (!user) {
+        throw new Error('No user found');
+      }
+
+      // Update the user's profile with mock Instagram data
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          instagram_handle: 'dev_' + user.id.substring(0, 8),
+          instagram_connected: true,
+          instagram_business_account: true,
+          instagram_access_token: 'mock_token_' + Date.now(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      toast.success('Successfully connected to Instagram (Development Mode)');
+      // Reload the page to reflect changes
+      window.location.reload();
     } catch (error) {
-      console.error('Error connecting to Instagram:', error);
+      console.error('Error in development Instagram connection:', error);
       toast.error('Failed to connect to Instagram. Please try again.');
     } finally {
       setIsLoading(false);
@@ -37,7 +54,7 @@ export const InstagramConnect = () => {
       size="lg"
     >
       <Instagram className="w-5 h-5 transition-transform group-hover:scale-110" />
-      {isLoading ? 'Connecting...' : 'Connect Instagram'}
+      {isLoading ? 'Connecting...' : 'Connect Instagram (Dev Mode)'}
       <span className="absolute -right-8 -top-8 aspect-square w-16 translate-x-full translate-y-full rounded-full bg-white/20 transition-transform group-hover:translate-x-0 group-hover:translate-y-0" />
     </Button>
   );
