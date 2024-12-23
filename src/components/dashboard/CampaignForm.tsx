@@ -39,6 +39,13 @@ export const CampaignForm = ({ onSuccess }: CampaignFormProps) => {
   const queryClient = useQueryClient();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      business_id: "",
+      start_date: "",
+      end_date: "",
+    },
   });
 
   const { data: businesses, isLoading: isLoadingBusinesses } = useQuery({
@@ -59,7 +66,13 @@ export const CampaignForm = ({ onSuccess }: CampaignFormProps) => {
 
   const createCampaign = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
-      const { error } = await supabase.from("campaigns").insert([values]);
+      const { error } = await supabase.from("campaigns").insert({
+        title: values.title,
+        description: values.description,
+        business_id: values.business_id,
+        start_date: values.start_date,
+        end_date: values.end_date,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
