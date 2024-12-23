@@ -50,8 +50,29 @@ export const CreateCampaignDialog = ({
         throw new Error("Not authenticated");
       }
 
-      // First check if business exists
-      const { data: businessData, error: fetchError } = await supabase
+      // First ensure profile exists
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      if (!existingProfile) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert({
+            id: userId,
+            email: (await supabase.auth.getUser()).data.user?.email,
+            user_type: 'business'
+          });
+
+        if (profileError) {
+          throw profileError;
+        }
+      }
+
+      // Then check if business exists
+      const { data: businessData } = await supabase
         .from("businesses")
         .select("id")
         .eq("user_id", userId)
@@ -59,21 +80,11 @@ export const CreateCampaignDialog = ({
 
       // If no business exists, create one
       if (!businessData) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("email")
-          .eq("id", userId)
-          .single();
-
-        if (!profile) {
-          throw new Error("Profile not found");
-        }
-
         const { error: createError } = await supabase
           .from("businesses")
           .insert({
             id: crypto.randomUUID(),
-            business_name: profile.email.split("@")[0], // Temporary name from email
+            business_name: (await supabase.auth.getUser()).data.user?.email?.split("@")[0] || "My Business",
             user_id: userId
           });
 
@@ -82,6 +93,7 @@ export const CreateCampaignDialog = ({
         }
       }
 
+      // Finally create the campaign
       const { error: campaignError } = await supabase.from("campaigns").insert({
         business_id: userId,
         title: data.title,
