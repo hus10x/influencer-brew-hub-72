@@ -30,6 +30,7 @@ interface BusinessCardProps {
 export const BusinessCard = ({ business, onEdit, onDelete, canDelete }: BusinessCardProps) => {
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
     if (!canDelete) {
@@ -42,6 +43,7 @@ export const BusinessCard = ({ business, onEdit, onDelete, canDelete }: Business
       return;
     }
 
+    setIsDeleting(true);
     try {
       const { error } = await supabase
         .from("businesses")
@@ -56,6 +58,8 @@ export const BusinessCard = ({ business, onEdit, onDelete, canDelete }: Business
     } catch (error) {
       console.error("Error deleting business:", error);
       toast.error("Failed to delete business");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -123,8 +127,9 @@ export const BusinessCard = ({ business, onEdit, onDelete, canDelete }: Business
                 <AlertDialogAction
                   onClick={handleDelete}
                   className="bg-destructive hover:bg-destructive/90"
+                  disabled={isDeleting}
                 >
-                  Delete Business
+                  {isDeleting ? "Deleting..." : "Delete Business"}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
