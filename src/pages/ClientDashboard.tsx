@@ -41,9 +41,9 @@ const ClientDashboard = () => {
 
   return (
     <div className="min-h-screen flex bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-border/10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="p-6 border-b border-border/10">
+      {/* Sidebar with border */}
+      <aside className="w-64 border-r border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="p-6 border-b border-border/40">
           <h1 className="text-2xl font-bold text-primary">hikayat</h1>
         </div>
         <nav className="p-4 space-y-2">
@@ -61,7 +61,7 @@ const ClientDashboard = () => {
               {item.label}
             </button>
           ))}
-          <div className="pt-4 mt-4 border-t border-border/10">
+          <div className="pt-4 mt-4 border-t border-border/40">
             <Button 
               variant="ghost" 
               className="w-full flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary transition-all duration-200 ease-in-out transform hover:scale-[1.02]"
@@ -77,7 +77,7 @@ const ClientDashboard = () => {
       {/* Main Content with Glassmorphism */}
       <main className="flex-1 p-8 bg-background/60 backdrop-blur-xl">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="bg-background/30 backdrop-blur-xl border-border/10 hover:shadow-lg transition-shadow duration-200 shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(0,0,0,0.2)]">
+          <Card className="bg-background/30 backdrop-blur-xl border-border/40 hover:shadow-lg transition-shadow duration-200 shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(0,0,0,0.2)]">
             <CardHeader className="space-y-1">
               <CardTitle className="text-lg font-medium text-foreground">ROI Budget</CardTitle>
             </CardHeader>
@@ -86,7 +86,7 @@ const ClientDashboard = () => {
               <p className="text-sm text-foreground/70 mt-1">Monthly budget</p>
             </CardContent>
           </Card>
-          <Card className="bg-background/30 backdrop-blur-xl border-border/10 hover:shadow-lg transition-shadow duration-200 shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(0,0,0,0.2)]">
+          <Card className="bg-background/30 backdrop-blur-xl border-border/40 hover:shadow-lg transition-shadow duration-200 shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(0,0,0,0.2)]">
             <CardHeader className="space-y-1">
               <CardTitle className="text-lg font-medium text-foreground">Live Campaigns</CardTitle>
             </CardHeader>
@@ -95,7 +95,7 @@ const ClientDashboard = () => {
               <p className="text-sm text-foreground/70 mt-1">Active collaborations</p>
             </CardContent>
           </Card>
-          <Card className="bg-background/30 backdrop-blur-xl border-border/10 hover:shadow-lg transition-shadow duration-200 shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(0,0,0,0.2)]">
+          <Card className="bg-background/30 backdrop-blur-xl border-border/40 hover:shadow-lg transition-shadow duration-200 shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(0,0,0,0.2)]">
             <CardHeader className="space-y-1">
               <CardTitle className="text-lg font-medium text-foreground">Total Reach</CardTitle>
             </CardHeader>
@@ -106,7 +106,7 @@ const ClientDashboard = () => {
           </Card>
         </div>
 
-        <Card className="mt-8 bg-background/30 backdrop-blur-xl border-border/10 shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(0,0,0,0.2)]">
+        <Card className="mt-8 bg-background/30 backdrop-blur-xl border-border/40 shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(0,0,0,0.2)]">
           <CardHeader>
             <CardTitle className="text-xl font-medium text-foreground">Recent Activity</CardTitle>
           </CardHeader>
@@ -115,7 +115,7 @@ const ClientDashboard = () => {
               {[1, 2, 3].map((i) => (
                 <div 
                   key={i} 
-                  className="flex items-center justify-between p-4 rounded-lg border border-border/10 bg-background/20 backdrop-blur-xl hover:shadow-lg transition-shadow duration-200"
+                  className="flex items-center justify-between p-4 rounded-lg border border-border/40 bg-background/20 backdrop-blur-xl hover:shadow-lg transition-shadow duration-200"
                 >
                   <div>
                     <p className="font-medium text-foreground">@foodie_influencer_{i}</p>
