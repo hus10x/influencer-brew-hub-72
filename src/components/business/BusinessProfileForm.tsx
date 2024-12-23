@@ -87,7 +87,6 @@ export const BusinessProfileForm = ({ business, onSuccess }: BusinessProfileForm
           user_id: userId,
         };
 
-        // Always create a new business with a generated UUID
         const { error } = await supabase
           .from("businesses")
           .insert(businessData)
