@@ -1,7 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Instagram } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { useState } from "react";
 
 export const InstagramConnect = () => {
@@ -10,16 +8,18 @@ export const InstagramConnect = () => {
   const handleInstagramConnect = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase.functions.invoke('instagram-auth');
+      // Direct Instagram Business OAuth URL with all required scopes
+      const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
+        "?enable_fb_login=0" +
+        "&force_authentication=1" +
+        "&client_id=2261088610942492" +
+        "&redirect_uri=https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth" +
+        "&response_type=code" +
+        "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish";
       
-      if (error) throw error;
-      
-      if (data?.url) {
-        window.location.href = data.url;
-      }
+      window.location.href = instagramUrl;
     } catch (error) {
       console.error('Error connecting to Instagram:', error);
-      toast.error('Failed to connect to Instagram');
     } finally {
       setIsLoading(false);
     }
