@@ -40,21 +40,21 @@ const ClientDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-gray-50/50">
+    <div className="min-h-screen flex bg-background">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r shadow-sm">
-        <div className="p-6 border-b">
-          <h1 className="text-2xl font-bold text-primary">Hikayat</h1>
+      <aside className="w-64 border-r border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="p-6 border-b border-border/40">
+          <h1 className="text-2xl font-bold text-primary">hikayat</h1>
         </div>
         <nav className="p-4 space-y-2">
           {sidebarItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all ${
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                 activeTab === item.id
                   ? "bg-primary/10 text-primary font-medium"
-                  : "text-gray-600 hover:bg-gray-100"
+                  : "text-muted-foreground hover:bg-muted/50"
               }`}
             >
               <item.icon className="w-5 h-5" />
@@ -62,8 +62,8 @@ const ClientDashboard = () => {
             </button>
           ))}
           <Button 
-            variant="outline" 
-            className="w-full mt-4 flex items-center gap-2"
+            variant="secondary" 
+            className="w-full mt-4 flex items-center gap-2 bg-background/95"
             onClick={handleLogout}
           >
             <LogOut className="w-4 h-4" />
@@ -75,36 +75,36 @@ const ClientDashboard = () => {
       {/* Main Content */}
       <main className="flex-1 p-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-muted/50 border-border/40">
             <CardHeader className="space-y-1">
               <CardTitle className="text-lg font-medium">ROI Budget</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-primary">$2,500</p>
-              <p className="text-sm text-gray-600 mt-1">Monthly budget</p>
+              <p className="text-sm text-muted-foreground mt-1">Monthly budget</p>
             </CardContent>
           </Card>
-          <Card className="shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-muted/50 border-border/40">
             <CardHeader className="space-y-1">
               <CardTitle className="text-lg font-medium">Live Campaigns</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-primary">4</p>
-              <p className="text-sm text-gray-600 mt-1">Active collaborations</p>
+              <p className="text-sm text-muted-foreground mt-1">Active collaborations</p>
             </CardContent>
           </Card>
-          <Card className="shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-muted/50 border-border/40">
             <CardHeader className="space-y-1">
               <CardTitle className="text-lg font-medium">Total Reach</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-primary">25.4K</p>
-              <p className="text-sm text-gray-600 mt-1">Audience reached</p>
+              <p className="text-sm text-muted-foreground mt-1">Audience reached</p>
             </CardContent>
           </Card>
         </div>
 
-        <Card className="mt-8 shadow-sm">
+        <Card className="mt-8 bg-muted/50 border-border/40">
           <CardHeader>
             <CardTitle className="text-xl font-medium">Recent Activity</CardTitle>
           </CardHeader>
@@ -113,13 +113,13 @@ const ClientDashboard = () => {
               {[1, 2, 3].map((i) => (
                 <div 
                   key={i} 
-                  className="flex items-center justify-between p-4 bg-gray-50/50 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors"
+                  className="flex items-center justify-between p-4 rounded-lg border border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
                 >
                   <div>
-                    <p className="font-medium text-gray-900">@foodie_influencer_{i}</p>
-                    <p className="text-sm text-gray-600">Completed campaign for Summer Menu</p>
+                    <p className="font-medium">@foodie_influencer_{i}</p>
+                    <p className="text-sm text-muted-foreground">Completed campaign for Summer Menu</p>
                   </div>
-                  <span className="text-sm text-gray-500">2 days ago</span>
+                  <span className="text-sm text-muted-foreground">2 days ago</span>
                 </div>
               ))}
             </div>
