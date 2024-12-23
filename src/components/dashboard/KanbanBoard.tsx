@@ -7,6 +7,7 @@ import { Check, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { KanbanColumn } from "./kanban/KanbanColumn";
 import { useDeleteCampaigns } from "@/hooks/use-delete-campaigns";
+import { useUpdateCampaignStatus } from "@/hooks/use-update-campaign-status";
 import type { Campaign } from "./kanban/types";
 import {
   AlertDialog,
@@ -57,6 +58,8 @@ export const KanbanBoard = () => {
     setSelectedCampaigns([]);
     setSelectionMode(false);
   });
+
+  const updateCampaignStatus = useUpdateCampaignStatus();
 
   const onDragEnd = (result: any) => {
     if (!result.destination || selectionMode) return;
