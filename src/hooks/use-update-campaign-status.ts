@@ -12,7 +12,7 @@ export const useUpdateCampaignStatus = () => {
       status,
     }: {
       campaignId: string;
-      status: string;
+      status: Campaign['status'];
     }) => {
       const { error } = await supabase
         .from("campaigns")
