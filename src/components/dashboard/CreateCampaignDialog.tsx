@@ -44,19 +44,45 @@ export const CreateCampaignDialog = ({
   const onSubmit = async (data: CampaignFormData) => {
     try {
       setIsLoading(true);
+      const userId = (await supabase.auth.getUser()).data.user?.id;
       
-      const { data: businessData, error: businessError } = await supabase
+      if (!userId) {
+        throw new Error("Not authenticated");
+      }
+
+      // First check if business exists
+      const { data: businessData, error: fetchError } = await supabase
         .from("businesses")
         .select("id")
-        .eq("id", (await supabase.auth.getUser()).data.user?.id)
-        .single();
+        .eq("id", userId)
+        .maybeSingle();
 
-      if (businessError) {
-        throw new Error("Could not fetch business data");
+      // If no business exists, create one
+      if (!businessData) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("email")
+          .eq("id", userId)
+          .single();
+
+        if (!profile) {
+          throw new Error("Profile not found");
+        }
+
+        const { error: createError } = await supabase
+          .from("businesses")
+          .insert({
+            id: userId,
+            business_name: profile.email.split("@")[0], // Temporary name from email
+          });
+
+        if (createError) {
+          throw createError;
+        }
       }
 
       const { error: campaignError } = await supabase.from("campaigns").insert({
-        business_id: businessData.id,
+        business_id: userId,
         title: data.title,
         description: data.description,
         start_date: new Date(data.startDate).toISOString(),
