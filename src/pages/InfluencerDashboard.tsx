@@ -66,71 +66,46 @@ const mockCollaborations: Collaboration[] = [
 ];
 
 const InfluencerDashboard = () => {
-  const [isInstagramConnected, setIsInstagramConnected] = useState(false);
+  const [isInstagramConnected, setIsInstagramConnected] = useState(true);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       <main className="flex-1 container mx-auto px-4 pt-20">
-        {!isInstagramConnected ? (
-          <div className="flex items-center justify-center min-h-[calc(100vh-12rem)]">
-            <div className="relative isolate overflow-hidden bg-muted/50 dark:bg-background/95 py-16 sm:py-24 rounded-3xl w-full">
-              <div className="mx-auto max-w-7xl px-6 lg:px-8">
-                <div className="mx-auto max-w-2xl text-center">
-                  <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
-                    Collab Now ✨
-                  </h1>
-                  <p className="mt-6 text-lg leading-8 text-muted-foreground">
-                    Effortless collabs. Real connections.
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-foreground">Collab Now ✨</h1>
+          <p className="mt-6 text-lg leading-8 text-muted-foreground">
+            Effortless collabs. Real connections.
+          </p>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {mockCollaborations.map((collab) => (
+            <Card key={collab.id} className="hover:shadow-lg transition-shadow">
+              <div className="relative h-48 overflow-hidden rounded-t-lg">
+                <img
+                  src={collab.image}
+                  alt={collab.businessName}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <CardHeader>
+                <CardTitle className="text-xl">{collab.businessName}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">{collab.description}</p>
+                <div className="space-y-2">
+                  <p className="text-sm">
+                    <strong>Requirements:</strong> {collab.requirements}
                   </p>
-                  <div className="mt-10 flex justify-center">
-                    <InstagramConnect />
-                  </div>
+                  <p className="text-sm">
+                    <strong>Compensation:</strong> {collab.compensation}
+                  </p>
                 </div>
-              </div>
-              <div className="absolute left-1/2 top-0 -z-10 -translate-x-1/2 blur-3xl xl:-top-6" aria-hidden="true">
-                <div className="aspect-[1155/678] w-[72.1875rem] bg-gradient-to-tr from-primary/30 to-secondary/30 opacity-30" />
-              </div>
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="text-center mb-12">
-              <h1 className="text-4xl font-bold text-foreground">Collab Now ✨</h1>
-              <p className="mt-6 text-lg leading-8 text-muted-foreground">
-                Effortless collabs. Real connections.
-              </p>
-            </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {mockCollaborations.map((collab) => (
-                <Card key={collab.id} className="hover:shadow-lg transition-shadow">
-                  <div className="relative h-48 overflow-hidden rounded-t-lg">
-                    <img
-                      src={collab.image}
-                      alt={collab.businessName}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <CardHeader>
-                    <CardTitle className="text-xl">{collab.businessName}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">{collab.description}</p>
-                    <div className="space-y-2">
-                      <p className="text-sm">
-                        <strong>Requirements:</strong> {collab.requirements}
-                      </p>
-                      <p className="text-sm">
-                        <strong>Compensation:</strong> {collab.compensation}
-                      </p>
-                    </div>
-                    <Button className="w-full mt-4">Join Collaboration</Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </>
-        )}
+                <Button className="w-full mt-4">Join Collaboration</Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </main>
     </div>
   );
