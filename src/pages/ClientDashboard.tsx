@@ -13,6 +13,7 @@ import { DashboardMetricCard } from "@/components/dashboard/DashboardMetricCard"
 import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { BusinessList } from "@/components/business/BusinessList";
+import { KanbanBoard } from "@/components/dashboard/KanbanBoard";
 
 const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -30,6 +31,8 @@ const ClientDashboard = () => {
     switch (activeTab) {
       case "businesses":
         return <BusinessList />;
+      case "campaigns":
+        return <KanbanBoard />;
       case "overview":
       default:
         return (
