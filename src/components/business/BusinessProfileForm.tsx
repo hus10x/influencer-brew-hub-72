@@ -68,6 +68,7 @@ export const BusinessProfileForm = ({ business, onSuccess }: BusinessProfileForm
 
   const mutation = useMutation({
     mutationFn: async (data: BusinessFormData) => {
+      if (!userId) throw new Error("Not authenticated");
       setIsLoading(true);
       let logoUrl = business?.logo_url;
 
@@ -76,17 +77,26 @@ export const BusinessProfileForm = ({ business, onSuccess }: BusinessProfileForm
         logoUrl = await uploadLogo(data.logo[0]);
       }
 
-      const { error } = await supabase
-        .from("businesses")
-        .upsert({
-          id: userId,
-          business_name: data.business_name,
-          industry: data.industry,
-          website: data.website,
-          logo_url: logoUrl,
-        })
-        .select()
-        .single();
+      const businessData = {
+        business_name: data.business_name,
+        industry: data.industry,
+        website: data.website,
+        logo_url: logoUrl,
+        user_id: userId,
+      };
+
+      const { error } = business
+        ? await supabase
+            .from("businesses")
+            .update(businessData)
+            .eq('id', business.id)
+            .select()
+            .single()
+        : await supabase
+            .from("businesses")
+            .insert({ ...businessData, id: crypto.randomUUID() })
+            .select()
+            .single();
 
       if (error) throw error;
       return data;

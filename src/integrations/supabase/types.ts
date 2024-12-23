@@ -18,6 +18,7 @@ export type Database = {
           industry: string | null
           logo_url: string | null
           updated_at: string | null
+          user_id: string
           website: string | null
         }
         Insert: {
@@ -28,6 +29,7 @@ export type Database = {
           industry?: string | null
           logo_url?: string | null
           updated_at?: string | null
+          user_id: string
           website?: string | null
         }
         Update: {
@@ -38,6 +40,7 @@ export type Database = {
           industry?: string | null
           logo_url?: string | null
           updated_at?: string | null
+          user_id?: string
           website?: string | null
         }
         Relationships: [
