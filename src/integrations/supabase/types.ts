@@ -16,6 +16,7 @@ export type Database = {
           description: string | null
           id: string
           industry: string | null
+          logo_url: string | null
           updated_at: string | null
           website: string | null
         }
@@ -25,6 +26,7 @@ export type Database = {
           description?: string | null
           id: string
           industry?: string | null
+          logo_url?: string | null
           updated_at?: string | null
           website?: string | null
         }
@@ -34,6 +36,7 @@ export type Database = {
           description?: string | null
           id?: string
           industry?: string | null
+          logo_url?: string | null
           updated_at?: string | null
           website?: string | null
         }
