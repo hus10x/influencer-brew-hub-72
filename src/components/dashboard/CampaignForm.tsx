@@ -4,24 +4,12 @@ import * as z from "zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Form } from "@/components/ui/form";
 import { toast } from "sonner";
+import { BusinessSelect } from "./campaign-form/BusinessSelect";
+import { CampaignDetails } from "./campaign-form/CampaignDetails";
+import { DateFields } from "./campaign-form/DateFields";
+import type { CampaignFormData } from "./campaign-form/types";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -37,7 +25,7 @@ interface CampaignFormProps {
 
 export const CampaignForm = ({ onSuccess }: CampaignFormProps) => {
   const queryClient = useQueryClient();
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<CampaignFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
@@ -86,7 +74,7 @@ export const CampaignForm = ({ onSuccess }: CampaignFormProps) => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = (values: CampaignFormData) => {
     createCampaign.mutate(values);
   };
 
@@ -107,99 +95,9 @@ export const CampaignForm = ({ onSuccess }: CampaignFormProps) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {businesses.length > 1 && (
-          <FormField
-            control={form.control}
-            name="business_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Business</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a business" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {businesses.map((business) => (
-                      <SelectItem key={business.id} value={business.id}>
-                        {business.business_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-        {businesses.length === 1 && (
-          <input
-            type="hidden"
-            {...form.register("business_id")}
-            value={businesses[0].id}
-          />
-        )}
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Campaign Title</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter campaign title" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Enter campaign description"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="start_date"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Start Date</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="end_date"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>End Date</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <BusinessSelect form={form} businesses={businesses} />
+        <CampaignDetails form={form} />
+        <DateFields form={form} />
         <Button
           type="submit"
           className="w-full"

@@ -341,6 +341,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      update_campaign_status: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
