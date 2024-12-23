@@ -47,6 +47,50 @@ export type Database = {
           },
         ]
       }
+      campaigns: {
+        Row: {
+          business_id: string
+          created_at: string | null
+          description: string | null
+          end_date: string
+          id: string
+          start_date: string
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string | null
+          description?: string | null
+          end_date: string
+          id?: string
+          start_date: string
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string | null
+          description?: string | null
+          end_date?: string
+          id?: string
+          start_date?: string
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       collaboration_submissions: {
         Row: {
           collaboration_id: string | null
@@ -101,12 +145,15 @@ export type Database = {
       collaborations: {
         Row: {
           business_id: string | null
+          campaign_id: string | null
           compensation: number
           created_at: string | null
           deadline: string
           description: string
+          filled_spots: number
           id: string
           image_url: string | null
+          max_spots: number
           requirements: string[]
           status: string | null
           title: string
@@ -114,12 +161,15 @@ export type Database = {
         }
         Insert: {
           business_id?: string | null
+          campaign_id?: string | null
           compensation: number
           created_at?: string | null
           deadline: string
           description: string
+          filled_spots?: number
           id?: string
           image_url?: string | null
+          max_spots?: number
           requirements: string[]
           status?: string | null
           title: string
@@ -127,12 +177,15 @@ export type Database = {
         }
         Update: {
           business_id?: string | null
+          campaign_id?: string | null
           compensation?: number
           created_at?: string | null
           deadline?: string
           description?: string
+          filled_spots?: number
           id?: string
           image_url?: string | null
+          max_spots?: number
           requirements?: string[]
           status?: string | null
           title?: string
@@ -144,6 +197,13 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collaborations_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
         ]
