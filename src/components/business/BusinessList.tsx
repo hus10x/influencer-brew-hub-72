@@ -30,8 +30,7 @@ export const BusinessList = () => {
 
       const { data, error } = await supabase
         .from("businesses")
-        .select("*")
-        .eq("id", userData.user.id);
+        .select("*");
 
       if (error) throw error;
       return data;
@@ -98,6 +97,7 @@ export const BusinessList = () => {
             business={business}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            canDelete={businesses.length > 1}
           />
         ))}
       </div>

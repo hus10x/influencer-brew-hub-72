@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tables } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,15 +18,30 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
 
 interface BusinessCardProps {
   business: Tables<"businesses">;
   onEdit: (business: Tables<"businesses">) => void;
   onDelete: () => void;
+  canDelete: boolean;
 }
 
-export const BusinessCard = ({ business, onEdit, onDelete }: BusinessCardProps) => {
+export const BusinessCard = ({ business, onEdit, onDelete, canDelete }: BusinessCardProps) => {
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
   const handleDelete = async () => {
+    if (!canDelete) {
+      toast.error("You must maintain at least one business profile");
+      return;
+    }
+
+    if (deleteConfirmation.toLowerCase() !== "yes") {
+      toast.error("Please type 'yes' to confirm deletion");
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from("businesses")
@@ -36,6 +52,7 @@ export const BusinessCard = ({ business, onEdit, onDelete }: BusinessCardProps) 
 
       toast.success("Business deleted successfully");
       onDelete();
+      setIsDeleteDialogOpen(false);
     } catch (error) {
       console.error("Error deleting business:", error);
       toast.error("Failed to delete business");
@@ -68,27 +85,46 @@ export const BusinessCard = ({ business, onEdit, onDelete }: BusinessCardProps) 
           >
             <Edit className="h-4 w-4" />
           </Button>
-          <AlertDialog>
+          <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="hover:bg-muted">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="hover:bg-muted"
+                disabled={!canDelete}
+                title={!canDelete ? "You must maintain at least one business profile" : "Delete business"}
+              >
                 <Trash2 className="h-4 w-4 text-destructive" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
                   This action cannot be undone. This will permanently delete your
-                  business profile and remove your data from our servers.
+                  business profile and remove all data associated with it.
                 </AlertDialogDescription>
               </AlertDialogHeader>
+              <div className="py-4">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Type <span className="font-semibold">yes</span> to confirm deletion
+                </p>
+                <Input
+                  value={deleteConfirmation}
+                  onChange={(e) => setDeleteConfirmation(e.target.value)}
+                  placeholder="Type 'yes' to confirm"
+                  className="max-w-sm"
+                />
+              </div>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel onClick={() => setDeleteConfirmation("")}>
+                  Cancel
+                </AlertDialogCancel>
                 <AlertDialogAction
                   onClick={handleDelete}
                   className="bg-destructive hover:bg-destructive/90"
                 >
-                  Delete
+                  Delete Business
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
