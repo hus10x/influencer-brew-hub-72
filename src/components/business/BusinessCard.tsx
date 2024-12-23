@@ -124,13 +124,13 @@ export const BusinessCard = ({ business, onEdit, onDelete, canDelete }: Business
                 <AlertDialogCancel onClick={() => setDeleteConfirmation("")}>
                   Cancel
                 </AlertDialogCancel>
-                <AlertDialogAction
+                <Button
+                  variant="destructive"
                   onClick={handleDelete}
-                  className="bg-destructive hover:bg-destructive/90"
                   disabled={isDeleting}
                 >
                   {isDeleting ? "Deleting..." : "Delete Business"}
-                </AlertDialogAction>
+                </Button>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
