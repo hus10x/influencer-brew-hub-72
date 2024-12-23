@@ -83,7 +83,7 @@ export const CreateCampaignDialog = ({
         const { error: createError } = await supabase
           .from("businesses")
           .insert({
-            id: crypto.randomUUID(),
+            id: userId, // Use userId instead of random UUID to match profile ID
             business_name: (await supabase.auth.getUser()).data.user?.email?.split("@")[0] || "My Business",
             user_id: userId
           });
