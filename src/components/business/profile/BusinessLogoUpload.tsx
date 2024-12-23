@@ -18,13 +18,15 @@ export const BusinessLogoUpload = ({ form, currentLogo }: BusinessLogoUploadProp
           <FormLabel>Business Logo</FormLabel>
           <FormControl>
             <div className="flex items-center gap-4">
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={(e) => onChange(e.target.files)}
-                {...field}
-                className="file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer"
-              />
+              <div className="flex-1">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => onChange(e.target.files)}
+                  {...field}
+                  className="h-auto py-1.5"
+                />
+              </div>
               {currentLogo && (
                 <img
                   src={currentLogo}
