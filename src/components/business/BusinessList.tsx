@@ -31,7 +31,7 @@ export const BusinessList = () => {
       const { data, error } = await supabase
         .from("businesses")
         .select("*")
-        .eq('id', userData.user.id);
+        .eq('user_id', userData.user.id);
 
       if (error) throw error;
       return data;
