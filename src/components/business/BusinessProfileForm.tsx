@@ -78,8 +78,19 @@ export const BusinessProfileForm = ({ business, onSuccess }: BusinessProfileForm
           logoUrl = await uploadLogo(data.logo[0]);
         }
 
+        // First check if a business already exists for this user
+        const { data: existingBusiness, error: fetchError } = await supabase
+          .from("businesses")
+          .select()
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (fetchError) {
+          console.error("Error checking existing business:", fetchError);
+          throw fetchError;
+        }
+
         const businessData = {
-          id: userId, // Use userId as business ID to match profile ID
           business_name: data.business_name,
           industry: data.industry,
           website: data.website,
@@ -87,20 +98,26 @@ export const BusinessProfileForm = ({ business, onSuccess }: BusinessProfileForm
           user_id: userId,
         };
 
-        const { error } = business
-          ? await supabase
-              .from("businesses")
-              .update(businessData)
-              .eq('id', business.id)
-              .select()
-              .maybeSingle()
-          : await supabase
-              .from("businesses")
-              .insert(businessData)
-              .select()
-              .maybeSingle();
+        let result;
+        
+        if (existingBusiness) {
+          // Update existing business
+          result = await supabase
+            .from("businesses")
+            .update(businessData)
+            .eq('id', existingBusiness.id)
+            .select()
+            .maybeSingle();
+        } else {
+          // Create new business
+          result = await supabase
+            .from("businesses")
+            .insert({ ...businessData, id: userId })
+            .select()
+            .maybeSingle();
+        }
 
-        if (error) throw error;
+        if (result.error) throw result.error;
         return data;
       } catch (error) {
         console.error("Error in business mutation:", error);
