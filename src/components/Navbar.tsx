@@ -5,6 +5,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
+import { MobileMenu } from "./MobileMenu";
 
 export const Navbar = () => {
   const navigate = useNavigate();
@@ -54,14 +55,17 @@ export const Navbar = () => {
           <div className="flex items-center gap-4">
             {!isLoggedIn ? (
               <>
-                <Button variant="outline" onClick={() => navigate("/login")}>
-                  <LogIn className="mr-2 h-4 w-4" />
-                  Login
-                </Button>
-                <Button onClick={() => navigate("/signup")} className="bg-primary hover:bg-primary/90">
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Sign Up
-                </Button>
+                <div className="hidden lg:flex items-center gap-4">
+                  <Button variant="outline" onClick={() => navigate("/login")}>
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Login
+                  </Button>
+                  <Button onClick={() => navigate("/signup")} className="bg-primary hover:bg-primary/90">
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Sign Up
+                  </Button>
+                </div>
+                <MobileMenu />
               </>
             ) : (
               <Button 

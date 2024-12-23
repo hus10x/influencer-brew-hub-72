@@ -20,43 +20,33 @@ export const HeroCarousel = () => {
   const [allImagesLoaded, setAllImagesLoaded] = useState(false);
 
   useEffect(() => {
-    // Preload all images
-    const imageObjects = images.map((src, index) => {
-      const img = new Image();
-      img.src = src;
-      img.onload = () => {
-        setImagesLoaded(prev => {
-          const newState = [...prev];
-          newState[index] = true;
-          return newState;
-        });
-      };
-      return img;
+    const imagePromises = images.map((src, index) => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => {
+          setImagesLoaded(prev => {
+            const newState = [...prev];
+            newState[index] = true;
+            return newState;
+          });
+          resolve(true);
+        };
+      });
     });
 
-    // Check if all images are loaded
-    const checkAllLoaded = () => {
-      if (imagesLoaded.every(loaded => loaded)) {
-        setAllImagesLoaded(true);
-      }
-    };
-
-    checkAllLoaded();
-    return () => {
-      // Cleanup image objects
-      imageObjects.forEach(img => {
-        img.onload = null;
-      });
-    };
-  }, [imagesLoaded]);
+    Promise.all(imagePromises).then(() => {
+      setAllImagesLoaded(true);
+    });
+  }, []);
 
   return (
-    <Carousel className="relative w-full" opts={{ loop: true }}>
+    <Carousel className="relative w-full max-w-[800px] mx-auto" opts={{ loop: true }}>
       <CarouselContent>
         {images.map((image, index) => (
-          <CarouselItem key={index}>
+          <CarouselItem key={index} className="relative">
             {!imagesLoaded[index] && (
-              <Skeleton className="w-full rounded-3xl aspect-[4/3]" />
+              <Skeleton className="w-full rounded-3xl aspect-[4/3] absolute inset-0" />
             )}
             <img
               src={image}
@@ -65,13 +55,6 @@ export const HeroCarousel = () => {
                 imagesLoaded[index] ? 'opacity-100' : 'opacity-0'
               }`}
               loading="eager"
-              onLoad={() => {
-                setImagesLoaded(prev => {
-                  const newState = [...prev];
-                  newState[index] = true;
-                  return newState;
-                });
-              }}
             />
           </CarouselItem>
         ))}
