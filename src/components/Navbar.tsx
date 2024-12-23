@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { LogIn, UserPlus, Moon, Sun, LogOut, Codesandbox } from "lucide-react";
+import { LogIn, UserPlus, Moon, Sun, LogOut, BookOpen } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -43,14 +43,13 @@ export const Navbar = () => {
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div 
-            className="text-2xl cursor-pointer group flex items-center space-x-2" 
+            className="text-2xl cursor-pointer flex items-center space-x-2" 
             onClick={() => navigate("/")}
           >
-            <Codesandbox className="h-6 w-6 text-primary transform transition-transform duration-200 ease-in-out group-hover:scale-105" />
-            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent font-sans tracking-tight transform transition-transform duration-200 ease-in-out group-hover:scale-105">
+            <BookOpen className="h-6 w-6 text-primary" />
+            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent font-sans tracking-tight">
               Hikayat
             </span>
-            <span className="h-2 w-2 bg-primary rounded-full animate-pulse"></span>
           </div>
           <div className="flex items-center gap-4">
             {!isLoggedIn ? (
