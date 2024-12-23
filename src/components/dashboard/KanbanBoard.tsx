@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { DragDropContext, Draggable } from "@hello-pangea/dnd";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Check, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { KanbanColumn } from "./kanban/KanbanColumn";
+import { useDeleteCampaigns } from "@/hooks/use-delete-campaigns";
 import type { Campaign } from "./kanban/types";
 import {
   AlertDialog,
@@ -22,7 +23,6 @@ import {
 export const KanbanBoard = () => {
   const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState(false);
-  const queryClient = useQueryClient();
 
   const { data: campaigns, isLoading } = useQuery({
     queryKey: ["campaigns"],
@@ -53,69 +53,9 @@ export const KanbanBoard = () => {
     },
   });
 
-  const updateCampaignStatus = useMutation({
-    mutationFn: async ({
-      campaignId,
-      status,
-    }: {
-      campaignId: string;
-      status: string;
-    }) => {
-      const { error } = await supabase
-        .from("campaigns")
-        .update({ status })
-        .eq("id", campaignId);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
-      toast.success("Campaign status updated");
-    },
-    onError: (error) => {
-      console.error("Error updating campaign status:", error);
-      toast.error("Failed to update campaign status");
-    },
-  });
-
-  const deleteCampaigns = useMutation({
-    mutationFn: async (campaignIds: string[]) => {
-      const { error } = await supabase
-        .from("campaigns")
-        .delete()
-        .in("id", campaignIds);
-      if (error) throw error;
-      return campaignIds;
-    },
-    onMutate: async (campaignIds) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["campaigns"] });
-      
-      // Get snapshot of current data
-      const previousCampaigns = queryClient.getQueryData<Campaign[]>(["campaigns"]);
-      
-      // Optimistically remove campaigns
-      queryClient.setQueryData<Campaign[]>(["campaigns"], (old) => 
-        old?.filter(campaign => !campaignIds.includes(campaign.id)) ?? []
-      );
-      
-      return { previousCampaigns };
-    },
-    onSuccess: () => {
-      toast.success("Campaigns deleted successfully");
-      setSelectedCampaigns([]);
-      setSelectionMode(false);
-    },
-    onError: (error, _, context) => {
-      // Rollback to previous state
-      if (context?.previousCampaigns) {
-        queryClient.setQueryData(["campaigns"], context.previousCampaigns);
-      }
-      console.error("Error deleting campaigns:", error);
-      toast.error("Failed to delete campaigns");
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
-    },
+  const deleteCampaigns = useDeleteCampaigns(() => {
+    setSelectedCampaigns([]);
+    setSelectionMode(false);
   });
 
   const onDragEnd = (result: any) => {
