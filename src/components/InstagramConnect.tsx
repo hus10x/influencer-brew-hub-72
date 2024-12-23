@@ -1,13 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Instagram } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export const InstagramConnect = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleInstagramConnect = async () => {
     try {
+      console.log('Starting Instagram connection process...');
       setIsLoading(true);
+      
       // Direct Instagram Business OAuth URL with all required scopes
       const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
         "?enable_fb_login=0" +
@@ -17,9 +20,11 @@ export const InstagramConnect = () => {
         "&response_type=code" +
         "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish";
       
+      console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
       window.location.href = instagramUrl;
     } catch (error) {
       console.error('Error connecting to Instagram:', error);
+      toast.error('Failed to connect to Instagram. Please try again.');
     } finally {
       setIsLoading(false);
     }
