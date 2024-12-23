@@ -108,10 +108,19 @@ const SignUp = () => {
             theme="light"
             providers={[]}
             view="sign_up"
-            redirectTo={`${window.location.origin}/login`}
+            redirectTo={`${window.location.origin}/signup`}
             onlyThirdPartyProviders={false}
-            showLinks={true}
+            showLinks={false}
           />
+          <div className="mt-4 text-center">
+            <Button
+              variant="link"
+              className="text-primary hover:text-primary/90"
+              onClick={() => navigate("/login")}
+            >
+              Already have an account? Sign in
+            </Button>
+          </div>
         </div>
       </div>
     </div>
