@@ -25,7 +25,7 @@ export type Database = {
           business_name: string
           created_at?: string | null
           description?: string | null
-          id: string
+          id?: string
           industry?: string | null
           logo_url?: string | null
           updated_at?: string | null
@@ -43,15 +43,7 @@ export type Database = {
           user_id?: string
           website?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "businesses_id_fkey"
-            columns: ["id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       campaigns: {
         Row: {

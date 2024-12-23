@@ -50,7 +50,7 @@ export const BusinessProfileForm = ({ business, onSuccess }: BusinessProfileForm
 
   const uploadLogo = async (file: File): Promise<string> => {
     const fileExt = file.name.split('.').pop();
-    const fileName = `${userId}-${Math.random()}.${fileExt}`;
+    const fileName = `${Math.random()}.${fileExt}`;
     const filePath = `${fileName}`;
 
     const { error: uploadError, data } = await supabase.storage
@@ -79,7 +79,6 @@ export const BusinessProfileForm = ({ business, onSuccess }: BusinessProfileForm
         }
 
         const businessData = {
-          id: crypto.randomUUID(), // Generate a new UUID for the business
           business_name: data.business_name,
           industry: data.industry,
           website: data.website,
