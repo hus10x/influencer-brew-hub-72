@@ -99,7 +99,9 @@ const SignUp = () => {
               variables: {
                 sign_up: {
                   button_label: "Sign Up",
-                  link_text: "Already have an account? Sign in"
+                  link_text: "Already have an account? Sign in",
+                  email_label: "Email",
+                  password_label: "Password"
                 }
               }
             }}
@@ -107,6 +109,9 @@ const SignUp = () => {
             providers={[]}
             view="sign_up"
             redirectTo={window.location.origin}
+            onlyThirdPartyProviders={false}
+            showLinks={true}
+            signInUrl="/login"
           />
         </div>
       </div>
