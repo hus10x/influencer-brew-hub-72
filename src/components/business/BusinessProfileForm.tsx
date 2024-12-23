@@ -78,18 +78,6 @@ export const BusinessProfileForm = ({ business, onSuccess }: BusinessProfileForm
           logoUrl = await uploadLogo(data.logo[0]);
         }
 
-        // First check if a business already exists for this user
-        const { data: existingBusiness, error: fetchError } = await supabase
-          .from("businesses")
-          .select()
-          .eq('user_id', userId)
-          .maybeSingle();
-
-        if (fetchError) {
-          console.error("Error checking existing business:", fetchError);
-          throw fetchError;
-        }
-
         const businessData = {
           business_name: data.business_name,
           industry: data.industry,
@@ -98,26 +86,14 @@ export const BusinessProfileForm = ({ business, onSuccess }: BusinessProfileForm
           user_id: userId,
         };
 
-        let result;
-        
-        if (existingBusiness) {
-          // Update existing business
-          result = await supabase
-            .from("businesses")
-            .update(businessData)
-            .eq('id', existingBusiness.id)
-            .select()
-            .maybeSingle();
-        } else {
-          // Create new business
-          result = await supabase
-            .from("businesses")
-            .insert({ ...businessData, id: userId })
-            .select()
-            .maybeSingle();
-        }
+        // Always create a new business with a generated UUID
+        const { error } = await supabase
+          .from("businesses")
+          .insert(businessData)
+          .select()
+          .single();
 
-        if (result.error) throw result.error;
+        if (error) throw error;
         return data;
       } catch (error) {
         console.error("Error in business mutation:", error);
@@ -125,12 +101,12 @@ export const BusinessProfileForm = ({ business, onSuccess }: BusinessProfileForm
       }
     },
     onSuccess: () => {
-      toast.success(business ? "Business updated successfully" : "Business created successfully");
+      toast.success("Business created successfully");
       onSuccess?.();
     },
     onError: (error) => {
-      console.error("Error updating business profile:", error);
-      toast.error(business ? "Failed to update business" : "Failed to create business");
+      console.error("Error creating business:", error);
+      toast.error("Failed to create business");
     },
     onSettled: () => {
       setIsLoading(false);
@@ -178,7 +154,7 @@ export const BusinessProfileForm = ({ business, onSuccess }: BusinessProfileForm
 
         <div className="flex items-center gap-4">
           <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Saving..." : business ? "Update" : "Create"}
+            {isLoading ? "Creating..." : "Create Business"}
           </Button>
           <Button
             type="button"
