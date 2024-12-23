@@ -72,34 +72,40 @@ export const BusinessProfileForm = ({ business, onSuccess }: BusinessProfileForm
       setIsLoading(true);
       let logoUrl = business?.logo_url;
 
-      // Handle logo upload if a new file is selected
-      if (data.logo && data.logo.length > 0) {
-        logoUrl = await uploadLogo(data.logo[0]);
+      try {
+        // Handle logo upload if a new file is selected
+        if (data.logo && data.logo.length > 0) {
+          logoUrl = await uploadLogo(data.logo[0]);
+        }
+
+        const businessData = {
+          id: userId, // Use userId as business ID to match profile ID
+          business_name: data.business_name,
+          industry: data.industry,
+          website: data.website,
+          logo_url: logoUrl,
+          user_id: userId,
+        };
+
+        const { error } = business
+          ? await supabase
+              .from("businesses")
+              .update(businessData)
+              .eq('id', business.id)
+              .select()
+              .maybeSingle()
+          : await supabase
+              .from("businesses")
+              .insert(businessData)
+              .select()
+              .maybeSingle();
+
+        if (error) throw error;
+        return data;
+      } catch (error) {
+        console.error("Error in business mutation:", error);
+        throw error;
       }
-
-      const businessData = {
-        business_name: data.business_name,
-        industry: data.industry,
-        website: data.website,
-        logo_url: logoUrl,
-        user_id: userId,
-      };
-
-      const { error } = business
-        ? await supabase
-            .from("businesses")
-            .update(businessData)
-            .eq('id', business.id)
-            .select()
-            .single()
-        : await supabase
-            .from("businesses")
-            .insert({ ...businessData, id: crypto.randomUUID() })
-            .select()
-            .single();
-
-      if (error) throw error;
-      return data;
     },
     onSuccess: () => {
       toast.success(business ? "Business updated successfully" : "Business created successfully");
