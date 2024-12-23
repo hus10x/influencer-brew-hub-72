@@ -81,15 +81,32 @@ const Login = () => {
             localization={{
               variables: {
                 sign_in: {
-                  email_label: 'Username or Email Address'
+                  email_label: 'Username or Email Address',
+                  password_label: 'Password',
+                  button_label: 'Sign In',
+                  loading_button_label: 'Signing in...',
+                  social_provider_text: 'Sign in with {{provider}}',
+                  link_text: "Don't have an account? Sign up now"
                 }
               }
             }}
-            theme="light"
             providers={["facebook"]}
             view="sign_in"
             redirectTo={window.location.origin}
+            onlyThirdPartyProviders={false}
+            socialLayout="horizontal"
+            showLinks={true}
+            afterSignInUrl="/signup"
           />
+          <div className="mt-4 text-center">
+            <Button
+              variant="link"
+              className="text-primary hover:text-primary/90"
+              onClick={() => navigate("/signup")}
+            >
+              Don't have an account? Sign up
+            </Button>
+          </div>
         </div>
       </div>
     </div>
