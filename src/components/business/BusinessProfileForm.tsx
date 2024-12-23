@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -14,41 +13,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Upload } from "lucide-react";
-
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-
-const businessFormSchema = z.object({
-  business_name: z.string().min(2, "Business name must be at least 2 characters"),
-  industry: z.string().min(1, "Please select an industry"),
-  website: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
-  logo: z
-    .instanceof(FileList)
-    .optional()
-    .refine((files) => !files || files.length === 0 || files.length === 1, "Please upload only one file")
-    .refine(
-      (files) => !files || files.length === 0 || files[0].size <= MAX_FILE_SIZE,
-      "Max file size is 5MB"
-    )
-    .refine(
-      (files) =>
-        !files ||
-        files.length === 0 ||
-        ACCEPTED_IMAGE_TYPES.includes(files[0].type),
-      "Only .jpg, .jpeg, .png and .webp formats are supported"
-    ),
-});
-
-type BusinessFormData = z.infer<typeof businessFormSchema>;
+import { BusinessLogoUpload } from "./profile/BusinessLogoUpload";
+import { IndustrySelect } from "./profile/IndustrySelect";
+import { businessFormSchema, BusinessFormData } from "./profile/types";
 
 export const BusinessProfileForm = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -173,27 +142,7 @@ export const BusinessProfileForm = () => {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="industry"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Industry</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your industry" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="cafe">Cafe</SelectItem>
-                    <SelectItem value="restaurant">Restaurant</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <IndustrySelect form={form} />
 
           <FormField
             control={form.control}
@@ -209,34 +158,7 @@ export const BusinessProfileForm = () => {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="logo"
-            render={({ field: { onChange, value, ...field } }) => (
-              <FormItem>
-                <FormLabel>Business Logo</FormLabel>
-                <FormControl>
-                  <div className="flex items-center gap-4">
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => onChange(e.target.files)}
-                      {...field}
-                      className="file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
-                    />
-                    {business?.logo_url && (
-                      <img
-                        src={business.logo_url}
-                        alt="Current logo"
-                        className="h-10 w-10 rounded-md object-cover"
-                      />
-                    )}
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <BusinessLogoUpload form={form} currentLogo={business?.logo_url} />
 
           <div className="flex items-center gap-4">
             <Button type="submit" disabled={isLoading}>
