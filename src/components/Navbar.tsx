@@ -43,10 +43,13 @@ export const Navbar = () => {
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div 
-            className="text-2xl font-bold text-foreground cursor-pointer" 
+            className="text-2xl cursor-pointer group flex items-center space-x-1" 
             onClick={() => navigate("/")}
           >
-            Hikayat
+            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent font-sans tracking-tight transform transition-transform duration-200 ease-in-out group-hover:scale-105">
+              Hikayat
+            </span>
+            <span className="h-2 w-2 bg-primary rounded-full animate-pulse"></span>
           </div>
           <div className="flex items-center gap-4">
             {!isLoggedIn ? (
