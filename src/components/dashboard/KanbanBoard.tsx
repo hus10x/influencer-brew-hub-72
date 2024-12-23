@@ -19,7 +19,7 @@ interface Campaign {
 export const KanbanBoard = () => {
   const queryClient = useQueryClient();
 
-  const { data: campaigns, isLoading } = useQuery({
+  const { data: campaigns, isLoading, error } = useQuery({
     queryKey: ["campaigns"],
     queryFn: async () => {
       const { data: userData } = await supabase.auth.getUser();
@@ -39,7 +39,11 @@ export const KanbanBoard = () => {
         .select("*")
         .in("business_id", businessIds);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching campaigns:", error);
+        throw error;
+      }
+      
       return data as Campaign[];
     },
   });
@@ -60,6 +64,7 @@ export const KanbanBoard = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+      toast.success("Campaign status updated");
     },
     onError: (error) => {
       console.error("Error updating campaign status:", error);
@@ -79,8 +84,13 @@ export const KanbanBoard = () => {
     });
   };
 
+  if (error) {
+    toast.error("Failed to load campaigns");
+    return <div>Error loading campaigns</div>;
+  }
+
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>Loading campaigns...</div>;
   }
 
   const columns = {

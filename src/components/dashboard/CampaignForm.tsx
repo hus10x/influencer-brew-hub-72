@@ -47,25 +47,32 @@ export const CampaignForm = ({ onSuccess }: CampaignFormProps) => {
         .select("*")
         .eq("user_id", userData.user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching businesses:", error);
+        throw error;
+      }
       return data;
     },
   });
 
   const createCampaign = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
-      const { error } = await supabase.from("campaigns").insert({
+      const { data, error } = await supabase.from("campaigns").insert({
         title: values.title,
         description: values.description,
         business_id: values.business_id,
         start_date: values.start_date,
         end_date: values.end_date,
-      });
+        status: 'draft'
+      }).select();
+      
       if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
       toast.success("Campaign created successfully");
+      form.reset();
       onSuccess();
     },
     onError: (error) => {
