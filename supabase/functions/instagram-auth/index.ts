@@ -1,8 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from './response.ts'
 import { createSuccessHtml, createErrorHtml } from './response.ts'
-import { exchangeCodeForToken, getLongLivedToken, getInstagramProfile } from './instagram-api.ts'
-import { updateUserInstagramProfile } from './database.ts'
+import { exchangeCodeForToken, getInstagramProfile } from './instagram-api.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.47.0'
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -44,18 +44,28 @@ serve(async (req) => {
     // Exchange code for access token
     const tokenData = await exchangeCodeForToken(code, appId, appSecret, redirectUri);
     
-    // Get long-lived token
-    const longLivedToken = await getLongLivedToken(tokenData.access_token, appSecret);
-    
     // Get user profile
-    const profile = await getInstagramProfile(longLivedToken);
+    const profile = await getInstagramProfile(tokenData.access_token);
+
+    // Initialize Supabase client
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     // Update user profile in database
-    await updateUserInstagramProfile(supabaseUrl, supabaseServiceRoleKey, {
-      username: profile.username,
-      isBusinessAccount: profile.account_type === 'BUSINESS',
-      accessToken: longLivedToken,
-    });
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({
+        instagram_handle: profile.username,
+        instagram_connected: true,
+        instagram_business_account: true,
+        instagram_access_token: tokenData.access_token,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('instagram_handle', profile.username);
+
+    if (updateError) {
+      console.error('Database update error:', updateError);
+      return createErrorHtml(`Failed to update profile: ${updateError.message}`);
+    }
 
     console.log('Successfully connected Instagram account');
     return createSuccessHtml({ username: profile.username });

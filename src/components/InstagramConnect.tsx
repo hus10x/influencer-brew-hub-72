@@ -11,14 +11,13 @@ export const InstagramConnect = () => {
       console.log('Starting Instagram connection process...');
       setIsLoading(true);
       
-      // Direct Instagram Business OAuth URL with all required scopes
-      const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
-        "?enable_fb_login=0" +
-        "&force_authentication=1" +
-        "&client_id=2261088610942492" +
+      // Instagram Graph API OAuth URL
+      const instagramUrl = "https://www.facebook.com/v19.0/dialog/oauth" + 
+        "?client_id=2261088610942492" +
         "&redirect_uri=https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth" +
         "&response_type=code" +
-        "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish";
+        "&scope=instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement,instagram_manage_insights" +
+        "&state=instagram";
       
       console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
       window.location.href = instagramUrl;

@@ -1,6 +1,6 @@
 export interface InstagramTokenResponse {
   access_token: string;
-  user_id: string;
+  token_type: string;
 }
 
 export interface InstagramProfile {
@@ -17,60 +17,77 @@ export async function exchangeCodeForToken(
 ): Promise<InstagramTokenResponse> {
   console.log('Exchanging code for access token...');
   
-  const response = await fetch('https://api.instagram.com/oauth/access_token', {
-    method: 'POST',
-    body: new URLSearchParams({
+  const response = await fetch('https://graph.facebook.com/v19.0/oauth/access_token', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
       client_id: appId,
       client_secret: appSecret,
-      grant_type: 'authorization_code',
       redirect_uri: redirectUri,
-      code,
+      code: code,
     }),
   });
 
-  const data = await response.json();
-  
-  if (data.error) {
-    console.error('Token exchange error:', data);
-    throw new Error(`Token exchange failed: ${data.error_message || data.error}`);
+  if (!response.ok) {
+    const error = await response.json();
+    console.error('Token exchange error:', error);
+    throw new Error(`Token exchange failed: ${error.error.message}`);
   }
 
-  return data;
-}
-
-export async function getLongLivedToken(
-  shortLivedToken: string,
-  appSecret: string
-): Promise<string> {
-  console.log('Getting long-lived token...');
-  
-  const response = await fetch(
-    `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${appSecret}&access_token=${shortLivedToken}`
-  );
-  
-  const data = await response.json();
-  
-  if (data.error) {
-    console.error('Long-lived token error:', data);
-    throw new Error(`Long-lived token exchange failed: ${data.error_message || data.error}`);
-  }
-
-  return data.access_token;
+  return response.json();
 }
 
 export async function getInstagramProfile(accessToken: string): Promise<InstagramProfile> {
   console.log('Fetching Instagram profile...');
   
-  const response = await fetch(
-    `https://graph.instagram.com/me?fields=id,username,account_type&access_token=${accessToken}`
+  // First get the Instagram Business Account ID
+  const accountsResponse = await fetch(
+    `https://graph.facebook.com/v19.0/me/accounts?access_token=${accessToken}`
   );
   
-  const data = await response.json();
-  
-  if (data.error) {
-    console.error('Profile fetch error:', data);
-    throw new Error(`Profile fetch failed: ${data.error_message || data.error}`);
+  if (!accountsResponse.ok) {
+    const error = await accountsResponse.json();
+    throw new Error(`Failed to fetch Facebook pages: ${error.error.message}`);
   }
-
-  return data;
+  
+  const accounts = await accountsResponse.json();
+  if (!accounts.data || accounts.data.length === 0) {
+    throw new Error('No Facebook pages found. Please ensure you have a Facebook page connected to your Instagram account.');
+  }
+  
+  // Get the Instagram Business Account connected to the page
+  const pageId = accounts.data[0].id;
+  const instagramResponse = await fetch(
+    `https://graph.facebook.com/v19.0/${pageId}?fields=instagram_business_account&access_token=${accessToken}`
+  );
+  
+  if (!instagramResponse.ok) {
+    const error = await instagramResponse.json();
+    throw new Error(`Failed to fetch Instagram business account: ${error.error.message}`);
+  }
+  
+  const instagramData = await instagramResponse.json();
+  if (!instagramData.instagram_business_account) {
+    throw new Error('No Instagram Business Account found. Please ensure your Facebook page is connected to an Instagram Professional account.');
+  }
+  
+  // Get the Instagram Business Account details
+  const igAccountId = instagramData.instagram_business_account.id;
+  const profileResponse = await fetch(
+    `https://graph.facebook.com/v19.0/${igAccountId}?fields=username,id&access_token=${accessToken}`
+  );
+  
+  if (!profileResponse.ok) {
+    const error = await profileResponse.json();
+    throw new Error(`Failed to fetch Instagram profile: ${error.error.message}`);
+  }
+  
+  const profile = await profileResponse.json();
+  return {
+    id: profile.id,
+    username: profile.username,
+    account_type: 'BUSINESS'
+  };
 }
