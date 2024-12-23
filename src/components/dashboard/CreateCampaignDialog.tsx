@@ -54,7 +54,7 @@ export const CreateCampaignDialog = ({
       const { data: businessData, error: fetchError } = await supabase
         .from("businesses")
         .select("id")
-        .eq("id", userId)
+        .eq("user_id", userId)
         .maybeSingle();
 
       // If no business exists, create one
@@ -72,8 +72,9 @@ export const CreateCampaignDialog = ({
         const { error: createError } = await supabase
           .from("businesses")
           .insert({
-            id: userId,
+            id: crypto.randomUUID(),
             business_name: profile.email.split("@")[0], // Temporary name from email
+            user_id: userId
           });
 
         if (createError) {
