@@ -70,12 +70,7 @@
     @apply border-border;
   }
   
-  html {
-    font-family: 'Circular', system-ui, sans-serif;
-  }
-  
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Circular', system-ui, sans-serif;
+    @apply bg-background text-foreground font-sans;
   }
 }
