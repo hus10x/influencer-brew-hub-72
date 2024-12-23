@@ -25,15 +25,17 @@ export const KanbanBoard = () => {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("Not authenticated");
 
+      // First get the businesses owned by the user
       const { data: userBusinesses } = await supabase
         .from("businesses")
         .select("id")
         .eq("user_id", userData.user.id);
 
-      if (!userBusinesses) return [];
+      if (!userBusinesses || userBusinesses.length === 0) return [];
 
       const businessIds = userBusinesses.map((b) => b.id);
 
+      // Then get campaigns for those businesses
       const { data, error } = await supabase
         .from("campaigns")
         .select("*")
