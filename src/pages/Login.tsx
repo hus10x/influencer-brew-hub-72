@@ -85,17 +85,15 @@ const Login = () => {
                   password_label: 'Password',
                   button_label: 'Sign In',
                   loading_button_label: 'Signing in...',
-                  social_provider_text: 'Sign in with {{provider}}',
-                  link_text: "Don't have an account? Sign up now"
                 }
               }
             }}
-            providers={["facebook"]}
+            providers={[]}
             view="sign_in"
             redirectTo={window.location.origin}
             onlyThirdPartyProviders={false}
             socialLayout="horizontal"
-            showLinks={true}
+            showLinks={false}
           />
           <div className="mt-4 text-center">
             <Button

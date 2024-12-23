@@ -95,11 +95,28 @@ const SignUp = () => {
                 },
               },
             }}
+            localization={{
+              variables: {
+                sign_up: {
+                  button_label: "Sign Up",
+                  link_text: "Already have an account? Sign in"
+                }
+              }
+            }}
             theme="light"
             providers={[]}
             view="sign_up"
             redirectTo={window.location.origin}
           />
+          <div className="mt-4 text-center">
+            <Button
+              variant="link"
+              className="text-primary hover:text-primary/90"
+              onClick={() => navigate("/login")}
+            >
+              Already have an account? Sign in
+            </Button>
+          </div>
         </div>
       </div>
     </div>
