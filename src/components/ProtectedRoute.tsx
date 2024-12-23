@@ -4,11 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  // Temporarily return children directly to allow access
-  return <>{children}</>;
-
-  // Original code commented out for later restoration
-  /*
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userType, setUserType] = useState<string | null>(null);
@@ -103,5 +98,4 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   return <>{children}</>;
-  */
 };
