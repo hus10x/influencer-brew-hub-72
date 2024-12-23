@@ -108,10 +108,9 @@ const SignUp = () => {
             theme="light"
             providers={[]}
             view="sign_up"
-            redirectTo={window.location.origin}
+            redirectTo={`${window.location.origin}/login`}
             onlyThirdPartyProviders={false}
             showLinks={true}
-            signInUrl="/login"
           />
         </div>
       </div>
