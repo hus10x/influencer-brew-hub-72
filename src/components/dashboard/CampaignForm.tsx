@@ -56,14 +56,14 @@ export const CampaignForm = ({ onSuccess }: CampaignFormProps) => {
   });
 
   const createCampaign = useMutation({
-    mutationFn: async (values: z.infer<typeof formSchema>) => {
+    mutationFn: async ({ values, status }: { values: z.infer<typeof formSchema>, status: 'draft' | 'active' }) => {
       const { data, error } = await supabase.from("campaigns").insert({
         title: values.title,
         description: values.description,
         business_id: values.business_id,
         start_date: values.start_date,
         end_date: values.end_date,
-        status: 'draft'
+        status
       }).select();
       
       if (error) throw error;
@@ -81,8 +81,8 @@ export const CampaignForm = ({ onSuccess }: CampaignFormProps) => {
     },
   });
 
-  const onSubmit = (values: CampaignFormData) => {
-    createCampaign.mutate(values);
+  const onSubmit = (values: CampaignFormData, status: 'draft' | 'active' = 'active') => {
+    createCampaign.mutate({ values, status });
   };
 
   if (isLoadingBusinesses) {
@@ -101,17 +101,28 @@ export const CampaignForm = ({ onSuccess }: CampaignFormProps) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit((values) => onSubmit(values))} className="space-y-6">
         <BusinessSelect form={form} businesses={businesses} />
         <CampaignDetails form={form} />
         <DateFields form={form} />
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={createCampaign.isPending}
-        >
-          Create Campaign
-        </Button>
+        <div className="flex gap-4">
+          <Button
+            type="submit"
+            className="flex-1"
+            disabled={createCampaign.isPending}
+          >
+            Create Campaign
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="flex-1"
+            disabled={createCampaign.isPending}
+            onClick={() => form.handleSubmit((values) => onSubmit(values, 'draft'))()}
+          >
+            Save as Draft
+          </Button>
+        </div>
       </form>
     </Form>
   );
