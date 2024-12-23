@@ -12,7 +12,7 @@ import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { DashboardMetricCard } from "@/components/dashboard/DashboardMetricCard";
 import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 import { QuickActions } from "@/components/dashboard/QuickActions";
-import { BusinessProfileForm } from "@/components/business/BusinessProfileForm";
+import { BusinessList } from "@/components/business/BusinessList";
 
 const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -29,7 +29,7 @@ const ClientDashboard = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "businesses":
-        return <BusinessProfileForm />;
+        return <BusinessList />;
       case "overview":
       default:
         return (
