@@ -16,22 +16,36 @@ import { useEffect, useState } from "react";
 const queryClient = new QueryClient();
 
 const App = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsLoggedIn(!!session);
+    // Initialize auth state
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setIsLoggedIn(!!session);
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+        setIsLoggedIn(false);
+      }
     };
 
-    checkAuth();
+    initializeAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
+
+  // Show loading state while checking auth
+  if (isLoggedIn === null) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
