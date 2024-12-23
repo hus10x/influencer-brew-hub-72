@@ -44,9 +44,9 @@ export const CreateCampaignDialog = ({
   const onSubmit = async (data: CampaignFormData) => {
     try {
       setIsLoading(true);
-      const userId = (await supabase.auth.getUser()).data.user?.id;
+      const { data: { user } } = await supabase.auth.getUser();
       
-      if (!userId) {
+      if (!user) {
         throw new Error("Not authenticated");
       }
 
@@ -54,19 +54,20 @@ export const CreateCampaignDialog = ({
       const { data: existingProfile } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", userId)
+        .eq("id", user.id)
         .single();
 
       if (!existingProfile) {
         const { error: profileError } = await supabase
           .from("profiles")
           .insert({
-            id: userId,
-            email: (await supabase.auth.getUser()).data.user?.email,
+            id: user.id,
+            email: user.email,
             user_type: 'business'
           });
 
         if (profileError) {
+          console.error("Error creating profile:", profileError);
           throw profileError;
         }
       }
@@ -75,27 +76,28 @@ export const CreateCampaignDialog = ({
       const { data: businessData } = await supabase
         .from("businesses")
         .select("id")
-        .eq("user_id", userId)
-        .maybeSingle();
+        .eq("user_id", user.id)
+        .single();
 
       // If no business exists, create one
       if (!businessData) {
         const { error: createError } = await supabase
           .from("businesses")
           .insert({
-            id: userId, // Use userId instead of random UUID to match profile ID
-            business_name: (await supabase.auth.getUser()).data.user?.email?.split("@")[0] || "My Business",
-            user_id: userId
+            id: user.id,
+            business_name: user.email?.split("@")[0] || "My Business",
+            user_id: user.id
           });
 
         if (createError) {
+          console.error("Error creating business:", createError);
           throw createError;
         }
       }
 
       // Finally create the campaign
       const { error: campaignError } = await supabase.from("campaigns").insert({
-        business_id: userId,
+        business_id: user.id,
         title: data.title,
         description: data.description,
         start_date: new Date(data.startDate).toISOString(),
@@ -104,6 +106,7 @@ export const CreateCampaignDialog = ({
       });
 
       if (campaignError) {
+        console.error("Error creating campaign:", campaignError);
         throw campaignError;
       }
 
