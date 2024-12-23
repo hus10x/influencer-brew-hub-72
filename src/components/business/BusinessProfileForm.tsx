@@ -162,7 +162,7 @@ export const BusinessProfileForm = () => {
 
           <div className="flex items-center gap-4">
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Saving..." : "Save Changes"}
+              {isLoading ? "Creating..." : "Create"}
             </Button>
             <Button
               type="button"
