@@ -11,8 +11,8 @@ import {
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { DashboardMetricCard } from "@/components/dashboard/DashboardMetricCard";
 import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
-import { Button } from "@/components/ui/button";
 import { QuickActions } from "@/components/dashboard/QuickActions";
+import { BusinessProfileForm } from "@/components/business/BusinessProfileForm";
 
 const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -26,6 +26,38 @@ const ClientDashboard = () => {
     { id: "settings", label: "Settings", icon: Settings },
   ];
 
+  const renderContent = () => {
+    switch (activeTab) {
+      case "businesses":
+        return <BusinessProfileForm />;
+      case "overview":
+      default:
+        return (
+          <div className="space-y-6">
+            <QuickActions />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <DashboardMetricCard
+                title="ROI Budget"
+                value="$2,500"
+                subtitle="Monthly budget"
+              />
+              <DashboardMetricCard
+                title="Live Campaigns"
+                value="4"
+                subtitle="Active collaborations"
+              />
+              <DashboardMetricCard
+                title="Total Reach"
+                value="25.4K"
+                subtitle="Audience reached"
+              />
+            </div>
+            <RecentActivityCard />
+          </div>
+        );
+    }
+  };
+
   return (
     <div className="min-h-screen flex bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <DashboardSidebar
@@ -35,29 +67,7 @@ const ClientDashboard = () => {
       />
 
       <main className="flex-1 p-8 bg-background/60 backdrop-blur-xl">
-        <div className="space-y-6">
-          <QuickActions />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <DashboardMetricCard
-              title="ROI Budget"
-              value="$2,500"
-              subtitle="Monthly budget"
-            />
-            <DashboardMetricCard
-              title="Live Campaigns"
-              value="4"
-              subtitle="Active collaborations"
-            />
-            <DashboardMetricCard
-              title="Total Reach"
-              value="25.4K"
-              subtitle="Audience reached"
-            />
-          </div>
-
-          <RecentActivityCard />
-        </div>
+        {renderContent()}
       </main>
     </div>
   );
