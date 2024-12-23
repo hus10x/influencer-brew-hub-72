@@ -79,6 +79,7 @@ export const BusinessProfileForm = ({ business, onSuccess }: BusinessProfileForm
         }
 
         const businessData = {
+          id: crypto.randomUUID(), // Generate a new UUID for the business
           business_name: data.business_name,
           industry: data.industry,
           website: data.website,
