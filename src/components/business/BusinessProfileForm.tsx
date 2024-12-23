@@ -30,8 +30,16 @@ export const BusinessProfileForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: user } = await supabase.auth.getUser();
-  const userId = user?.user?.id;
+  // Get current user using useQuery instead of direct await
+  const { data: userData } = useQuery({
+    queryKey: ["user"],
+    queryFn: async () => {
+      const { data } = await supabase.auth.getUser();
+      return data;
+    },
+  });
+
+  const userId = userData?.user?.id;
 
   const { data: business, isLoading: isLoadingBusiness } = useQuery({
     queryKey: ["business"],
@@ -65,7 +73,10 @@ export const BusinessProfileForm = () => {
         .from("businesses")
         .upsert({
           id: userId,
-          ...data,
+          business_name: data.business_name,
+          industry: data.industry,
+          description: data.description,
+          website: data.website,
         })
         .select()
         .single();
