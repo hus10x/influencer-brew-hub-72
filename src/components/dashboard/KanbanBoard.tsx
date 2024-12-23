@@ -3,7 +3,7 @@ import { DragDropContext, Draggable } from "@hello-pangea/dnd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Trash } from "lucide-react";
+import { Check, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { KanbanColumn } from "./kanban/KanbanColumn";
 import type { Campaign } from "./kanban/types";
@@ -21,6 +21,7 @@ import {
 
 export const KanbanBoard = () => {
   const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
+  const [selectionMode, setSelectionMode] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: campaigns, isLoading } = useQuery({
@@ -83,20 +84,42 @@ export const KanbanBoard = () => {
         .delete()
         .in("id", campaignIds);
       if (error) throw error;
+      return campaignIds;
+    },
+    onMutate: async (campaignIds) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["campaigns"] });
+      
+      // Get snapshot of current data
+      const previousCampaigns = queryClient.getQueryData<Campaign[]>(["campaigns"]);
+      
+      // Optimistically remove campaigns
+      queryClient.setQueryData<Campaign[]>(["campaigns"], (old) => 
+        old?.filter(campaign => !campaignIds.includes(campaign.id)) ?? []
+      );
+      
+      return { previousCampaigns };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
       toast.success("Campaigns deleted successfully");
       setSelectedCampaigns([]);
+      setSelectionMode(false);
     },
-    onError: (error) => {
+    onError: (error, _, context) => {
+      // Rollback to previous state
+      if (context?.previousCampaigns) {
+        queryClient.setQueryData(["campaigns"], context.previousCampaigns);
+      }
       console.error("Error deleting campaigns:", error);
       toast.error("Failed to delete campaigns");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
     },
   });
 
   const onDragEnd = (result: any) => {
-    if (!result.destination) return;
+    if (!result.destination || selectionMode) return;
 
     const { draggableId, destination } = result;
     const newStatus = destination.droppableId;
@@ -108,6 +131,8 @@ export const KanbanBoard = () => {
   };
 
   const toggleCampaignSelection = (campaignId: string) => {
+    if (!selectionMode) return;
+    
     setSelectedCampaigns(prev =>
       prev.includes(campaignId)
         ? prev.filter(id => id !== campaignId)
@@ -127,38 +152,56 @@ export const KanbanBoard = () => {
 
   return (
     <div className="flex flex-col h-full gap-4">
-      {selectedCampaigns.length > 0 && (
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="destructive"
-              size="sm"
-              className="self-end flex items-center gap-2"
-            >
-              <Trash className="w-4 h-4" />
-              Delete Selected ({selectedCampaigns.length})
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the
-                selected campaigns and remove all associated data.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => deleteCampaigns.mutate(selectedCampaigns)}
-                className="bg-destructive hover:bg-destructive/90"
+      <div className="flex justify-end gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setSelectionMode(!selectionMode);
+            if (!selectionMode) {
+              setSelectedCampaigns([]);
+            }
+          }}
+          className={`flex items-center gap-2 ${selectionMode ? 'bg-primary text-primary-foreground' : ''}`}
+        >
+          <Check className="w-4 h-4" />
+          {selectionMode ? 'Exit Selection' : 'Select Campaigns'}
+        </Button>
+        
+        {selectedCampaigns.length > 0 && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="flex items-center gap-2"
               >
-                Delete Campaigns
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
+                <Trash className="w-4 h-4" />
+                Delete Selected ({selectedCampaigns.length})
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the
+                  selected campaigns and remove all associated data.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => deleteCampaigns.mutate(selectedCampaigns)}
+                  className="bg-destructive hover:bg-destructive/90"
+                >
+                  Delete Campaigns
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+      </div>
+      
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
           {Object.entries(columns).map(([status, items]) => (
@@ -168,6 +211,7 @@ export const KanbanBoard = () => {
                 campaigns={items}
                 selectedCampaigns={selectedCampaigns}
                 onSelect={toggleCampaignSelection}
+                selectionMode={selectionMode}
               />
             </div>
           ))}

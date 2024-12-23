@@ -7,6 +7,7 @@ interface KanbanColumnProps {
   campaigns: Campaign[];
   selectedCampaigns: string[];
   onSelect: (campaignId: string) => void;
+  selectionMode: boolean;
 }
 
 export const KanbanColumn = ({
@@ -14,6 +15,7 @@ export const KanbanColumn = ({
   campaigns,
   selectedCampaigns,
   onSelect,
+  selectionMode,
 }: KanbanColumnProps) => {
   return (
     <Droppable droppableId={status}>
@@ -38,22 +40,19 @@ export const KanbanColumn = ({
               </div>
             ) : (
               campaigns.map((campaign, index) => (
-                <div
+                <KanbanCard
                   key={campaign.id}
-                  {...provided.droppableProps}
-                  className="touch-none"
-                >
-                  <KanbanCard
-                    id={campaign.id}
-                    title={campaign.title}
-                    description={campaign.description || ""}
-                    startDate={new Date(campaign.start_date)}
-                    endDate={new Date(campaign.end_date)}
-                    collaborationsCount={0}
-                    isSelected={selectedCampaigns.includes(campaign.id)}
-                    onSelect={() => onSelect(campaign.id)}
-                  />
-                </div>
+                  id={campaign.id}
+                  title={campaign.title}
+                  description={campaign.description || ""}
+                  startDate={new Date(campaign.start_date)}
+                  endDate={new Date(campaign.end_date)}
+                  collaborationsCount={0}
+                  isSelected={selectedCampaigns.includes(campaign.id)}
+                  onSelect={() => onSelect(campaign.id)}
+                  index={index}
+                  selectionMode={selectionMode}
+                />
               ))
             )}
             {provided.placeholder}
