@@ -35,12 +35,8 @@ export const KanbanCard = ({
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
-          style={{
-            ...provided.draggableProps.style,
-            transform: snapshot.isDragging
-              ? provided.draggableProps.style?.transform
-              : "none",
-          }}
+          {...provided.dragHandleProps}
+          className="touch-none"
         >
           <Card 
             className={`w-full bg-card hover:shadow-md transition-shadow group ${
@@ -63,9 +59,7 @@ export const KanbanCard = ({
                       <Check className={`h-4 w-4 ${isSelected ? 'text-primary' : 'text-muted-foreground/50'}`} />
                     </Button>
                   ) : (
-                    <div {...provided.dragHandleProps}>
-                      <GripVertical className="h-4 w-4 text-muted-foreground/50" />
-                    </div>
+                    <GripVertical className="h-4 w-4 text-muted-foreground/50" />
                   )}
                   <h3 className="text-lg font-semibold">{title}</h3>
                 </div>
