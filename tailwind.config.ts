@@ -19,7 +19,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Circular", "system-ui", "-apple-system", "sans-serif"],
+        sans: ["Atkinson Hyperlegible", "system-ui", "-apple-system", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",

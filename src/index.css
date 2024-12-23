@@ -1,18 +1,4 @@
-@font-face {
-  font-family: 'Circular';
-  src: url('https://ahtozhqhjdkivyaqskko.supabase.co/storage/v1/object/public/Circular%20Font/circular-medium.woff') format('woff');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Circular';
-  src: url('https://ahtozhqhjdkivyaqskko.supabase.co/storage/v1/object/public/Circular%20Font/circular-bold.woff') format('woff');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
