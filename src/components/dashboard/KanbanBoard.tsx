@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DragDropContext, Draggable } from "@hello-pangea/dnd";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +24,17 @@ import {
 export const KanbanBoard = () => {
   const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const { data: campaigns, isLoading } = useQuery({
     queryKey: ["campaigns"],
@@ -146,15 +157,16 @@ export const KanbanBoard = () => {
       </div>
       
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 gap-6 h-full min-h-[calc(100vh-12rem)] overflow-hidden">
           {Object.entries(columns).map(([status, items]) => (
-            <div key={status} className="h-full">
+            <div key={status} className="h-full min-h-[50vh] flex flex-col">
               <KanbanColumn
                 status={status}
                 campaigns={items}
                 selectedCampaigns={selectedCampaigns}
                 onSelect={toggleCampaignSelection}
                 selectionMode={selectionMode}
+                windowWidth={windowWidth}
               />
             </div>
           ))}

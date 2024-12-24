@@ -36,13 +36,15 @@ export const KanbanCard = ({
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
+          className="mb-4 last:mb-0"
           style={{
             ...provided.draggableProps.style,
             transform: provided.draggableProps.style?.transform,
+            transition: provided.draggableProps.style?.transition,
           }}
         >
           <Card 
-            className={`w-full bg-white hover:shadow-md transition-shadow ${
+            className={`w-full bg-white hover:shadow-md transition-shadow relative ${
               isSelected ? 'ring-2 ring-primary' : ''
             } ${snapshot.isDragging ? 'shadow-lg' : ''}`}
           >
@@ -65,16 +67,16 @@ export const KanbanCard = ({
                   <h3 className="text-lg font-semibold">{title}</h3>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground">{description}</p>
+              <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
               <div className="space-y-2">
                 <div className="flex items-center text-sm text-muted-foreground">
-                  <CalendarDays className="mr-2 h-4 w-4" />
-                  <span>
+                  <CalendarDays className="mr-2 h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">
                     {startDate.toLocaleDateString()} - {endDate.toLocaleDateString()}
                   </span>
                 </div>
                 <div className="flex items-center text-sm text-muted-foreground">
-                  <Users className="mr-2 h-4 w-4" />
+                  <Users className="mr-2 h-4 w-4 flex-shrink-0" />
                   <span>{collaborationsCount} collaboration{collaborationsCount !== 1 ? 's' : ''}</span>
                 </div>
               </div>
