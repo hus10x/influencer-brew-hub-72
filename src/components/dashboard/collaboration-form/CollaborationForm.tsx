@@ -159,7 +159,8 @@ export const CollaborationForm = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {!campaignId && (
+        {/* Only show campaign selection when in standalone mode (no campaignId prop) */}
+        {!campaignId && campaigns && campaigns.length > 0 && (
           <FormField
             control={form.control}
             name="campaign_id"
