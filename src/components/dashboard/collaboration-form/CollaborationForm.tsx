@@ -82,9 +82,18 @@ export const CollaborationForm = ({
         .from("businesses")
         .select("id")
         .eq("user_id", user.id)
-        .single();
+        .limit(1)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching business:", error);
+        throw error;
+      }
+      
+      if (!data) {
+        throw new Error("No business found");
+      }
+      
       return data;
     },
     enabled: !businessId,
