@@ -1,8 +1,10 @@
 import { Card } from "@/components/ui/card";
-import { Check } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Users } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import { Draggable } from "@hello-pangea/dnd";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface KanbanCardProps {
   id: string;
@@ -29,6 +31,12 @@ export const KanbanCard = ({
   index,
   selectionMode,
 }: KanbanCardProps) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Mocked data for demonstration - will be replaced with real data
+  const totalSpots = 15;
+  const filledSpots = 8;
+
   return (
     <Draggable draggableId={id} index={index}>
       {(provided, snapshot) => (
@@ -75,9 +83,51 @@ export const KanbanCard = ({
                     {startDate.toLocaleDateString()} - {endDate.toLocaleDateString()}
                   </span>
                 </div>
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Users className="mr-2 h-4 w-4 flex-shrink-0" />
-                  <span>{collaborationsCount} collaboration{collaborationsCount !== 1 ? 's' : ''}</span>
+                
+                {/* Collaboration Summary */}
+                <div className="border-t border-border/50 pt-2 mt-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-between hover:bg-muted/50 -mx-2"
+                    onClick={() => setIsExpanded(!isExpanded)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        {collaborationsCount} Collaboration{collaborationsCount !== 1 ? 's' : ''} | {filledSpots}/{totalSpots} spots
+                      </span>
+                    </div>
+                    {isExpanded ? (
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </Button>
+                  
+                  {/* Expanded Collaboration List */}
+                  <div
+                    className={cn(
+                      "overflow-hidden transition-all",
+                      isExpanded ? "max-h-40" : "max-h-0"
+                    )}
+                  >
+                    <div className="space-y-1 pt-2">
+                      {/* Mocked collaborations - will be replaced with real data */}
+                      <div className="text-sm px-2 py-1 hover:bg-muted/50 rounded-md">
+                        <div className="flex justify-between items-center">
+                          <span>Instagram Story</span>
+                          <span className="text-muted-foreground">2/5 spots</span>
+                        </div>
+                      </div>
+                      <div className="text-sm px-2 py-1 hover:bg-muted/50 rounded-md">
+                        <div className="flex justify-between items-center">
+                          <span>Product Review</span>
+                          <span className="text-muted-foreground">4/5 spots</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
