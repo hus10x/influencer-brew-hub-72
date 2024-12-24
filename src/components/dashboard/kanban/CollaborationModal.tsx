@@ -48,7 +48,7 @@ export const CollaborationModal = ({
   if (isEditing) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Collaboration</DialogTitle>
           </DialogHeader>
@@ -64,9 +64,9 @@ export const CollaborationModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center gap-4">
             <div>
               <DialogTitle>{collaboration.title}</DialogTitle>
               <DialogDescription>Collaboration Details</DialogDescription>
