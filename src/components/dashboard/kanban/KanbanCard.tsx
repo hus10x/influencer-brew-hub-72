@@ -147,17 +147,17 @@ export const KanbanCard = ({
                     className="w-full justify-between hover:bg-muted/50 -mx-2 mt-2"
                     onClick={() => setIsExpanded(!isExpanded)}
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-sm text-muted-foreground truncate">
                         {collaborationsCount} Collaboration{collaborationsCount !== 1 ? 's' : ''} | 
                         <DollarSign className="h-3 w-3 inline mx-1" />
-                        500-1000 per collab
+                        <span className="whitespace-nowrap">500-1000 per collab</span>
                       </span>
                     </div>
                     {isExpanded ? (
-                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                      <ChevronUp className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     ) : (
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     )}
                   </Button>
                   
@@ -172,14 +172,14 @@ export const KanbanCard = ({
                       {/* Mocked collaborations - will be replaced with real data */}
                       <div className="text-sm px-2 py-1 hover:bg-muted/50 rounded-md">
                         <div className="flex justify-between items-center">
-                          <span>Instagram Story</span>
-                          <span className="text-muted-foreground">2/5 spots</span>
+                          <span className="truncate">Instagram Story</span>
+                          <span className="text-muted-foreground ml-2 flex-shrink-0">2/5 spots</span>
                         </div>
                       </div>
                       <div className="text-sm px-2 py-1 hover:bg-muted/50 rounded-md">
                         <div className="flex justify-between items-center">
-                          <span>Product Review</span>
-                          <span className="text-muted-foreground">4/5 spots</span>
+                          <span className="truncate">Product Review</span>
+                          <span className="text-muted-foreground ml-2 flex-shrink-0">4/5 spots</span>
                         </div>
                       </div>
                     </div>
