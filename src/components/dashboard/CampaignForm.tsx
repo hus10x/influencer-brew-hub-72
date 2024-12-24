@@ -22,18 +22,25 @@ const formSchema = z.object({
 
 interface CampaignFormProps {
   onSuccess: () => void;
+  campaign?: {
+    id: string;
+    title: string;
+    description?: string;
+    start_date: string;
+    end_date: string;
+  };
 }
 
-export const CampaignForm = ({ onSuccess }: CampaignFormProps) => {
+export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
   const queryClient = useQueryClient();
   const form = useForm<CampaignFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      description: "",
+      title: campaign?.title || "",
+      description: campaign?.description || "",
       business_id: "",
-      start_date: "",
-      end_date: "",
+      start_date: campaign?.start_date.split('T')[0] || "",
+      end_date: campaign?.end_date.split('T')[0] || "",
     },
   });
 
@@ -56,34 +63,55 @@ export const CampaignForm = ({ onSuccess }: CampaignFormProps) => {
     },
   });
 
-  const createCampaign = useMutation({
+  const mutation = useMutation({
     mutationFn: async ({ values, status }: { values: z.infer<typeof formSchema>, status: 'draft' | 'active' }) => {
-      const { data, error } = await supabase.from("campaigns").insert({
-        title: values.title,
-        description: values.description,
-        business_id: values.business_id,
-        start_date: values.start_date,
-        end_date: values.end_date,
-        status
-      }).select();
-      
-      if (error) throw error;
-      return data[0];
+      if (campaign) {
+        // Update existing campaign
+        const { data, error } = await supabase
+          .from("campaigns")
+          .update({
+            title: values.title,
+            description: values.description,
+            start_date: values.start_date,
+            end_date: values.end_date,
+          })
+          .eq('id', campaign.id)
+          .select();
+        
+        if (error) throw error;
+        return data[0];
+      } else {
+        // Create new campaign
+        const { data, error } = await supabase
+          .from("campaigns")
+          .insert({
+            title: values.title,
+            description: values.description,
+            business_id: values.business_id,
+            start_date: values.start_date,
+            end_date: values.end_date,
+            status
+          })
+          .select();
+        
+        if (error) throw error;
+        return data[0];
+      }
     },
     onSuccess: (campaign) => {
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
-      toast.success("Campaign created successfully");
+      toast.success(campaign ? "Campaign updated successfully" : "Campaign created successfully");
       form.reset();
       onSuccess();
     },
     onError: (error) => {
-      console.error("Error creating campaign:", error);
-      toast.error("Failed to create campaign");
+      console.error("Error with campaign:", error);
+      toast.error(campaign ? "Failed to update campaign" : "Failed to create campaign");
     },
   });
 
   const onSubmit = (values: CampaignFormData, status: 'draft' | 'active' = 'active') => {
-    createCampaign.mutate({ values, status });
+    mutation.mutate({ values, status });
   };
 
   if (isLoadingBusinesses) {
@@ -104,36 +132,40 @@ export const CampaignForm = ({ onSuccess }: CampaignFormProps) => {
     <div className="space-y-8">
       <Form {...form}>
         <form onSubmit={form.handleSubmit((values) => onSubmit(values))} className="space-y-6">
-          <BusinessSelect form={form} businesses={businesses} />
+          {!campaign && <BusinessSelect form={form} businesses={businesses} />}
           <CampaignDetails form={form} />
           <DateFields form={form} />
           
-          <div className="pt-6 border-t">
-            <h3 className="text-lg font-medium mb-4">Add Collaboration Details</h3>
-            <CollaborationForm 
-              campaignId={createCampaign.data?.id} 
-              businessId={form.getValues().business_id}
-              isStandalone={false}
-            />
-          </div>
+          {!campaign && (
+            <div className="pt-6 border-t">
+              <h3 className="text-lg font-medium mb-4">Add Collaboration Details</h3>
+              <CollaborationForm 
+                campaignId={mutation.data?.id} 
+                businessId={form.getValues().business_id}
+                isStandalone={false}
+              />
+            </div>
+          )}
 
           <div className="flex gap-4">
             <Button
               type="submit"
               className="flex-1"
-              disabled={createCampaign.isPending}
+              disabled={mutation.isPending}
             >
-              Create Campaign & Collaboration
+              {campaign ? "Update Campaign" : "Create Campaign & Collaboration"}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="flex-1"
-              disabled={createCampaign.isPending}
-              onClick={() => form.handleSubmit((values) => onSubmit(values, 'draft'))()}
-            >
-              Save as Draft
-            </Button>
+            {!campaign && (
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                disabled={mutation.isPending}
+                onClick={() => form.handleSubmit((values) => onSubmit(values, 'draft'))()}
+              >
+                Save as Draft
+              </Button>
+            )}
           </div>
         </form>
       </Form>
