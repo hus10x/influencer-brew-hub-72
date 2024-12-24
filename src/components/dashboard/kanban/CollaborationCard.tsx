@@ -15,6 +15,8 @@ interface CollaborationCardProps {
     requirements: string[];
     deadline: string;
     image_url: string | null;
+    business_id: string | null;
+    campaign_id: string | null;
   };
 }
 
