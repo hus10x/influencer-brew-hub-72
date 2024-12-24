@@ -7,7 +7,6 @@ import {
   Users,
   Plus,
   DollarSign,
-  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CalendarDays } from "lucide-react";
@@ -28,6 +27,7 @@ interface KanbanCardProps {
   onSelect: () => void;
   index: number;
   selectionMode: boolean;
+  collaborationsCount?: number; // Added this prop
 }
 
 export const KanbanCard = ({
@@ -40,6 +40,7 @@ export const KanbanCard = ({
   onSelect,
   index,
   selectionMode,
+  collaborationsCount = 0, // Added with default value
 }: KanbanCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
