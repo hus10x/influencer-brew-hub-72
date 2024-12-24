@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Check, GripVertical } from "lucide-react";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Users } from "lucide-react";
 import { Draggable } from "@hello-pangea/dnd";
@@ -37,6 +37,10 @@ export const KanbanCard = ({
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className="touch-none"
+          style={{
+            ...provided.draggableProps.style,
+            cursor: snapshot.isDragging ? "grabbing" : "grab",
+          }}
         >
           <Card 
             className={`w-full bg-card hover:shadow-md transition-shadow group ${
@@ -46,7 +50,7 @@ export const KanbanCard = ({
             <div className="p-4 space-y-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2">
-                  {selectionMode ? (
+                  {selectionMode && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -58,8 +62,6 @@ export const KanbanCard = ({
                     >
                       <Check className={`h-4 w-4 ${isSelected ? 'text-primary' : 'text-muted-foreground/50'}`} />
                     </Button>
-                  ) : (
-                    <GripVertical className="h-4 w-4 text-muted-foreground/50" />
                   )}
                   <h3 className="text-lg font-semibold">{title}</h3>
                 </div>
