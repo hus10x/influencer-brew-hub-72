@@ -68,7 +68,26 @@ export const CollaborationForm = ({
       if (error) throw error;
       return data;
     },
-    enabled: isStandalone && !campaignId, // Only fetch if standalone and no campaignId provided
+    enabled: isStandalone && !campaignId,
+  });
+
+  // Get the business ID if not provided
+  const { data: userBusiness } = useQuery({
+    queryKey: ["userBusiness"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from("businesses")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !businessId,
   });
 
   const uploadImage = async (file: File): Promise<string> => {
@@ -99,6 +118,12 @@ export const CollaborationForm = ({
           imageUrl = await uploadImage(data.image[0]);
         }
 
+        // Use the provided businessId or the fetched one
+        const effectiveBusinessId = businessId || userBusiness?.id;
+        if (!effectiveBusinessId) {
+          throw new Error("No business ID available");
+        }
+
         const collaborationData = {
           title: data.title,
           description: data.description,
@@ -107,15 +132,13 @@ export const CollaborationForm = ({
           deadline: data.deadline,
           max_spots: data.max_spots,
           campaign_id: campaignId || data.campaign_id,
-          business_id: businessId,
+          business_id: effectiveBusinessId,
           image_url: imageUrl,
         };
 
         const { error } = await supabase
           .from("collaborations")
-          .insert(collaborationData)
-          .select()
-          .single();
+          .insert(collaborationData);
 
         if (error) throw error;
         return data;
