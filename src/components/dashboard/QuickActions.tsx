@@ -10,15 +10,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { CampaignForm } from "./CampaignForm";
+import { CollaborationForm } from "./collaboration-form/CollaborationForm";
 
 export const QuickActions = () => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
+  const [isCollaborationDialogOpen, setIsCollaborationDialogOpen] = useState(false);
 
   return (
     <div className="space-y-4 animate-fade-up">
       <h2 className="text-2xl font-semibold tracking-tight">Quick Actions</h2>
       <div className="flex flex-wrap gap-4">
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isCampaignDialogOpen} onOpenChange={setIsCampaignDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-primary hover:bg-primary/90 gap-2">
               <Plus className="w-4 h-4" />
@@ -32,21 +34,31 @@ export const QuickActions = () => {
                 Create a new campaign to manage your collaborations
               </DialogDescription>
             </DialogHeader>
-            <CampaignForm onSuccess={() => setIsDialogOpen(false)} />
+            <CampaignForm onSuccess={() => setIsCampaignDialogOpen(false)} />
           </DialogContent>
         </Dialog>
-        <Button
-          variant="secondary"
-          size="lg"
-          className="gap-2"
-          onClick={() => {
-            // TODO: Open collaboration creation modal
-            console.log("Create collaboration clicked");
-          }}
-        >
-          <Users className="w-4 h-4" />
-          New Collaboration
-        </Button>
+
+        <Dialog open={isCollaborationDialogOpen} onOpenChange={setIsCollaborationDialogOpen}>
+          <DialogTrigger asChild>
+            <Button
+              variant="secondary"
+              size="lg"
+              className="gap-2"
+            >
+              <Users className="w-4 h-4" />
+              New Collaboration
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Create New Collaboration</DialogTitle>
+              <DialogDescription>
+                Create a new collaboration opportunity for influencers
+              </DialogDescription>
+            </DialogHeader>
+            <CollaborationForm onSuccess={() => setIsCollaborationDialogOpen(false)} />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

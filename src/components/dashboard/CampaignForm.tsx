@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { BusinessSelect } from "./campaign-form/BusinessSelect";
 import { CampaignDetails } from "./campaign-form/CampaignDetails";
 import { DateFields } from "./campaign-form/DateFields";
+import { CollaborationForm } from "./collaboration-form/CollaborationForm";
 import type { CampaignFormData } from "./campaign-form/types";
 
 const formSchema = z.object({
@@ -67,9 +68,9 @@ export const CampaignForm = ({ onSuccess }: CampaignFormProps) => {
       }).select();
       
       if (error) throw error;
-      return data;
+      return data[0];
     },
-    onSuccess: () => {
+    onSuccess: (campaign) => {
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
       toast.success("Campaign created successfully");
       form.reset();
@@ -100,30 +101,37 @@ export const CampaignForm = ({ onSuccess }: CampaignFormProps) => {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit((values) => onSubmit(values))} className="space-y-6">
-        <BusinessSelect form={form} businesses={businesses} />
-        <CampaignDetails form={form} />
-        <DateFields form={form} />
-        <div className="flex gap-4">
-          <Button
-            type="submit"
-            className="flex-1"
-            disabled={createCampaign.isPending}
-          >
-            Create Campaign
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="flex-1"
-            disabled={createCampaign.isPending}
-            onClick={() => form.handleSubmit((values) => onSubmit(values, 'draft'))()}
-          >
-            Save as Draft
-          </Button>
-        </div>
-      </form>
-    </Form>
+    <div className="space-y-8">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit((values) => onSubmit(values))} className="space-y-6">
+          <BusinessSelect form={form} businesses={businesses} />
+          <CampaignDetails form={form} />
+          <DateFields form={form} />
+          <div className="flex gap-4">
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={createCampaign.isPending}
+            >
+              Create Campaign
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1"
+              disabled={createCampaign.isPending}
+              onClick={() => form.handleSubmit((values) => onSubmit(values, 'draft'))()}
+            >
+              Save as Draft
+            </Button>
+          </div>
+        </form>
+      </Form>
+
+      <div className="pt-6 border-t">
+        <h3 className="text-lg font-medium mb-4">Add Collaboration Details</h3>
+        <CollaborationForm />
+      </div>
+    </div>
   );
 };
