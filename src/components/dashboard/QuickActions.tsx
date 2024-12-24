@@ -27,7 +27,7 @@ export const QuickActions = () => {
               New Campaign
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Campaign</DialogTitle>
               <DialogDescription>
@@ -49,7 +49,7 @@ export const QuickActions = () => {
               New Collaboration
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Collaboration</DialogTitle>
               <DialogDescription>

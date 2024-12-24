@@ -159,6 +159,32 @@ export const CollaborationForm = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {!campaignId && (
+          <FormField
+            control={form.control}
+            name="campaign_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Campaign</FormLabel>
+                <FormControl>
+                  <select
+                    className="w-full p-2 border rounded-md"
+                    {...field}
+                  >
+                    <option value="">Select a campaign</option>
+                    {campaigns?.map((campaign) => (
+                      <option key={campaign.id} value={campaign.id}>
+                        {campaign.title}
+                      </option>
+                    ))}
+                  </select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
         <FormField
           control={form.control}
           name="title"
@@ -190,32 +216,6 @@ export const CollaborationForm = ({
             </FormItem>
           )}
         />
-
-        {!campaignId && (
-          <FormField
-            control={form.control}
-            name="campaign_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Campaign</FormLabel>
-                <FormControl>
-                  <select
-                    className="w-full p-2 border rounded-md"
-                    {...field}
-                  >
-                    <option value="">Select a campaign</option>
-                    {campaigns?.map((campaign) => (
-                      <option key={campaign.id} value={campaign.id}>
-                        {campaign.title}
-                      </option>
-                    ))}
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
 
         <div className="space-y-4">
           <FormLabel>Requirements</FormLabel>

@@ -130,7 +130,7 @@ export const CampaignForm = ({ onSuccess }: CampaignFormProps) => {
 
       <div className="pt-6 border-t">
         <h3 className="text-lg font-medium mb-4">Add Collaboration Details</h3>
-        <CollaborationForm />
+        <CollaborationForm campaignId={createCampaign.data?.id} />
       </div>
     </div>
   );
