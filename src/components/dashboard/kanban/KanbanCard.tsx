@@ -16,6 +16,14 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CollaborationCard } from "./CollaborationCard";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { CollaborationForm } from "../collaboration-form/CollaborationForm";
 
 interface KanbanCardProps {
   id: string;
@@ -27,7 +35,7 @@ interface KanbanCardProps {
   onSelect: () => void;
   index: number;
   selectionMode: boolean;
-  collaborationsCount?: number; // Added this prop
+  collaborationsCount?: number;
 }
 
 export const KanbanCard = ({
@@ -40,9 +48,10 @@ export const KanbanCard = ({
   onSelect,
   index,
   selectionMode,
-  collaborationsCount = 0, // Added with default value
+  collaborationsCount = 0,
 }: KanbanCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const { data: collaborations = [] } = useQuery({
     queryKey: ["collaborations", id],
@@ -71,6 +80,10 @@ export const KanbanCard = ({
     if (percentage >= 100) return "bg-red-500";
     if (percentage >= 80) return "bg-orange-500";
     return "bg-green-500";
+  };
+
+  const handleDialogClose = () => {
+    setIsDialogOpen(false);
   };
 
   return (
@@ -134,7 +147,7 @@ export const KanbanCard = ({
                       className="h-6 w-6"
                       onClick={(e) => {
                         e.stopPropagation();
-                        console.log("Add collaboration clicked");
+                        setIsDialogOpen(true);
                       }}
                     >
                       <Plus className="h-3 w-3" />
@@ -193,6 +206,22 @@ export const KanbanCard = ({
               </div>
             </div>
           </Card>
+
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Create New Collaboration</DialogTitle>
+                <DialogDescription>
+                  Add a new collaboration to the campaign "{title}"
+                </DialogDescription>
+              </DialogHeader>
+              <CollaborationForm
+                campaignId={id}
+                onSuccess={handleDialogClose}
+                isStandalone={false}
+              />
+            </DialogContent>
+          </Dialog>
         </div>
       )}
     </Draggable>
