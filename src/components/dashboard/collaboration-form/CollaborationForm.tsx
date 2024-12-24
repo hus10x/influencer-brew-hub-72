@@ -37,16 +37,14 @@ export const CollaborationForm = ({
       compensation: 0,
       deadline: "",
       max_spots: 1,
-      campaign_id: campaignId,
+      campaign_id: campaignId || "",
     },
   });
 
-  // Only fetch campaigns if we're not in campaign creation mode
+  // Fetch campaigns for the selector
   const { data: campaigns } = useQuery({
     queryKey: ["campaigns"],
     queryFn: async () => {
-      if (campaignId) return null;
-      
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("Not authenticated");
 
@@ -68,7 +66,7 @@ export const CollaborationForm = ({
       if (error) throw error;
       return data;
     },
-    enabled: !campaignId,
+    enabled: !campaignId, // Only fetch if campaignId is not provided
   });
 
   const uploadImage = async (file: File): Promise<string> => {
