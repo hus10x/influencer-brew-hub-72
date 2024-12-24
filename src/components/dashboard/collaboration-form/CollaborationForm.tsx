@@ -1,22 +1,17 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, X } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Form } from "@/components/ui/form";
 import { collaborationFormSchema, type CollaborationFormData } from "./types";
+import { CampaignSelector } from "./CampaignSelector";
+import { BasicDetailsSection } from "./BasicDetailsSection";
+import { RequirementsSection } from "./RequirementsSection";
+import { ImageUploadSection } from "./ImageUploadSection";
+import { CompensationSection } from "./CompensationSection";
 
 interface CollaborationFormProps {
   campaignId?: string;
@@ -81,7 +76,7 @@ export const CollaborationForm = ({
     const fileName = `${Math.random()}.${fileExt}`;
     const filePath = `${fileName}`;
 
-    const { error: uploadError, data } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('business-logos')
       .upload(filePath, file);
 
@@ -143,15 +138,6 @@ export const CollaborationForm = ({
     },
   });
 
-  const addRequirement = () => {
-    setRequirements([...requirements, ""]);
-  };
-
-  const removeRequirement = (index: number) => {
-    const newRequirements = requirements.filter((_, i) => i !== index);
-    setRequirements(newRequirements);
-  };
-
   const onSubmit = (data: CollaborationFormData) => {
     mutation.mutate(data);
   };
@@ -159,185 +145,15 @@ export const CollaborationForm = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Only show campaign selection when in standalone mode (no campaignId prop) */}
-        {!campaignId && campaigns && campaigns.length > 0 && (
-          <FormField
-            control={form.control}
-            name="campaign_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Campaign</FormLabel>
-                <FormControl>
-                  <select
-                    className="w-full p-2 border rounded-md"
-                    {...field}
-                  >
-                    <option value="">Select a campaign</option>
-                    {campaigns?.map((campaign) => (
-                      <option key={campaign.id} value={campaign.id}>
-                        {campaign.title}
-                      </option>
-                    ))}
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter collaboration title" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+        {!campaignId && <CampaignSelector form={form} campaigns={campaigns} />}
+        <BasicDetailsSection form={form} />
+        <RequirementsSection
+          form={form}
+          requirements={requirements}
+          setRequirements={setRequirements}
         />
-
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Describe what you're looking for..."
-                  className="min-h-[100px]"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="space-y-4">
-          <FormLabel>Requirements</FormLabel>
-          {requirements.map((_, index) => (
-            <div key={index} className="flex gap-2">
-              <FormField
-                control={form.control}
-                name={`requirements.${index}`}
-                render={({ field }) => (
-                  <FormItem className="flex-1">
-                    <FormControl>
-                      <Input
-                        placeholder="Enter requirement"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {index > 0 && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => removeRequirement(index)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          ))}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={addRequirement}
-            className="w-full"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Requirement
-          </Button>
-        </div>
-
-        <FormField
-          control={form.control}
-          name="compensation"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Compensation (USD)</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="Enter compensation amount"
-                  {...field}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="deadline"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Deadline</FormLabel>
-              <FormControl>
-                <Input
-                  type="datetime-local"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="max_spots"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Number of Spots</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  min="1"
-                  placeholder="Enter number of available spots"
-                  {...field}
-                  onChange={(e) => field.onChange(parseInt(e.target.value))}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="image"
-          render={({ field: { onChange, value, ...field } }) => (
-            <FormItem>
-              <FormLabel>Collaboration Image</FormLabel>
-              <FormControl>
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    onChange(e.target.files);
-                  }}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <CompensationSection form={form} />
+        <ImageUploadSection form={form} />
 
         <Button type="submit" disabled={isLoading} className="w-full">
           {isLoading ? "Creating..." : "Create Collaboration"}
