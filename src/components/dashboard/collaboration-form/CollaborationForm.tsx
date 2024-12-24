@@ -143,7 +143,9 @@ export const CollaborationForm = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {!campaignId && <CampaignSelector form={form} campaigns={campaigns} />}
+        {!campaignId && campaigns && campaigns.length > 0 && (
+          <CampaignSelector form={form} campaigns={campaigns} />
+        )}
         <BasicDetailsSection form={form} />
         <RequirementsSection
           form={form}
