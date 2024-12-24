@@ -6,10 +6,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { DollarSign, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { DollarSign, Users, Pencil } from "lucide-react";
+import { useState } from "react";
+import { CollaborationForm } from "../collaboration-form/CollaborationForm";
 
 interface CollaborationModalProps {
   collaboration: {
+    id: string;
     title: string;
     description: string;
     compensation: number;
@@ -18,6 +22,8 @@ interface CollaborationModalProps {
     requirements: string[];
     deadline: string;
     image_url: string | null;
+    business_id: string | null;
+    campaign_id: string | null;
   } | null;
   isOpen: boolean;
   onClose: () => void;
@@ -28,16 +34,51 @@ export const CollaborationModal = ({
   isOpen,
   onClose,
 }: CollaborationModalProps) => {
+  const [isEditing, setIsEditing] = useState(false);
+
   if (!collaboration) return null;
 
   const fillPercentage = (collaboration.filled_spots / collaboration.max_spots) * 100;
+
+  const handleEditSuccess = () => {
+    setIsEditing(false);
+    onClose();
+  };
+
+  if (isEditing) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Edit Collaboration</DialogTitle>
+          </DialogHeader>
+          <CollaborationForm
+            onSuccess={handleEditSuccess}
+            initialData={collaboration}
+            isStandalone={false}
+          />
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{collaboration.title}</DialogTitle>
-          <DialogDescription>Collaboration Details</DialogDescription>
+          <div className="flex justify-between items-center">
+            <div>
+              <DialogTitle>{collaboration.title}</DialogTitle>
+              <DialogDescription>Collaboration Details</DialogDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setIsEditing(true)}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          </div>
         </DialogHeader>
 
         <div className="space-y-4">

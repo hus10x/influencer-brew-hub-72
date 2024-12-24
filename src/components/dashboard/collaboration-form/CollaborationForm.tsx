@@ -18,6 +18,7 @@ interface CollaborationFormProps {
   onSuccess?: () => void;
   businessId?: string;
   isStandalone?: boolean;
+  initialData?: CollaborationFormData & { id: string };
 }
 
 export const CollaborationForm = ({
@@ -25,14 +26,17 @@ export const CollaborationForm = ({
   onSuccess,
   businessId,
   isStandalone = true,
+  initialData,
 }: CollaborationFormProps) => {
-  const [requirements, setRequirements] = useState<string[]>([""]);
+  const [requirements, setRequirements] = useState<string[]>(
+    initialData?.requirements || [""]
+  );
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
 
   const form = useForm<CollaborationFormData>({
     resolver: zodResolver(collaborationFormSchema),
-    defaultValues: {
+    defaultValues: initialData || {
       title: "",
       description: "",
       requirements: [""],
@@ -85,15 +89,8 @@ export const CollaborationForm = ({
         .limit(1)
         .maybeSingle();
 
-      if (error) {
-        console.error("Error fetching business:", error);
-        throw error;
-      }
-      
-      if (!data) {
-        throw new Error("No business found");
-      }
-      
+      if (error) throw error;
+      if (!data) throw new Error("No business found");
       return data;
     },
     enabled: !businessId,
@@ -127,7 +124,6 @@ export const CollaborationForm = ({
           imageUrl = await uploadImage(data.image[0]);
         }
 
-        // Use the provided businessId or the fetched one
         const effectiveBusinessId = businessId || userBusiness?.id;
         if (!effectiveBusinessId) {
           throw new Error("No business ID available");
@@ -142,14 +138,26 @@ export const CollaborationForm = ({
           max_spots: data.max_spots,
           campaign_id: campaignId || data.campaign_id,
           business_id: effectiveBusinessId,
-          image_url: imageUrl,
+          ...(imageUrl && { image_url: imageUrl }),
         };
 
-        const { error } = await supabase
-          .from("collaborations")
-          .insert(collaborationData);
+        if (initialData) {
+          // Update existing collaboration
+          const { error } = await supabase
+            .from("collaborations")
+            .update(collaborationData)
+            .eq("id", initialData.id);
 
-        if (error) throw error;
+          if (error) throw error;
+        } else {
+          // Create new collaboration
+          const { error } = await supabase
+            .from("collaborations")
+            .insert(collaborationData);
+
+          if (error) throw error;
+        }
+
         return data;
       } catch (error) {
         console.error("Error in collaboration mutation:", error);
@@ -158,12 +166,12 @@ export const CollaborationForm = ({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["collaborations"] });
-      toast.success("Collaboration created successfully");
+      toast.success(initialData ? "Collaboration updated successfully" : "Collaboration created successfully");
       onSuccess?.();
     },
     onError: (error) => {
-      console.error("Error creating collaboration:", error);
-      toast.error("Failed to create collaboration");
+      console.error("Error with collaboration:", error);
+      toast.error(initialData ? "Failed to update collaboration" : "Failed to create collaboration");
     },
     onSettled: () => {
       setIsLoading(false);
@@ -190,7 +198,10 @@ export const CollaborationForm = ({
         <ImageUploadSection form={form} />
 
         <Button type="submit" disabled={isLoading} className="w-full">
-          {isLoading ? "Creating..." : isStandalone ? "Create Collaboration" : "Add Collaboration"}
+          {isLoading 
+            ? (initialData ? "Updating..." : "Creating...") 
+            : (initialData ? "Update Collaboration" : "Create Collaboration")
+          }
         </Button>
       </form>
     </Form>
