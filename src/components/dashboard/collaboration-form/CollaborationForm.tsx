@@ -189,11 +189,9 @@ export const CollaborationForm = ({
         <CompensationSection form={form} />
         <ImageUploadSection form={form} />
 
-        {isStandalone && (
-          <Button type="submit" disabled={isLoading} className="w-full">
-            {isLoading ? "Creating..." : "Create Collaboration"}
-          </Button>
-        )}
+        <Button type="submit" disabled={isLoading} className="w-full">
+          {isLoading ? "Creating..." : isStandalone ? "Create Collaboration" : "Add Collaboration"}
+        </Button>
       </form>
     </Form>
   );
