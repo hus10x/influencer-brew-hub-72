@@ -107,13 +107,23 @@ export const CampaignForm = ({ onSuccess }: CampaignFormProps) => {
           <BusinessSelect form={form} businesses={businesses} />
           <CampaignDetails form={form} />
           <DateFields form={form} />
+          
+          <div className="pt-6 border-t">
+            <h3 className="text-lg font-medium mb-4">Add Collaboration Details</h3>
+            <CollaborationForm 
+              campaignId={createCampaign.data?.id} 
+              businessId={form.getValues().business_id}
+              isStandalone={false}
+            />
+          </div>
+
           <div className="flex gap-4">
             <Button
               type="submit"
               className="flex-1"
               disabled={createCampaign.isPending}
             >
-              Create Campaign
+              Create Campaign & Collaboration
             </Button>
             <Button
               type="button"
@@ -127,11 +137,6 @@ export const CampaignForm = ({ onSuccess }: CampaignFormProps) => {
           </div>
         </form>
       </Form>
-
-      <div className="pt-6 border-t">
-        <h3 className="text-lg font-medium mb-4">Add Collaboration Details</h3>
-        <CollaborationForm campaignId={createCampaign.data?.id} />
-      </div>
     </div>
   );
 };

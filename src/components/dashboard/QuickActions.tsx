@@ -56,7 +56,10 @@ export const QuickActions = () => {
                 Create a new collaboration opportunity for influencers
               </DialogDescription>
             </DialogHeader>
-            <CollaborationForm onSuccess={() => setIsCollaborationDialogOpen(false)} />
+            <CollaborationForm 
+              onSuccess={() => setIsCollaborationDialogOpen(false)} 
+              isStandalone={true}
+            />
           </DialogContent>
         </Dialog>
       </div>

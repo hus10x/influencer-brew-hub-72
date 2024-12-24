@@ -17,12 +17,14 @@ interface CollaborationFormProps {
   campaignId?: string;
   onSuccess?: () => void;
   businessId?: string;
+  isStandalone?: boolean;
 }
 
 export const CollaborationForm = ({
   campaignId,
   onSuccess,
   businessId,
+  isStandalone = true,
 }: CollaborationFormProps) => {
   const [requirements, setRequirements] = useState<string[]>([""]);
   const [isLoading, setIsLoading] = useState(false);
@@ -66,7 +68,7 @@ export const CollaborationForm = ({
       if (error) throw error;
       return data;
     },
-    enabled: !campaignId, // Only fetch if campaignId is not provided
+    enabled: isStandalone && !campaignId, // Only fetch if standalone and no campaignId provided
   });
 
   const uploadImage = async (file: File): Promise<string> => {
@@ -143,7 +145,7 @@ export const CollaborationForm = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {!campaignId && campaigns && campaigns.length > 0 && (
+        {isStandalone && !campaignId && campaigns && campaigns.length > 0 && (
           <CampaignSelector form={form} campaigns={campaigns} />
         )}
         <BasicDetailsSection form={form} />
@@ -155,9 +157,11 @@ export const CollaborationForm = ({
         <CompensationSection form={form} />
         <ImageUploadSection form={form} />
 
-        <Button type="submit" disabled={isLoading} className="w-full">
-          {isLoading ? "Creating..." : "Create Collaboration"}
-        </Button>
+        {isStandalone && (
+          <Button type="submit" disabled={isLoading} className="w-full">
+            {isLoading ? "Creating..." : "Create Collaboration"}
+          </Button>
+        )}
       </form>
     </Form>
   );
