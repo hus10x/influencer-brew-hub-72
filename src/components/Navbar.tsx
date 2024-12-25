@@ -29,26 +29,28 @@ export const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
+      // First update local state and redirect
+      setIsLoggedIn(false);
+      navigate("/");
+
+      // Then attempt to sign out
+      const { error } = await supabase.auth.signOut({
+        scope: 'local'
+      });
       
       if (error) {
         console.error("Logout error:", error);
-        // Don't show error for session_not_found as it's expected in some cases
+        // Only show error for non-session related issues
         if (!error.message.includes('session_not_found')) {
           toast.error("Error during logout");
+          return;
         }
       }
 
-      // Always clear local state and redirect
-      setIsLoggedIn(false);
-      navigate("/");
       toast.success("Logged out successfully");
-      
     } catch (error) {
       console.error("Error during logout:", error);
-      // Ensure user is logged out locally even if server request fails
-      setIsLoggedIn(false);
-      navigate("/");
+      // Error already handled by setting local state and redirecting
       toast.success("Logged out successfully");
     }
   };
