@@ -57,9 +57,9 @@ export const InstagramConnect = () => {
         throw new Error('Failed to initialize Instagram connection');
       }
       
-      // Build the Instagram OAuth URL
+      // Build the Instagram OAuth URL with the correct redirect URI
       const appId = '493461117098279';
-      const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.com/functions/v1/instagram-auth/callback';
+      const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.com/functions/v1/instagram-auth/oauth-uri';
       
       const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
         `?client_id=${appId}` +
