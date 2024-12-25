@@ -65,7 +65,7 @@ export const CollaborationModal = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
+        <DialogHeader className="pr-12">
           <div className="flex justify-between items-center gap-4">
             <div>
               <DialogTitle>{collaboration.title}</DialogTitle>
@@ -75,6 +75,7 @@ export const CollaborationModal = ({
               variant="outline"
               size="icon"
               onClick={() => setIsEditing(true)}
+              className="mr-8"
             >
               <Pencil className="h-4 w-4" />
             </Button>
