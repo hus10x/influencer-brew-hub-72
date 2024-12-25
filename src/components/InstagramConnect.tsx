@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Instagram } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const InstagramConnect = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -11,12 +12,19 @@ export const InstagramConnect = () => {
       console.log('Starting Instagram connection process...');
       setIsLoading(true);
       
-      // Get the Instagram OAuth URL from our edge function
-      const response = await fetch('https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/oauth-url');
-      const { url } = await response.json();
+      // Get the Instagram OAuth URL from our edge function using Supabase client
+      const { data, error } = await supabase.functions.invoke('instagram-auth/oauth-url');
       
-      console.log('Redirecting to Instagram OAuth URL:', url);
-      window.location.href = url;
+      if (error) {
+        throw error;
+      }
+
+      if (!data?.url) {
+        throw new Error('No OAuth URL returned');
+      }
+      
+      console.log('Redirecting to Instagram OAuth URL:', data.url);
+      window.location.href = data.url;
     } catch (error) {
       console.error('Error connecting to Instagram:', error);
       toast.error('Failed to connect to Instagram. Please try again.');
