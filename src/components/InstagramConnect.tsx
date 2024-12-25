@@ -59,7 +59,7 @@ export const InstagramConnect = () => {
       
       // Build the Instagram OAuth URL with the correct redirect URI
       const appId = '493461117098279';
-      const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.com/functions/v1/instagram-auth/oauth-uri';
+      const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.com/functions/v1/instagram-auth/callback';
       
       const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
         `?client_id=${appId}` +
