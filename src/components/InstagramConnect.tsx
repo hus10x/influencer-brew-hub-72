@@ -33,13 +33,20 @@ export const InstagramConnect = () => {
         console.error('Error storing OAuth state:', stateError);
         throw new Error('Failed to initialize Instagram connection');
       }
+
+      // Fetch Instagram credentials from Supabase Edge Function
+      const { data: credentials, error: credentialsError } = await supabase.functions.invoke('get-instagram-credentials');
       
-      // Build the Instagram OAuth URL
-      const appId = '493461117098279';
+      if (credentialsError || !credentials?.appId) {
+        console.error('Error fetching Instagram credentials:', credentialsError);
+        throw new Error('Failed to fetch Instagram credentials');
+      }
+      
+      // Build the Instagram OAuth URL with fetched credentials
       const redirectUri = 'https://preview--influencer-brew-hub-72.lovable.app/';
       
       const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
-        `?client_id=${appId}` +
+        `?client_id=${credentials.appId}` +
         "&enable_fb_login=0" +
         "&force_authentication=1" +
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
