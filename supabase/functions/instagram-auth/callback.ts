@@ -46,12 +46,11 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     console.log('Fetching OAuth state from database...');
-    // Get the user ID from the stored state
+    // Get the user ID from the stored state and ensure it's not already used
     const { data: oauthState, error: stateError } = await supabase
       .from('instagram_oauth_states')
-      .select('user_id')
+      .select('user_id, used')
       .eq('state', state)
-      .eq('used', false)
       .single();
 
     if (stateError || !oauthState) {
@@ -59,18 +58,30 @@ serve(async (req) => {
       return createErrorHtml('Invalid or expired OAuth state');
     }
 
+    if (oauthState.used) {
+      console.error('OAuth state has already been used');
+      return createErrorHtml('This authentication link has already been used');
+    }
+
     console.log('Found valid OAuth state for user:', oauthState.user_id);
     const userId = oauthState.user_id;
 
-    // Mark the state as used
+    // Mark the state as used immediately to prevent reuse
     const { error: updateStateError } = await supabase
       .from('instagram_oauth_states')
-      .update({ used: true })
-      .eq('state', state);
+      .update({ 
+        used: true,
+        updated_at: new Date().toISOString()
+      })
+      .eq('state', state)
+      .eq('used', false); // Only update if it's not already used
 
     if (updateStateError) {
       console.error('Error marking OAuth state as used:', updateStateError);
+      return createErrorHtml('Failed to process authentication');
     }
+
+    console.log('Successfully marked OAuth state as used');
 
     console.log('Exchanging code for token...');
     const tokenData = await exchangeCodeForToken(code, appId, appSecret, redirectUri);
