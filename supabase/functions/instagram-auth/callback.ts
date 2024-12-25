@@ -15,14 +15,15 @@ serve(async (req) => {
     const code = url.searchParams.get('code');
     const state = url.searchParams.get('state');
     const error = url.searchParams.get('error');
+    const error_reason = url.searchParams.get('error_reason');
     
     if (error) {
-      console.error('Instagram OAuth error:', error);
-      return createErrorHtml(`Instagram OAuth error: ${error}`);
+      console.error('Instagram OAuth error:', error, 'Reason:', error_reason);
+      return createErrorHtml(`Instagram OAuth error: ${error}. Reason: ${error_reason}`);
     }
 
     if (!code || !state) {
-      console.error('Missing code or state');
+      console.error('Missing code or state parameters');
       return createErrorHtml('Invalid OAuth parameters');
     }
 
@@ -37,9 +38,11 @@ serve(async (req) => {
       return createErrorHtml('Server configuration error');
     }
 
+    console.log('Initializing Supabase client...');
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     // Get the user ID from the stored state
+    console.log('Fetching OAuth state for:', state);
     const { data: oauthState, error: stateError } = await supabase
       .from('instagram_oauth_states')
       .select('user_id')
@@ -55,20 +58,28 @@ serve(async (req) => {
     const userId = oauthState.user_id;
     console.log('Found user ID from state:', userId);
 
-    // Mark the state as used
-    await supabase
+    // Mark the state as used immediately to prevent replay attacks
+    console.log('Marking OAuth state as used...');
+    const { error: updateStateError } = await supabase
       .from('instagram_oauth_states')
       .update({ used: true })
       .eq('state', state);
+
+    if (updateStateError) {
+      console.error('Error updating OAuth state:', updateStateError);
+      // Continue anyway as this is not critical
+    }
 
     console.log('Exchanging code for token...');
     const tokenData = await exchangeCodeForToken(code, appId, appSecret, redirectUri);
     console.log('Token received successfully');
     
+    console.log('Fetching Instagram profile...');
     const profile = await getInstagramProfile(tokenData.access_token);
     console.log('Instagram profile fetched:', profile);
 
     // Get user's role from profiles table
+    console.log('Fetching user profile...');
     const { data: userProfile, error: profileError } = await supabase
       .from('profiles')
       .select('user_type')
@@ -81,6 +92,7 @@ serve(async (req) => {
     }
 
     // Update the user's profile with Instagram info
+    console.log('Updating user profile with Instagram info...');
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
