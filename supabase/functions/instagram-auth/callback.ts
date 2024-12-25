@@ -88,6 +88,19 @@ serve(async (req) => {
       hasProfile: !!profile
     });
 
+    // Get user's role from profiles table
+    console.log('Fetching user profile...');
+    const { data: userProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('user_type')
+      .eq('id', userId)
+      .single();
+
+    if (profileError) {
+      console.error('Error fetching user profile:', profileError);
+      return createErrorHtml('Error fetching user profile');
+    }
+
     console.log('Updating user profile with Instagram data...');
     const { error: updateError } = await supabase
       .from('profiles')
@@ -106,7 +119,12 @@ serve(async (req) => {
     }
 
     console.log('Successfully connected Instagram account for user:', userId);
-    return createSuccessHtml({ username: profile.username }, '/influencer');
+    
+    // Determine redirect path based on user type
+    const redirectPath = userProfile.user_type === 'influencer' ? '/influencer' : '/client';
+    console.log(`Redirecting user to ${redirectPath}`);
+    
+    return createSuccessHtml({ username: profile.username }, redirectPath);
 
   } catch (error) {
     console.error('Error in Instagram auth:', error);
