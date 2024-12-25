@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const queryClient = new QueryClient();
 
@@ -22,7 +23,18 @@ const App = () => {
     // Initialize auth state
     const initializeAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Session error:', error);
+          if (error.message.includes('refresh_token_not_found')) {
+            await supabase.auth.signOut();
+            toast.error("Session expired. Please login again.");
+          }
+          setIsLoggedIn(false);
+          return;
+        }
+        
         setIsLoggedIn(!!session);
       } catch (error) {
         console.error('Error checking auth status:', error);
@@ -33,8 +45,14 @@ const App = () => {
     initializeAuth();
 
     // Subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsLoggedIn(!!session);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'TOKEN_REFRESHED') {
+        setIsLoggedIn(true);
+      } else if (event === 'SIGNED_OUT') {
+        setIsLoggedIn(false);
+      } else {
+        setIsLoggedIn(!!session);
+      }
     });
 
     return () => {
