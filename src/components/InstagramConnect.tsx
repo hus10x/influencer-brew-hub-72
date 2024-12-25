@@ -18,8 +18,6 @@ export const InstagramConnect = () => {
         throw new Error('User not authenticated');
       }
 
-      console.log('Authenticated user:', user.id);
-
       // Generate a random state for security
       const state = crypto.randomUUID();
       
@@ -35,12 +33,10 @@ export const InstagramConnect = () => {
         console.error('Error storing OAuth state:', stateError);
         throw new Error('Failed to initialize Instagram connection');
       }
-
-      console.log('Successfully stored OAuth state:', state);
       
       // Build the Instagram OAuth URL
       const appId = '493461117098279';
-      const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth';
+      const redirectUri = 'https://preview--influencer-brew-hub-72.lovable.app/';
       
       const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
         `?client_id=${appId}` +
