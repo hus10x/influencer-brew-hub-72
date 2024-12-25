@@ -5,12 +5,15 @@ import { exchangeCodeForToken, getInstagramProfile } from './instagram-api.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.47.0'
 
 serve(async (req) => {
+  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    console.log('Instagram auth callback function called');
+    console.log('Instagram auth callback function called with URL:', req.url);
+    console.log('Request headers:', Object.fromEntries(req.headers.entries()));
+    
     const url = new URL(req.url);
     const code = url.searchParams.get('code');
     const state = url.searchParams.get('state');
@@ -43,6 +46,7 @@ serve(async (req) => {
       return createErrorHtml('Server configuration error');
     }
 
+    console.log('Creating Supabase client...');
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     console.log('Fetching OAuth state from database...');
