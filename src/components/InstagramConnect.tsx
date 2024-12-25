@@ -2,42 +2,37 @@ import { Button } from "@/components/ui/button";
 import { Instagram } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 
 export const InstagramConnect = () => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleInstagramConnect = async () => {
+  const handleInstagramConnect = () => {
     try {
       console.log('Starting Instagram connection process...');
       setIsLoading(true);
       
-      // Get the Instagram OAuth URL from our edge function
-      const { data, error } = await supabase.functions.invoke('instagram-auth/oauth-url');
+      // Generate a random state for security
+      const state = crypto.randomUUID();
+      localStorage.setItem('instagram_oauth_state', state);
       
-      if (error) {
-        console.error('Error getting OAuth URL:', error);
-        throw error;
-      }
-
-      if (!data?.url) {
-        console.error('No OAuth URL returned from function:', data);
-        throw new Error('Failed to get OAuth URL from server');
-      }
-
-      // Store the state parameter in localStorage for verification
-      if (data.state) {
-        console.log('Storing state parameter:', data.state);
-        localStorage.setItem('instagram_oauth_state', data.state);
-      }
+      // Build the Instagram OAuth URL directly
+      const appId = '493461117098279'; // Your Instagram App ID
+      const redirectUri = window.location.origin;
       
-      // Redirect to Facebook's OAuth URL
-      console.log('Redirecting to Facebook OAuth URL:', data.url);
-      window.location.href = data.url;
+      const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
+        `?client_id=${appId}` +
+        "&enable_fb_login=0" +
+        "&force_authentication=1" +
+        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+        "&response_type=code" +
+        "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish" +
+        `&state=${state}`;
+      
+      console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
+      window.location.href = instagramUrl;
     } catch (error) {
       console.error('Error connecting to Instagram:', error);
       toast.error('Failed to connect to Instagram. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };

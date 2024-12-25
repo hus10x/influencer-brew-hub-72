@@ -10,15 +10,15 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Facebook auth callback function called');
+    console.log('Instagram auth callback function called');
     const url = new URL(req.url);
     const code = url.searchParams.get('code');
     const state = url.searchParams.get('state');
     const error = url.searchParams.get('error');
     
     if (error) {
-      console.error('Facebook OAuth error:', error);
-      return createErrorHtml(`Facebook OAuth error: ${error}`);
+      console.error('Instagram OAuth error:', error);
+      return createErrorHtml(`Instagram OAuth error: ${error}`);
     }
 
     if (!code) {
@@ -33,7 +33,7 @@ serve(async (req) => {
 
     const appId = Deno.env.get('FACEBOOK_APP_ID');
     const appSecret = Deno.env.get('FACEBOOK_APP_SECRET');
-    const redirectUri = `https://ahtozhqhjdkivyaqskko.supabase.com/functions/v1/instagram-auth/callback`;
+    const redirectUri = url.origin;
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
@@ -70,7 +70,7 @@ serve(async (req) => {
     return createSuccessHtml({ username: profile.username });
 
   } catch (error) {
-    console.error('Error in Facebook auth:', error);
-    return createErrorHtml(error.message || 'Failed to process Facebook authentication');
+    console.error('Error in Instagram auth:', error);
+    return createErrorHtml(error.message || 'Failed to process Instagram authentication');
   }
 })
