@@ -38,7 +38,7 @@ export const InstagramConnect = () => {
 
   const handleInstagramConnect = async () => {
     try {
-      console.log('Starting Facebook OAuth process...');
+      console.log('Starting Instagram OAuth process...');
       setIsLoading(true);
       
       // First check if we have a valid session
@@ -62,25 +62,25 @@ export const InstagramConnect = () => {
 
       if (stateError) {
         console.error('Error storing OAuth state:', stateError);
-        throw new Error('Failed to initialize Facebook connection');
+        throw new Error('Failed to initialize Instagram connection');
       }
       
-      // Build the Facebook OAuth URL with the correct permissions
+      // Build the Instagram OAuth URL
       const appId = '493461117098279';
       const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.com/functions/v1/instagram-auth/callback';
       
-      const facebookUrl = "https://www.facebook.com/v19.0/dialog/oauth" + 
+      const instagramUrl = "https://api.instagram.com/oauth/authorize" + 
         `?client_id=${appId}` +
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
         "&response_type=code" +
-        "&scope=instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement" +
+        "&scope=basic" +
         `&state=${state}`;
       
-      console.log('Redirecting to Facebook OAuth URL:', facebookUrl);
-      window.location.href = facebookUrl;
+      console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
+      window.location.href = instagramUrl;
     } catch (error) {
-      console.error('Error connecting to Facebook:', error);
-      toast.error('Failed to connect to Facebook. Please try again.');
+      console.error('Error connecting to Instagram:', error);
+      toast.error('Failed to connect to Instagram. Please try again.');
       setIsLoading(false);
     }
   };
