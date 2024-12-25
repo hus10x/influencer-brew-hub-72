@@ -30,15 +30,16 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const appId = '493461117098279';
+    const appId = Deno.env.get('FACEBOOK_APP_ID');
     const appSecret = Deno.env.get('FACEBOOK_APP_SECRET');
-    const redirectUri = 'https://preview--influencer-brew-hub-72.lovable.app/';
+    const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
 
-    if (!appSecret || !supabaseUrl || !supabaseServiceRoleKey) {
+    if (!appSecret || !supabaseUrl || !supabaseServiceRoleKey || !appId) {
       console.error('Missing required environment variables:', {
         hasAppSecret: !!appSecret,
         hasSupabaseUrl: !!supabaseUrl,
-        hasServiceRoleKey: !!supabaseServiceRoleKey
+        hasServiceRoleKey: !!supabaseServiceRoleKey,
+        hasAppId: !!appId
       });
       return createErrorHtml('Server configuration error');
     }
