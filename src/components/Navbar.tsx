@@ -29,13 +29,39 @@ export const Navbar = () => {
 
   const handleLogout = async () => {
     try {
+      // First check if we have a valid session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        // If no session exists, just clear local state and redirect
+        setIsLoggedIn(false);
+        navigate("/");
+        toast.success("Logged out successfully");
+        return;
+      }
+
+      // If we have a valid session, proceed with logout
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      if (error) {
+        console.error("Error during logout:", error);
+        if (error.message.includes('session_not_found')) {
+          // Handle expired session case
+          setIsLoggedIn(false);
+          navigate("/");
+          toast.success("Logged out successfully");
+          return;
+        }
+        throw error;
+      }
+      
       toast.success("Logged out successfully");
       navigate("/");
     } catch (error) {
       console.error("Error logging out:", error);
-      toast.error("Error logging out");
+      // Even if there's an error, we should reset the local state
+      setIsLoggedIn(false);
+      navigate("/");
+      toast.error("Error during logout, but you've been logged out locally");
     }
   };
 
