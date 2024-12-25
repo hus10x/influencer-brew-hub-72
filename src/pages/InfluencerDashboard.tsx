@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Instagram } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { InstagramConnect } from "@/components/InstagramConnect";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { checkInstagramConnection } from "@/utils/checkInstagramConnection";
 
 interface Collaboration {
   id: string;
@@ -84,6 +84,12 @@ const InfluencerDashboard = () => {
       if (error) {
         console.error('Error fetching profile:', error);
         throw error;
+      }
+
+      // Check Instagram connection status
+      if (profile?.email) {
+        const instagramStatus = await checkInstagramConnection(profile.email);
+        console.log('Instagram connection status:', instagramStatus);
       }
 
       return profile;
