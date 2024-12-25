@@ -13,7 +13,9 @@ export const InstagramConnect = () => {
       setIsLoading(true);
       
       // Get the Instagram OAuth URL from our edge function
-      const { data, error } = await supabase.functions.invoke('instagram-auth/oauth-url');
+      const { data, error } = await supabase.functions.invoke('instagram-auth/oauth-url', {
+        baseURL: 'https://ahtozhqhjdkivyaqskko.supabase.com/functions/v1'
+      });
       
       if (error) {
         console.error('Error getting OAuth URL:', error);
