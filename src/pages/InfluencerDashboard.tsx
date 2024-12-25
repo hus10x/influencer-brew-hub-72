@@ -79,21 +79,18 @@ const InfluencerDashboard = () => {
         .from('profiles')
         .select('*')
         .eq('id', session.user.id)
-        .maybeSingle();
+        .single();
 
       if (error) {
         console.error('Error fetching profile:', error);
         throw error;
       }
 
-      // Check Instagram connection status
-      if (profile?.email) {
-        const instagramStatus = await checkInstagramConnection(profile.email);
-        console.log('Instagram connection status:', instagramStatus);
-      }
-
+      console.log('Profile data:', profile);
       return profile;
     },
+    retry: 1,
+    refetchOnWindowFocus: true
   });
 
   if (isLoading) {
