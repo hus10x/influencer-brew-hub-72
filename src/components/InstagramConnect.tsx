@@ -21,8 +21,8 @@ export const InstagramConnect = () => {
       }
 
       if (!data?.url) {
-        console.error('No OAuth URL returned from function');
-        throw new Error('No OAuth URL returned');
+        console.error('No OAuth URL returned from function:', data);
+        throw new Error('Failed to get OAuth URL from server');
       }
 
       // Store the state parameter in localStorage for verification
