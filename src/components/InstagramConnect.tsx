@@ -28,9 +28,18 @@ export const InstagramConnect = () => {
       if (code && state) {
         setIsLoading(true);
         try {
-          // Call the Instagram auth callback function
+          // Get the current session for authentication
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) {
+            throw new Error('No active session');
+          }
+
+          // Call the Instagram auth callback function with authorization header
           const { data, error: functionError } = await supabase.functions.invoke('instagram-auth', {
-            body: { code, state }
+            body: { code, state },
+            headers: {
+              Authorization: `Bearer ${session.access_token}`
+            }
           });
 
           if (functionError) throw functionError;
