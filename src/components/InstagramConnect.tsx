@@ -34,8 +34,8 @@ export const InstagramConnect = () => {
         throw new Error('Failed to initialize Instagram connection');
       }
       
-      // Build the Instagram OAuth URL
-      const appId = '493461117098279';
+      // Build the Instagram OAuth URL with the correct app ID
+      const appId = '1314871332853944';
       const redirectUri = 'https://preview--influencer-brew-hub-72.lovable.app/';
       
       const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
