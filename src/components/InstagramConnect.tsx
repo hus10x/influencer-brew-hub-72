@@ -15,11 +15,14 @@ export const InstagramConnect = () => {
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
+        console.error('No authenticated user found');
         throw new Error('User not authenticated');
       }
+      console.log('Authenticated user:', user.id);
 
       // Generate a random state for security
       const state = crypto.randomUUID();
+      console.log('Generated OAuth state:', state);
       
       // Store the state in the database
       const { error: stateError } = await supabase
@@ -33,6 +36,7 @@ export const InstagramConnect = () => {
         console.error('Error storing OAuth state:', stateError);
         throw new Error('Failed to initialize Instagram connection');
       }
+      console.log('Successfully stored OAuth state in database');
       
       // Build the Instagram OAuth URL with the correct app ID
       const appId = '1314871332853944';
@@ -47,7 +51,7 @@ export const InstagramConnect = () => {
         "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish" +
         `&state=${state}`;
       
-      console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
+      console.log('Generated Instagram OAuth URL:', instagramUrl);
       window.location.href = instagramUrl;
     } catch (error) {
       console.error('Error connecting to Instagram:', error);
