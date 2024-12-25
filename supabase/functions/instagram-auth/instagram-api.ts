@@ -17,15 +17,22 @@ export async function exchangeCodeForToken(
 ): Promise<InstagramTokenResponse> {
   console.log('Exchanging code for access token...');
   
-  const tokenUrl = 'https://graph.facebook.com/v19.0/oauth/access_token';
+  const tokenUrl = 'https://api.instagram.com/oauth/access_token';
   const params = new URLSearchParams({
     client_id: appId,
     client_secret: appSecret,
+    grant_type: 'authorization_code',
     redirect_uri: redirectUri,
     code: code,
   });
 
-  const response = await fetch(`${tokenUrl}?${params}`);
+  const response = await fetch(tokenUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: params,
+  });
 
   if (!response.ok) {
     const error = await response.json();

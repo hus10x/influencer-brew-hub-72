@@ -11,8 +11,8 @@ export const InstagramConnect = () => {
       console.log('Starting Instagram connection process...');
       setIsLoading(true);
       
-      // Instagram OAuth URL with only necessary scopes
-      const instagramUrl = "https://www.facebook.com/v19.0/dialog/oauth" + 
+      // Instagram OAuth URL with required scopes for Instagram Graph API
+      const instagramUrl = "https://api.instagram.com/oauth/authorize" + 
         "?client_id=YOUR_APP_ID" +
         "&redirect_uri=https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth" +
         "&response_type=code" +
