@@ -24,27 +24,42 @@ export const useAuth = () => {
 
   const logout = async () => {
     try {
-      // First update local state
-      setIsLoggedIn(false);
+      // First try to get the current session
+      const { data: { session } } = await supabase.auth.getSession();
       
-      // Then attempt to sign out locally only
-      const { error } = await supabase.auth.signOut({ 
-        scope: 'local'
-      });
+      if (!session) {
+        // If no session exists, just clean up the local state
+        setIsLoggedIn(false);
+        navigate("/");
+        toast.success("Logged out successfully");
+        return;
+      }
+
+      // If we have a session, attempt to sign out
+      const { error } = await supabase.auth.signOut();
       
-      // If there's an error but it's just session_not_found, we can ignore it
-      if (error && !error.message.includes('session_not_found')) {
+      if (error) {
         console.error("Logout error:", error);
+        // If it's a session_not_found error, we can treat it as a successful logout
+        if (error.message.includes('session_not_found')) {
+          setIsLoggedIn(false);
+          navigate("/");
+          toast.success("Logged out successfully");
+          return;
+        }
+        // For other errors, show an error message
         toast.error("Error during logout");
         return;
       }
 
-      // Always navigate and show success message
+      // If logout was successful
+      setIsLoggedIn(false);
       navigate("/");
       toast.success("Logged out successfully");
     } catch (error) {
       console.error("Error during logout:", error);
-      // Even if there's an error, we want to clear the local state
+      // Even if there's an error, we want to clean up the local state
+      setIsLoggedIn(false);
       navigate("/");
       toast.success("Logged out successfully");
     }
