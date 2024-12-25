@@ -4,21 +4,27 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 
 export const InstagramConnect = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   // Check if user is already connected to Instagram
   const { data: profile, isLoading: isCheckingConnection } = useQuery({
     queryKey: ['instagram-connection'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.log('No session found, redirecting to login');
+        navigate('/login');
+        return null;
+      }
 
       const { data, error } = await supabase
         .from('profiles')
         .select('instagram_connected, instagram_handle')
-        .eq('id', user.id)
+        .eq('id', session.user.id)
         .single();
 
       if (error) {
@@ -35,10 +41,12 @@ export const InstagramConnect = () => {
       console.log('Starting Facebook OAuth process...');
       setIsLoading(true);
       
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error('User not authenticated');
+      // First check if we have a valid session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.log('No session found, redirecting to login');
+        navigate('/login');
+        return;
       }
 
       // Generate a random state for security
@@ -49,7 +57,7 @@ export const InstagramConnect = () => {
         .from('instagram_oauth_states')
         .insert({
           state: state,
-          user_id: user.id
+          user_id: session.user.id
         });
 
       if (stateError) {
