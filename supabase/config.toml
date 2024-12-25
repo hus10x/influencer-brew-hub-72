@@ -26,4 +26,5 @@ enabled = true
 enabled = true
 
 [[functions]]
+name = "instagram-auth"
 verify_jwt = false
