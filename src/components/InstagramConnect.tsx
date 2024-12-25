@@ -65,8 +65,15 @@ export const InstagramConnect = () => {
         throw new Error('Failed to initialize Instagram connection');
       }
       
-      // Build the Instagram OAuth URL
-      const appId = '493461117098279';
+      // Get the Instagram app credentials from Edge Function
+      const { data: credentials, error: credentialsError } = await supabase.functions.invoke('get-instagram-credentials');
+      
+      if (credentialsError) {
+        console.error('Error getting Instagram credentials:', credentialsError);
+        throw new Error('Failed to get Instagram credentials');
+      }
+
+      const { appId } = credentials;
       const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.com/functions/v1/instagram-auth/callback';
       
       const instagramUrl = "https://api.instagram.com/oauth/authorize" + 
