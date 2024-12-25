@@ -44,22 +44,49 @@ serve(async (req) => {
 
     console.log('Exchanging code for token...');
     const tokenData = await exchangeCodeForToken(code, appId, appSecret, redirectUri);
-    console.log('Token received, fetching Instagram profile...');
+    console.log('Token received:', tokenData);
+    
     const profile = await getInstagramProfile(tokenData.access_token);
+    console.log('Instagram profile fetched:', profile);
 
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-    console.log('Updating profile with Instagram data:', profile.username);
+    // Get user ID from state parameter (which we set during the initial OAuth request)
+    const userId = state;
+    console.log('Updating profile for user:', userId);
+
+    const { data: existingProfile, error: fetchError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (fetchError) {
+      console.error('Error fetching profile:', fetchError);
+      return createErrorHtml('Failed to fetch user profile');
+    }
+
+    if (!existingProfile) {
+      console.error('No profile found for user:', userId);
+      return createErrorHtml('User profile not found');
+    }
+
+    console.log('Updating profile with Instagram data:', {
+      handle: profile.username,
+      connected: true,
+      token: tokenData.access_token
+    });
+
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
         instagram_handle: profile.username,
         instagram_connected: true,
-        instagram_business_account: true,
         instagram_access_token: tokenData.access_token,
+        instagram_business_account: true,
         updated_at: new Date().toISOString(),
       })
-      .eq('instagram_handle', profile.username);
+      .eq('id', userId);
 
     if (updateError) {
       console.error('Database update error:', updateError);
