@@ -1,11 +1,60 @@
 import { Button } from "@/components/ui/button";
 import { Instagram } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 export const InstagramConnect = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Handle the redirect from Instagram
+    const handleInstagramRedirect = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const state = params.get('state');
+      const error = params.get('error');
+      
+      if (error) {
+        console.error('Instagram OAuth error:', error);
+        toast.error('Failed to connect Instagram account');
+        // Clear URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return;
+      }
+
+      if (code && state) {
+        setIsLoading(true);
+        try {
+          // Call the Instagram auth callback function
+          const { data, error: functionError } = await supabase.functions.invoke('instagram-auth', {
+            body: { code, state }
+          });
+
+          if (functionError) throw functionError;
+
+          if (data?.success) {
+            toast.success('Successfully connected Instagram account');
+            // Refresh the page to update the UI
+            window.location.reload();
+          } else {
+            throw new Error('Failed to connect Instagram account');
+          }
+        } catch (error) {
+          console.error('Error connecting Instagram:', error);
+          toast.error('Failed to connect Instagram account');
+        } finally {
+          setIsLoading(false);
+          // Clear URL parameters
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }
+    };
+
+    handleInstagramRedirect();
+  }, []);
 
   const handleInstagramConnect = async () => {
     try {
@@ -34,17 +83,15 @@ export const InstagramConnect = () => {
         throw new Error('Failed to initialize Instagram connection');
       }
       
-      // Build the Instagram OAuth URL with the correct app ID
+      // Build the Instagram OAuth URL
       const appId = '1314871332853944';
-      const redirectUri = 'https://preview--influencer-brew-hub-72.lovable.app/';
+      const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
       
       const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
         `?client_id=${appId}` +
-        "&enable_fb_login=0" +
-        "&force_authentication=1" +
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
         "&response_type=code" +
-        "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish" +
+        "&scope=instagram_basic" +
         `&state=${state}`;
       
       console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
