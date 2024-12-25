@@ -12,7 +12,6 @@ serve(async (req) => {
 
   try {
     console.log('Instagram auth callback function called with URL:', req.url);
-    console.log('Request headers:', Object.fromEntries(req.headers.entries()));
     
     const url = new URL(req.url);
     const code = url.searchParams.get('code');
@@ -38,11 +37,7 @@ serve(async (req) => {
     const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
 
     if (!appSecret || !supabaseUrl || !supabaseServiceRoleKey) {
-      console.error('Missing required environment variables:', {
-        hasAppSecret: !!appSecret,
-        hasSupabaseUrl: !!supabaseUrl,
-        hasServiceRoleKey: !!supabaseServiceRoleKey
-      });
+      console.error('Missing required environment variables');
       return createErrorHtml('Server configuration error');
     }
 
@@ -50,7 +45,6 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     console.log('Fetching OAuth state from database...');
-    // Get the user ID from the stored state and ensure it's not already used
     const { data: oauthState, error: stateError } = await supabase
       .from('instagram_oauth_states')
       .select('user_id, used')
@@ -71,19 +65,10 @@ serve(async (req) => {
     const userId = oauthState.user_id;
 
     // Mark the state as used immediately to prevent reuse
-    const { error: updateStateError } = await supabase
+    await supabase
       .from('instagram_oauth_states')
-      .update({ 
-        used: true,
-        updated_at: new Date().toISOString()
-      })
-      .eq('state', state)
-      .eq('used', false); // Only update if it's not already used
-
-    if (updateStateError) {
-      console.error('Error marking OAuth state as used:', updateStateError);
-      return createErrorHtml('Failed to process authentication');
-    }
+      .update({ used: true })
+      .eq('state', state);
 
     console.log('Successfully marked OAuth state as used');
 
@@ -112,7 +97,6 @@ serve(async (req) => {
     }
 
     console.log('Updating user profile with Instagram data...');
-    // Update the user's profile with Instagram info
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
