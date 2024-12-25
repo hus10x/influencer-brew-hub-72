@@ -12,23 +12,27 @@ export const InstagramConnect = () => {
       console.log('Starting Instagram connection process...');
       setIsLoading(true);
       
-      // Get the Instagram OAuth URL from our edge function using Supabase client
+      // Get the Instagram OAuth URL from our edge function
       const { data, error } = await supabase.functions.invoke('instagram-auth/oauth-url');
       
       if (error) {
+        console.error('Error getting OAuth URL:', error);
         throw error;
       }
 
       if (!data?.url) {
+        console.error('No OAuth URL returned from function');
         throw new Error('No OAuth URL returned');
       }
 
       // Store the state parameter in localStorage for verification
       if (data.state) {
+        console.log('Storing state parameter:', data.state);
         localStorage.setItem('instagram_oauth_state', data.state);
       }
       
-      console.log('Redirecting to Instagram OAuth URL:', data.url);
+      // Redirect to Facebook's OAuth URL (not our endpoint)
+      console.log('Redirecting to Facebook OAuth URL:', data.url);
       window.location.href = data.url;
     } catch (error) {
       console.error('Error connecting to Instagram:', error);
