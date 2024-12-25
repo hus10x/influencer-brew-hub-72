@@ -31,29 +31,40 @@ export const InstagramConnect = () => {
           // Get the current session for authentication
           const { data: { session } } = await supabase.auth.getSession();
           if (!session) {
-            throw new Error('No active session');
+            console.error('No active session found');
+            toast.error('Authentication required');
+            navigate('/login');
+            return;
           }
 
+          console.log('Calling Instagram auth function with session token');
+          
           // Call the Instagram auth callback function with authorization header
           const { data, error: functionError } = await supabase.functions.invoke('instagram-auth', {
             body: { code, state },
             headers: {
-              Authorization: `Bearer ${session.access_token}`
+              Authorization: `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json'
             }
           });
 
-          if (functionError) throw functionError;
+          if (functionError) {
+            console.error('Function error:', functionError);
+            throw functionError;
+          }
+
+          console.log('Instagram auth function response:', data);
 
           if (data?.success) {
             toast.success('Successfully connected Instagram account');
             // Refresh the page to update the UI
             window.location.reload();
           } else {
-            throw new Error('Failed to connect Instagram account');
+            throw new Error(data?.error || 'Failed to connect Instagram account');
           }
         } catch (error) {
           console.error('Error connecting Instagram:', error);
-          toast.error('Failed to connect Instagram account');
+          toast.error(error.message || 'Failed to connect Instagram account');
         } finally {
           setIsLoading(false);
           // Clear URL parameters
@@ -63,7 +74,7 @@ export const InstagramConnect = () => {
     };
 
     handleInstagramRedirect();
-  }, []);
+  }, [navigate]);
 
   const handleInstagramConnect = async () => {
     try {
@@ -73,11 +84,16 @@ export const InstagramConnect = () => {
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        throw new Error('User not authenticated');
+        console.error('No authenticated user found');
+        toast.error('Please log in to connect your Instagram account');
+        navigate('/login');
+        return;
       }
 
       // Generate a random state for security
       const state = crypto.randomUUID();
+      
+      console.log('Storing OAuth state...');
       
       // Store the state in the database
       const { error: stateError } = await supabase
