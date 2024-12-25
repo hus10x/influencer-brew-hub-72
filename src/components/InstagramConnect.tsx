@@ -57,7 +57,7 @@ export const InstagramConnect = () => {
       }
       console.log('Successfully stored OAuth state in database');
       
-      // Build the Instagram OAuth URL with correct basic display API scopes
+      // Build the Instagram OAuth URL with correct Instagram API scope
       const appId = '1314871332853944';
       const redirectUri = 'https://ahtozhqhjdkivyaqskko.functions.supabase.co/instagram-auth';
       
@@ -65,7 +65,7 @@ export const InstagramConnect = () => {
         `?client_id=${appId}` +
         "&response_type=code" +
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-        "&scope=user_profile,user_media" +
+        "&scope=instagram_basic" +
         `&state=${state}`;
       
       console.log('Generated Instagram OAuth URL:', instagramUrl);
