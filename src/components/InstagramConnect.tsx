@@ -57,21 +57,19 @@ export const InstagramConnect = () => {
         throw new Error('Failed to initialize Instagram connection');
       }
       
-      // Build the Instagram OAuth URL with the correct redirect URI
+      // Build the Facebook OAuth URL for Instagram Graph API
       const appId = '493461117098279';
       const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.com/functions/v1/instagram-auth/callback';
       
-      const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
+      const facebookUrl = "https://www.facebook.com/v19.0/dialog/oauth" + 
         `?client_id=${appId}` +
-        "&enable_fb_login=0" +
-        "&force_authentication=1" +
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
         "&response_type=code" +
-        "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish" +
+        "&scope=instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement,instagram_manage_insights" +
         `&state=${state}`;
       
-      console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
-      window.location.href = instagramUrl;
+      console.log('Redirecting to Facebook OAuth URL:', facebookUrl);
+      window.location.href = facebookUrl;
     } catch (error) {
       console.error('Error connecting to Instagram:', error);
       toast.error('Failed to connect to Instagram. Please try again.');
