@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Instagram } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { InstagramConnect } from "@/components/InstagramConnect";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Collaboration {
   id: string;
@@ -66,7 +69,55 @@ const mockCollaborations: Collaboration[] = [
 ];
 
 const InfluencerDashboard = () => {
-  const [isInstagramConnected, setIsInstagramConnected] = useState(false);
+  const { data: profile, isLoading, error } = useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No session found');
+
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
+      }
+
+      return profile;
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Navbar />
+        <main className="flex-1 container mx-auto px-4 pt-20">
+          <div className="flex items-center justify-center min-h-[calc(100vh-12rem)]">
+            <p>Loading...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (error) {
+    toast.error('Failed to load profile');
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Navbar />
+        <main className="flex-1 container mx-auto px-4 pt-20">
+          <div className="flex items-center justify-center min-h-[calc(100vh-12rem)]">
+            <p>Something went wrong. Please try again later.</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  const isInstagramConnected = profile?.instagram_connected || false;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
