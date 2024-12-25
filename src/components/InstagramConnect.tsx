@@ -59,7 +59,7 @@ export const InstagramConnect = () => {
       
       // Build the Instagram OAuth URL
       const appId = '1314871332853944';
-      const redirectUri = 'https://preview--influencer-brew-hub-72.lovable.app/';
+      const redirectUri = 'https://ahtozhqhjdkivyaqskko.functions.supabase.co/instagram-auth';
       
       const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
         `?client_id=${appId}` +
@@ -67,7 +67,7 @@ export const InstagramConnect = () => {
         "&force_authentication=1" +
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
         "&response_type=code" +
-        "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish" +
+        "&scope=instagram_basic,instagram_content_publish" +
         `&state=${state}`;
       
       console.log('Generated Instagram OAuth URL:', instagramUrl);
