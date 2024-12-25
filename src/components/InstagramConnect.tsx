@@ -2,21 +2,40 @@ import { Button } from "@/components/ui/button";
 import { Instagram } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const InstagramConnect = () => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleInstagramConnect = () => {
+  const handleInstagramConnect = async () => {
     try {
       console.log('Starting Instagram connection process...');
       setIsLoading(true);
       
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       // Generate a random state for security
       const state = crypto.randomUUID();
-      localStorage.setItem('instagram_oauth_state', state);
       
-      // Build the Instagram OAuth URL directly
-      const appId = '493461117098279'; // Your Instagram App ID
+      // Store the state in the database
+      const { error: stateError } = await supabase
+        .from('instagram_oauth_states')
+        .insert({
+          state: state,
+          user_id: user.id
+        });
+
+      if (stateError) {
+        console.error('Error storing OAuth state:', stateError);
+        throw new Error('Failed to initialize Instagram connection');
+      }
+      
+      // Build the Instagram OAuth URL
+      const appId = '493461117098279';
       const redirectUri = 'https://preview--influencer-brew-hub-72.lovable.app/';
       
       const instagramUrl = "https://www.instagram.com/oauth/authorize" + 

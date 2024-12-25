@@ -21,26 +21,44 @@ serve(async (req) => {
       return createErrorHtml(`Instagram OAuth error: ${error}`);
     }
 
-    if (!code) {
-      console.error('No code provided');
-      return createErrorHtml('No authorization code provided');
+    if (!code || !state) {
+      console.error('Missing code or state');
+      return createErrorHtml('Invalid OAuth parameters');
     }
 
-    if (!state) {
-      console.error('No state parameter provided');
-      return createErrorHtml('Invalid OAuth state');
-    }
-
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const appId = Deno.env.get('FACEBOOK_APP_ID');
     const appSecret = Deno.env.get('FACEBOOK_APP_SECRET');
     const redirectUri = 'https://preview--influencer-brew-hub-72.lovable.app/';
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!appId || !appSecret || !supabaseUrl || !supabaseServiceRoleKey) {
       console.error('Missing required environment variables');
       return createErrorHtml('Server configuration error');
     }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    // Get the user ID from the stored state
+    const { data: oauthState, error: stateError } = await supabase
+      .from('instagram_oauth_states')
+      .select('user_id')
+      .eq('state', state)
+      .eq('used', false)
+      .single();
+
+    if (stateError || !oauthState) {
+      console.error('Invalid or expired OAuth state:', stateError);
+      return createErrorHtml('Invalid or expired OAuth state');
+    }
+
+    const userId = oauthState.user_id;
+
+    // Mark the state as used
+    await supabase
+      .from('instagram_oauth_states')
+      .update({ used: true })
+      .eq('state', state);
 
     console.log('Exchanging code for token...');
     const tokenData = await exchangeCodeForToken(code, appId, appSecret, redirectUri);
@@ -49,47 +67,20 @@ serve(async (req) => {
     const profile = await getInstagramProfile(tokenData.access_token);
     console.log('Instagram profile fetched:', profile);
 
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
-
-    // Get user ID from state parameter (which we set during the initial OAuth request)
-    const userId = state;
-    console.log('Updating profile for user:', userId);
-
-    const { data: existingProfile, error: fetchError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-
-    if (fetchError) {
-      console.error('Error fetching profile:', fetchError);
-      return createErrorHtml('Failed to fetch user profile');
-    }
-
-    if (!existingProfile) {
-      console.error('No profile found for user:', userId);
-      return createErrorHtml('User profile not found');
-    }
-
-    console.log('Updating profile with Instagram data:', {
-      handle: profile.username,
-      connected: true,
-      token: tokenData.access_token
-    });
-
+    // Update the user's profile
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
         instagram_handle: profile.username,
         instagram_connected: true,
-        instagram_access_token: tokenData.access_token,
         instagram_business_account: true,
+        instagram_access_token: tokenData.access_token,
         updated_at: new Date().toISOString(),
       })
       .eq('id', userId);
 
     if (updateError) {
-      console.error('Database update error:', updateError);
+      console.error('Error updating profile:', updateError);
       return createErrorHtml(`Failed to update profile: ${updateError.message}`);
     }
 
