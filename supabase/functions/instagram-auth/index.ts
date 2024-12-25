@@ -13,6 +13,7 @@ serve(async (req) => {
     console.log('Facebook auth function called');
     const url = new URL(req.url);
     const code = url.searchParams.get('code');
+    const state = url.searchParams.get('state');
     const error = url.searchParams.get('error');
     
     if (error) {
@@ -23,6 +24,11 @@ serve(async (req) => {
     if (!code) {
       console.error('No code provided');
       return createErrorHtml('No authorization code provided');
+    }
+
+    if (!state) {
+      console.error('No state parameter provided');
+      return createErrorHtml('Invalid OAuth state');
     }
 
     const appId = Deno.env.get('FACEBOOK_APP_ID');

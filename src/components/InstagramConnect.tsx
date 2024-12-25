@@ -22,6 +22,11 @@ export const InstagramConnect = () => {
       if (!data?.url) {
         throw new Error('No OAuth URL returned');
       }
+
+      // Store the state parameter in localStorage for verification
+      if (data.state) {
+        localStorage.setItem('instagram_oauth_state', data.state);
+      }
       
       console.log('Redirecting to Instagram OAuth URL:', data.url);
       window.location.href = data.url;
