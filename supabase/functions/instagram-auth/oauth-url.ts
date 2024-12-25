@@ -16,7 +16,7 @@ serve(async (req) => {
     const state = crypto.randomUUID();
     
     // Facebook OAuth URL with required scopes for Instagram Graph API
-    const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth';
+    const redirectUri = `https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback`;
     const facebookUrl = "https://www.facebook.com/v19.0/dialog/oauth" + 
       `?client_id=${appId}` +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +

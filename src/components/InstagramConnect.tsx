@@ -31,7 +31,7 @@ export const InstagramConnect = () => {
         localStorage.setItem('instagram_oauth_state', data.state);
       }
       
-      // Redirect to Facebook's OAuth URL (not our endpoint)
+      // Redirect to Facebook's OAuth URL
       console.log('Redirecting to Facebook OAuth URL:', data.url);
       window.location.href = data.url;
     } catch (error) {
