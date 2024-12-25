@@ -3,9 +3,32 @@ import { Instagram } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 export const InstagramConnect = () => {
   const [isLoading, setIsLoading] = useState(false);
+
+  // Check if user is already connected to Instagram
+  const { data: profile, isLoading: isCheckingConnection } = useQuery({
+    queryKey: ['instagram-connection'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('instagram_connected, instagram_handle')
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Error checking Instagram connection:', error);
+        return null;
+      }
+
+      return data;
+    }
+  });
 
   const handleInstagramConnect = async () => {
     try {
@@ -34,9 +57,9 @@ export const InstagramConnect = () => {
         throw new Error('Failed to initialize Instagram connection');
       }
       
-      // Build the Instagram OAuth URL
+      // Build the Instagram OAuth URL with the correct redirect URI
       const appId = '493461117098279';
-      const redirectUri = 'https://preview--influencer-brew-hub-72.lovable.app/';
+      const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.com/functions/v1/instagram-auth/callback';
       
       const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
         `?client_id=${appId}` +
@@ -56,15 +79,25 @@ export const InstagramConnect = () => {
     }
   };
 
+  // If already connected, don't show the button
+  if (profile?.instagram_connected) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Instagram className="w-4 h-4" />
+        Connected as @{profile.instagram_handle}
+      </div>
+    );
+  }
+
   return (
     <Button
       onClick={handleInstagramConnect}
-      disabled={isLoading}
+      disabled={isLoading || isCheckingConnection}
       className="group relative flex items-center gap-2 overflow-hidden px-6 transition-all duration-300 hover:bg-primary/90"
       size="lg"
     >
       <Instagram className="w-5 h-5 transition-transform group-hover:scale-110" />
-      {isLoading ? 'Connecting...' : 'Connect Instagram'}
+      {isLoading ? 'Connecting...' : isCheckingConnection ? 'Checking...' : 'Connect Instagram'}
       <span className="absolute -right-8 -top-8 aspect-square w-16 translate-x-full translate-y-full rounded-full bg-white/20 transition-transform group-hover:translate-x-0 group-hover:translate-y-0" />
     </Button>
   );

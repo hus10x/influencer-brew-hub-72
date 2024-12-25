@@ -30,7 +30,7 @@ serve(async (req) => {
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const appId = Deno.env.get('FACEBOOK_APP_ID');
     const appSecret = Deno.env.get('FACEBOOK_APP_SECRET');
-    const redirectUri = 'https://preview--influencer-brew-hub-72.lovable.app/';
+    const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.com/functions/v1/instagram-auth/callback';
 
     if (!appId || !appSecret || !supabaseUrl || !supabaseServiceRoleKey) {
       console.error('Missing required environment variables');
@@ -53,6 +53,7 @@ serve(async (req) => {
     }
 
     const userId = oauthState.user_id;
+    console.log('Found user ID from state:', userId);
 
     // Mark the state as used
     await supabase
@@ -62,7 +63,7 @@ serve(async (req) => {
 
     console.log('Exchanging code for token...');
     const tokenData = await exchangeCodeForToken(code, appId, appSecret, redirectUri);
-    console.log('Token received:', tokenData);
+    console.log('Token received successfully');
     
     const profile = await getInstagramProfile(tokenData.access_token);
     console.log('Instagram profile fetched:', profile);
@@ -85,7 +86,7 @@ serve(async (req) => {
       .update({
         instagram_handle: profile.username,
         instagram_connected: true,
-        instagram_business_account: true,
+        instagram_business_account: profile.account_type === 'BUSINESS',
         instagram_access_token: tokenData.access_token,
         updated_at: new Date().toISOString(),
       })
@@ -96,7 +97,7 @@ serve(async (req) => {
       return createErrorHtml(`Failed to update profile: ${updateError.message}`);
     }
 
-    console.log('Successfully connected Instagram business account');
+    console.log('Successfully connected Instagram account for user:', userId);
     
     // Determine redirect path based on user type
     const redirectPath = userProfile.user_type === 'influencer' ? '/influencer' : '/client';
