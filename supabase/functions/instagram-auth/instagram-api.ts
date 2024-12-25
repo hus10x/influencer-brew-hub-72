@@ -16,7 +16,6 @@ export async function exchangeCodeForToken(
   redirectUri: string
 ): Promise<FacebookTokenResponse> {
   console.log('Exchanging code for Facebook access token...');
-  console.log('Using redirect URI:', redirectUri);
   
   const tokenUrl = 'https://graph.facebook.com/v19.0/oauth/access_token';
   const params = new URLSearchParams({
@@ -34,9 +33,7 @@ export async function exchangeCodeForToken(
     throw new Error(`Token exchange failed: ${error.error?.message || 'Unknown error'}`);
   }
 
-  const tokenData = await response.json();
-  console.log('Token exchange successful');
-  return tokenData;
+  return response.json();
 }
 
 export async function getInstagramProfile(accessToken: string): Promise<InstagramProfile> {
@@ -49,12 +46,10 @@ export async function getInstagramProfile(accessToken: string): Promise<Instagra
   
   if (!pagesResponse.ok) {
     const error = await pagesResponse.json();
-    console.error('Failed to fetch Facebook pages:', error);
     throw new Error(`Failed to fetch Facebook pages: ${error.error?.message || 'Unknown error'}`);
   }
   
   const pages = await pagesResponse.json();
-  console.log('Found Facebook pages:', pages.data?.length || 0);
   
   if (!pages.data || pages.data.length === 0) {
     throw new Error('No Facebook pages found. Please create a Facebook page first.');
@@ -64,40 +59,33 @@ export async function getInstagramProfile(accessToken: string): Promise<Instagra
   const pageId = pages.data[0].id;
   const pageAccessToken = pages.data[0].access_token;
   
-  console.log('Fetching Instagram business account for page:', pageId);
   const instagramResponse = await fetch(
     `https://graph.facebook.com/v19.0/${pageId}?fields=instagram_business_account&access_token=${pageAccessToken}`
   );
   
   if (!instagramResponse.ok) {
     const error = await instagramResponse.json();
-    console.error('Failed to fetch Instagram account:', error);
     throw new Error(`Failed to fetch Instagram account: ${error.error?.message || 'Unknown error'}`);
   }
   
   const instagramData = await instagramResponse.json();
   
   if (!instagramData.instagram_business_account) {
-    console.error('No Instagram business account found:', instagramData);
     throw new Error('No Instagram business account connected to this Facebook page.');
   }
   
   // Get Instagram account details
   const igAccountId = instagramData.instagram_business_account.id;
-  console.log('Found Instagram business account:', igAccountId);
-  
   const igResponse = await fetch(
     `https://graph.facebook.com/v19.0/${igAccountId}?fields=username,id&access_token=${pageAccessToken}`
   );
   
   if (!igResponse.ok) {
     const error = await igResponse.json();
-    console.error('Failed to fetch Instagram profile:', error);
     throw new Error(`Failed to fetch Instagram profile: ${error.error?.message || 'Unknown error'}`);
   }
   
   const igProfile = await igResponse.json();
-  console.log('Successfully fetched Instagram profile:', igProfile.username);
   
   return {
     id: igProfile.id,
