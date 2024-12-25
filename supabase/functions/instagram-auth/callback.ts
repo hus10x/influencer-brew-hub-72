@@ -5,6 +5,7 @@ import { exchangeCodeForToken, getInstagramProfile } from './instagram-api.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.47.0'
 
 serve(async (req) => {
+  // Add CORS headers to all responses
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -80,8 +81,7 @@ serve(async (req) => {
         used: true,
         updated_at: new Date().toISOString()
       })
-      .eq('state', state)
-      .eq('used', false);
+      .eq('state', state);
 
     if (updateStateError) {
       console.error('Error marking OAuth state as used:', updateStateError);

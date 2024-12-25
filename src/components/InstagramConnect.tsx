@@ -1,11 +1,30 @@
 import { Button } from "@/components/ui/button";
 import { Instagram } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 export const InstagramConnect = () => {
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    // Listen for messages from the popup window
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'INSTAGRAM_AUTH_SUCCESS') {
+        console.log('Instagram auth success:', event.data);
+        toast.success('Successfully connected to Instagram!');
+        // Reload the page to reflect the new connection status
+        window.location.reload();
+      } else if (event.data.type === 'INSTAGRAM_AUTH_ERROR') {
+        console.error('Instagram auth error:', event.data.error);
+        toast.error(`Failed to connect to Instagram: ${event.data.error}`);
+        setIsLoading(false);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   const handleInstagramConnect = async () => {
     try {
@@ -38,7 +57,7 @@ export const InstagramConnect = () => {
       }
       console.log('Successfully stored OAuth state in database');
       
-      // Build the Instagram OAuth URL with the correct app ID
+      // Build the Instagram OAuth URL
       const appId = '1314871332853944';
       const redirectUri = 'https://preview--influencer-brew-hub-72.lovable.app/';
       
@@ -52,7 +71,18 @@ export const InstagramConnect = () => {
         `&state=${state}`;
       
       console.log('Generated Instagram OAuth URL:', instagramUrl);
-      window.location.href = instagramUrl;
+
+      // Open the Instagram auth URL in a popup window
+      const width = 600;
+      const height = 700;
+      const left = window.screen.width / 2 - width / 2;
+      const top = window.screen.height / 2 - height / 2;
+      
+      window.open(
+        instagramUrl,
+        'instagram-oauth-auth',
+        `width=${width},height=${height},top=${top},left=${left}`
+      );
     } catch (error) {
       console.error('Error connecting to Instagram:', error);
       toast.error('Failed to connect to Instagram. Please try again.');
