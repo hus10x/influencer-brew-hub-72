@@ -7,28 +7,32 @@ schemas = ["public", "storage", "graphql_public"]
 
 [db]
 port = 54322
+shadow_port = 54320
+major_version = 15
 
 [studio]
 enabled = true
 port = 54323
+api_port = 54324
 
 [inbucket]
 enabled = true
-port = 54324
+port = 54325
+smtp_port = 54326
+pop3_port = 54327
 
 [storage]
 enabled = true
+port = 54328
 
 [auth]
 enabled = true
+port = 54329
 
 [realtime]
 enabled = true
+port = 54330
 
-[[functions]]
-name = "instagram-auth"
-verify_jwt = false
-
-[[functions]]
-name = "instagram-auth/callback"
+[edge-functions]
+[edge-functions.instagram-auth]
 verify_jwt = false

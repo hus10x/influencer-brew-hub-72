@@ -28,7 +28,7 @@ export const InstagramConnect = () => {
       
       console.log('Storing OAuth state...');
       
-      // Store the state in the database with a clear expiration
+      // Store the state in the database with expiration
       const { error: stateError } = await supabase
         .from('instagram_oauth_states')
         .insert({
@@ -43,7 +43,7 @@ export const InstagramConnect = () => {
         throw new Error('Failed to initialize Instagram connection');
       }
       
-      // Build the Instagram OAuth URL with all required scopes
+      // Build the Instagram OAuth URL with required scopes
       const appId = '1314871332853944';
       const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
       
