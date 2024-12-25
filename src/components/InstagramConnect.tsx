@@ -11,16 +11,12 @@ export const InstagramConnect = () => {
       console.log('Starting Instagram connection process...');
       setIsLoading(true);
       
-      // Instagram OAuth URL with required scopes for Instagram Graph API
-      const instagramUrl = "https://api.instagram.com/oauth/authorize" + 
-        "?client_id=YOUR_APP_ID" +
-        "&redirect_uri=https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth" +
-        "&response_type=code" +
-        "&scope=instagram_basic,instagram_content_publish,instagram_manage_insights" +
-        "&state=instagram";
+      // Get the Instagram OAuth URL from our edge function
+      const response = await fetch('https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/oauth-url');
+      const { url } = await response.json();
       
-      console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
-      window.location.href = instagramUrl;
+      console.log('Redirecting to Instagram OAuth URL:', url);
+      window.location.href = url;
     } catch (error) {
       console.error('Error connecting to Instagram:', error);
       toast.error('Failed to connect to Instagram. Please try again.');
