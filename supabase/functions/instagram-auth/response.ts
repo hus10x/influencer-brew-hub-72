@@ -3,7 +3,7 @@ export const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-export function createSuccessHtml(profile: { username: string }) {
+export function createSuccessHtml(profile: { username: string }, redirectPath: string) {
   return new Response(
     `
     <!DOCTYPE html>
@@ -15,12 +15,12 @@ export function createSuccessHtml(profile: { username: string }) {
             type: 'INSTAGRAM_AUTH_SUCCESS',
             profile: ${JSON.stringify(profile)}
           }, '*');
-          window.close();
+          window.location.href = '${redirectPath}';
         </script>
       </head>
       <body>
         <h1>Successfully connected Instagram!</h1>
-        <p>You can close this window now.</p>
+        <p>Redirecting you to your dashboard...</p>
       </body>
     </html>
     `,
