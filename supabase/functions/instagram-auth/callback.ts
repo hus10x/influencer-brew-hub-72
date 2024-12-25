@@ -12,6 +12,7 @@ serve(async (req) => {
 
   try {
     console.log('Instagram auth callback function called with URL:', req.url);
+    console.log('Request headers:', Object.fromEntries(req.headers.entries()));
     
     const url = new URL(req.url);
     const code = url.searchParams.get('code');
@@ -37,7 +38,11 @@ serve(async (req) => {
     const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
 
     if (!appSecret || !supabaseUrl || !supabaseServiceRoleKey) {
-      console.error('Missing required environment variables');
+      console.error('Missing required environment variables:', {
+        hasAppSecret: !!appSecret,
+        hasSupabaseUrl: !!supabaseUrl,
+        hasServiceRoleKey: !!supabaseServiceRoleKey
+      });
       return createErrorHtml('Server configuration error');
     }
 
@@ -65,10 +70,19 @@ serve(async (req) => {
     const userId = oauthState.user_id;
 
     // Mark the state as used immediately to prevent reuse
-    await supabase
+    const { error: updateStateError } = await supabase
       .from('instagram_oauth_states')
-      .update({ used: true })
-      .eq('state', state);
+      .update({ 
+        used: true,
+        updated_at: new Date().toISOString()
+      })
+      .eq('state', state)
+      .eq('used', false); // Only update if it's not already used
+
+    if (updateStateError) {
+      console.error('Error marking OAuth state as used:', updateStateError);
+      return createErrorHtml('Failed to process authentication');
+    }
 
     console.log('Successfully marked OAuth state as used');
 

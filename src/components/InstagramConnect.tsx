@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Instagram } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -8,73 +8,6 @@ import { useNavigate } from "react-router-dom";
 export const InstagramConnect = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Handle the redirect from Instagram
-    const handleInstagramRedirect = async () => {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get('code');
-      const state = params.get('state');
-      const error = params.get('error');
-      
-      if (error) {
-        console.error('Instagram OAuth error:', error);
-        toast.error('Failed to connect Instagram account');
-        // Clear URL parameters
-        window.history.replaceState({}, document.title, window.location.pathname);
-        return;
-      }
-
-      if (code && state) {
-        setIsLoading(true);
-        try {
-          // Get the current session for authentication
-          const { data: { session } } = await supabase.auth.getSession();
-          if (!session) {
-            console.error('No active session found');
-            toast.error('Authentication required');
-            navigate('/login');
-            return;
-          }
-
-          console.log('Calling Instagram auth function with session token');
-          
-          // Call the Instagram auth callback function with authorization header
-          const { data, error: functionError } = await supabase.functions.invoke('instagram-auth', {
-            body: { code, state },
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-              'Content-Type': 'application/json'
-            }
-          });
-
-          if (functionError) {
-            console.error('Function error:', functionError);
-            throw functionError;
-          }
-
-          console.log('Instagram auth function response:', data);
-
-          if (data?.success) {
-            toast.success('Successfully connected Instagram account');
-            // Refresh the page to update the UI
-            window.location.reload();
-          } else {
-            throw new Error(data?.error || 'Failed to connect Instagram account');
-          }
-        } catch (error) {
-          console.error('Error connecting Instagram:', error);
-          toast.error(error.message || 'Failed to connect Instagram account');
-        } finally {
-          setIsLoading(false);
-          // Clear URL parameters
-          window.history.replaceState({}, document.title, window.location.pathname);
-        }
-      }
-    };
-
-    handleInstagramRedirect();
-  }, [navigate]);
 
   const handleInstagramConnect = async () => {
     try {
