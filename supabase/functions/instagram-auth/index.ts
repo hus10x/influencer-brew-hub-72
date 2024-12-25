@@ -36,11 +36,14 @@ serve(async (req) => {
       return createErrorHtml('Server configuration error');
     }
 
+    console.log('Exchanging code for token...');
     const tokenData = await exchangeCodeForToken(code, appId, appSecret, redirectUri);
+    console.log('Token received, fetching Instagram profile...');
     const profile = await getInstagramProfile(tokenData.access_token);
 
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
+    console.log('Updating profile with Instagram data:', profile.username);
     const { error: updateError } = await supabase
       .from('profiles')
       .update({

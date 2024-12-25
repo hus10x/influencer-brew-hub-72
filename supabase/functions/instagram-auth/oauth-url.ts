@@ -20,6 +20,8 @@ serve(async (req) => {
       "&scope=instagram_basic,instagram_content_publish,instagram_manage_insights,pages_show_list" +
       "&state=instagram";
 
+    console.log('Generated Facebook OAuth URL:', facebookUrl);
+
     return new Response(
       JSON.stringify({ url: facebookUrl }),
       {
@@ -31,6 +33,7 @@ serve(async (req) => {
       },
     )
   } catch (error) {
+    console.error('Error generating OAuth URL:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {
