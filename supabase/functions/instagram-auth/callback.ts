@@ -28,11 +28,11 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const appId = Deno.env.get('FACEBOOK_APP_ID');
+    const appId = '493461117098279';
     const appSecret = Deno.env.get('FACEBOOK_APP_SECRET');
     const redirectUri = 'https://preview--influencer-brew-hub-72.lovable.app/';
 
-    if (!appId || !appSecret || !supabaseUrl || !supabaseServiceRoleKey) {
+    if (!appSecret || !supabaseUrl || !supabaseServiceRoleKey) {
       console.error('Missing required environment variables');
       return createErrorHtml('Server configuration error');
     }
@@ -79,6 +79,7 @@ serve(async (req) => {
       return createErrorHtml('Error fetching user profile');
     }
 
+    console.log('Updating user profile with Instagram data...');
     // Update the user's profile with Instagram info
     const { error: updateError } = await supabase
       .from('profiles')
@@ -96,7 +97,7 @@ serve(async (req) => {
       return createErrorHtml(`Failed to update profile: ${updateError.message}`);
     }
 
-    console.log('Successfully connected Instagram business account');
+    console.log('Successfully connected Instagram account for user:', userId);
     
     // Determine redirect path based on user type
     const redirectPath = userProfile.user_type === 'influencer' ? '/influencer' : '/client';
