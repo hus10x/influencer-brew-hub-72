@@ -67,7 +67,7 @@ export const InstagramConnect = () => {
         "&force_authentication=1" +
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
         "&response_type=code" +
-        "&scope=instagram_content_publish,pages_show_list,business_management" +
+        "&scope=instagram_graph_user_profile,instagram_graph_user_media" +
         `&state=${state}`;
       
       console.log('Generated Instagram OAuth URL:', instagramUrl);
