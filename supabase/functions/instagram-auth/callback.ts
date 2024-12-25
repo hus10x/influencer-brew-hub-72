@@ -5,7 +5,6 @@ import { exchangeCodeForToken, getInstagramProfile } from './instagram-api.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.47.0'
 
 serve(async (req) => {
-  // Add CORS headers to all responses
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -16,29 +15,22 @@ serve(async (req) => {
     const code = url.searchParams.get('code');
     const state = url.searchParams.get('state');
     const error = url.searchParams.get('error');
-    const error_reason = url.searchParams.get('error_reason');
     
-    console.log('URL Parameters:', { 
-      hasCode: !!code, 
-      state, 
-      error,
-      error_reason,
-      fullUrl: req.url 
-    });
+    console.log('URL Parameters:', { code: !!code, state, error });
     
     if (error) {
-      console.error('Instagram OAuth error:', error, 'Reason:', error_reason);
-      return createErrorHtml(`Instagram OAuth error: ${error}. Reason: ${error_reason}`);
+      console.error('Instagram OAuth error:', error);
+      return createErrorHtml(`Instagram OAuth error: ${error}`);
     }
 
     if (!code || !state) {
-      console.error('Missing required parameters:', { code: !!code, state: !!state });
+      console.error('Missing code or state');
       return createErrorHtml('Invalid OAuth parameters');
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const appId = '1314871332853944';
+    const appId = '493461117098279';
     const appSecret = Deno.env.get('FACEBOOK_APP_SECRET');
     const redirectUri = 'https://preview--influencer-brew-hub-72.lovable.app/';
 
@@ -81,7 +73,8 @@ serve(async (req) => {
         used: true,
         updated_at: new Date().toISOString()
       })
-      .eq('state', state);
+      .eq('state', state)
+      .eq('used', false); // Only update if it's not already used
 
     if (updateStateError) {
       console.error('Error marking OAuth state as used:', updateStateError);
@@ -92,24 +85,13 @@ serve(async (req) => {
 
     console.log('Exchanging code for token...');
     const tokenData = await exchangeCodeForToken(code, appId, appSecret, redirectUri);
-    console.log('Token exchange response:', {
-      hasAccessToken: !!tokenData.access_token,
-      tokenType: tokenData.token_type,
-      error: tokenData.error,
-      errorDescription: tokenData.error_description
-    });
-    
-    if (!tokenData.access_token) {
-      console.error('Failed to get access token:', tokenData);
-      return createErrorHtml(`Failed to get access token: ${tokenData.error_description || 'Unknown error'}`);
-    }
+    console.log('Token received:', { hasAccessToken: !!tokenData.access_token });
     
     console.log('Fetching Instagram profile...');
     const profile = await getInstagramProfile(tokenData.access_token);
     console.log('Instagram profile fetched:', {
       username: profile.username,
-      hasProfile: !!profile,
-      profileData: profile
+      hasProfile: !!profile
     });
 
     // Get user's role from profiles table

@@ -1,30 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Instagram } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 export const InstagramConnect = () => {
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    // Listen for messages from the popup window
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'INSTAGRAM_AUTH_SUCCESS') {
-        console.log('Instagram auth success:', event.data);
-        toast.success('Successfully connected to Instagram!');
-        // Reload the page to reflect the new connection status
-        window.location.reload();
-      } else if (event.data.type === 'INSTAGRAM_AUTH_ERROR') {
-        console.error('Instagram auth error:', event.data.error);
-        toast.error(`Failed to connect to Instagram: ${event.data.error}`);
-        setIsLoading(false);
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, []);
 
   const handleInstagramConnect = async () => {
     try {
@@ -34,14 +15,11 @@ export const InstagramConnect = () => {
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.error('No authenticated user found');
         throw new Error('User not authenticated');
       }
-      console.log('Authenticated user:', user.id);
 
       // Generate a random state for security
       const state = crypto.randomUUID();
-      console.log('Generated OAuth state:', state);
       
       // Store the state in the database
       const { error: stateError } = await supabase
@@ -55,32 +33,22 @@ export const InstagramConnect = () => {
         console.error('Error storing OAuth state:', stateError);
         throw new Error('Failed to initialize Instagram connection');
       }
-      console.log('Successfully stored OAuth state in database');
       
-      // Build the Instagram OAuth URL with correct Instagram API scope
+      // Build the Instagram OAuth URL with the correct app ID
       const appId = '1314871332853944';
-      const redirectUri = 'https://ahtozhqhjdkivyaqskko.functions.supabase.co/instagram-auth';
+      const redirectUri = 'https://preview--influencer-brew-hub-72.lovable.app/';
       
-      const instagramUrl = "https://api.instagram.com/oauth/authorize" + 
+      const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
         `?client_id=${appId}` +
-        "&response_type=code" +
+        "&enable_fb_login=0" +
+        "&force_authentication=1" +
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-        "&scope=instagram_basic" +
+        "&response_type=code" +
+        "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish" +
         `&state=${state}`;
       
-      console.log('Generated Instagram OAuth URL:', instagramUrl);
-
-      // Open the Instagram auth URL in a popup window
-      const width = 600;
-      const height = 700;
-      const left = window.screen.width / 2 - width / 2;
-      const top = window.screen.height / 2 - height / 2;
-      
-      window.open(
-        instagramUrl,
-        'instagram-oauth-auth',
-        `width=${width},height=${height},top=${top},left=${left}`
-      );
+      console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
+      window.location.href = instagramUrl;
     } catch (error) {
       console.error('Error connecting to Instagram:', error);
       toast.error('Failed to connect to Instagram. Please try again.');
