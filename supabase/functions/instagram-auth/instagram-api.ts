@@ -21,6 +21,7 @@ export const exchangeCodeForToken = async (
   formData.append('code', code);
 
   try {
+    console.log('Making token exchange request...');
     const response = await fetch(tokenUrl, {
       method: 'POST',
       body: formData,
@@ -45,6 +46,7 @@ export const getInstagramProfile = async (accessToken: string) => {
   console.log('Fetching Instagram profile...');
   
   try {
+    console.log('Making profile request...');
     const response = await fetch(
       `https://graph.instagram.com/me?fields=id,username&access_token=${accessToken}`
     );
