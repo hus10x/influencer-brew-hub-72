@@ -29,28 +29,43 @@ export const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      // Clear local state first
+      // First, clear the local session state
       setIsLoggedIn(false);
       
-      // Attempt to sign out
+      // Get current session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        // If no session exists, just navigate away
+        navigate("/");
+        toast.success("Logged out successfully");
+        return;
+      }
+
+      // Attempt to sign out with the session
       const { error } = await supabase.auth.signOut();
       
       if (error) {
         console.error("Logout error:", error);
-        // If it's a session not found error, we can ignore it since the user is already logged out
-        if (!error.message.includes('session_not_found')) {
-          toast.error("Error during logout");
+        // If it's a session not found error, we can safely ignore it
+        if (error.message.includes('session_not_found')) {
+          navigate("/");
+          toast.success("Logged out successfully");
           return;
         }
+        // For other errors, show error message but still clear local state
+        toast.error("Error during logout");
+        navigate("/");
+        return;
       }
       
-      // Always navigate and show success message
+      // Successful logout
       navigate("/");
       toast.success("Logged out successfully");
       
     } catch (error) {
       console.error("Error during logout:", error);
-      // Even if there's an error, ensure the user is logged out locally
+      // Ensure user is logged out locally even if server request fails
       navigate("/");
       toast.error("Error during logout, but you've been logged out locally");
     }
