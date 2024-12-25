@@ -16,6 +16,8 @@ serve(async (req) => {
     const state = url.searchParams.get('state');
     const error = url.searchParams.get('error');
     
+    console.log('Received params:', { code: !!code, state, error });
+    
     if (error) {
       console.error('Instagram OAuth error:', error);
       return createErrorHtml(`Instagram OAuth error: ${error}`);
@@ -37,9 +39,11 @@ serve(async (req) => {
       return createErrorHtml('Server configuration error');
     }
 
+    console.log('Creating Supabase client...');
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     // Get the user ID from the stored state
+    console.log('Fetching OAuth state for:', state);
     const { data: oauthState, error: stateError } = await supabase
       .from('instagram_oauth_states')
       .select('user_id')
@@ -53,6 +57,7 @@ serve(async (req) => {
     }
 
     const userId = oauthState.user_id;
+    console.log('Found user ID:', userId);
 
     // Mark the state as used
     await supabase
@@ -62,7 +67,7 @@ serve(async (req) => {
 
     console.log('Exchanging code for token...');
     const tokenData = await exchangeCodeForToken(code, appId, appSecret, redirectUri);
-    console.log('Token received:', tokenData);
+    console.log('Token received successfully');
     
     const profile = await getInstagramProfile(tokenData.access_token);
     console.log('Instagram profile fetched:', profile);
@@ -79,6 +84,7 @@ serve(async (req) => {
       return createErrorHtml('Error fetching user profile');
     }
 
+    console.log('Updating user profile with Instagram info...');
     // Update the user's profile with Instagram info
     const { error: updateError } = await supabase
       .from('profiles')
