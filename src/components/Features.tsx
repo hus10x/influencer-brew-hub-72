@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Camera, Users, Zap, Trophy } from "lucide-react";
 
 const features = [
@@ -21,9 +22,21 @@ const features = [
     title: "Proven Results",
     description: "Track your success with detailed analytics and performance metrics.",
   },
-];
+] as const;
 
-export const Features = () => {
+const FeatureCard = memo(({ feature, index }: { feature: typeof features[number]; index: number }) => (
+  <div
+    className="p-6 rounded-2xl bg-background border border-border shadow-sm hover:shadow-md transition-shadow animate-fade-up"
+    style={{ animationDelay: `${index * 100}ms` }}
+  >
+    <feature.icon className="w-12 h-12 text-primary mb-4" />
+    <h3 className="text-xl font-semibold text-foreground mb-2">{feature.title}</h3>
+    <p className="text-muted-foreground">{feature.description}</p>
+  </div>
+));
+FeatureCard.displayName = "FeatureCard";
+
+const Features = () => {
   return (
     <section className="py-24 bg-muted/50 dark:bg-background/95 px-6">
       <div className="container mx-auto">
@@ -40,18 +53,12 @@ export const Features = () => {
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((feature, index) => (
-            <div
-              key={feature.title}
-              className="p-6 rounded-2xl bg-background border border-border shadow-sm hover:shadow-md transition-shadow animate-fade-up"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <feature.icon className="w-12 h-12 text-primary mb-4" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">{feature.title}</h3>
-              <p className="text-muted-foreground">{feature.description}</p>
-            </div>
+            <FeatureCard key={feature.title} feature={feature} index={index} />
           ))}
         </div>
       </div>
     </section>
   );
 };
+
+export default Features;
