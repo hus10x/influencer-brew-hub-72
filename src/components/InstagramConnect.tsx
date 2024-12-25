@@ -17,7 +17,7 @@ export const InstagramConnect = () => {
       
       // Build the Instagram OAuth URL directly
       const appId = '493461117098279'; // Your Instagram App ID
-      const redirectUri = window.location.origin;
+      const redirectUri = 'https://preview--influencer-brew-hub-72.lovable.app';
       
       const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
         `?client_id=${appId}` +
