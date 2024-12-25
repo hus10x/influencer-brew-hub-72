@@ -5,7 +5,6 @@ import { exchangeCodeForToken, getInstagramProfile } from './instagram-api.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.47.0'
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -15,13 +14,10 @@ serve(async (req) => {
     const url = new URL(req.url);
     const code = url.searchParams.get('code');
     const error = url.searchParams.get('error');
-    const error_reason = url.searchParams.get('error_reason');
     
-    console.log('Received params:', { code, error, error_reason });
-
     if (error) {
-      console.error('Instagram OAuth error:', { error, error_reason });
-      return createErrorHtml(`Instagram OAuth error: ${error_reason || error}`);
+      console.error('Instagram OAuth error:', error);
+      return createErrorHtml(`Instagram OAuth error: ${error}`);
     }
 
     if (!code) {
@@ -29,7 +25,6 @@ serve(async (req) => {
       return createErrorHtml('No authorization code provided');
     }
 
-    // Get environment variables
     const appId = Deno.env.get('INSTAGRAM_APP_ID');
     const appSecret = Deno.env.get('INSTAGRAM_APP_SECRET');
     const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth';
@@ -41,16 +36,11 @@ serve(async (req) => {
       return createErrorHtml('Server configuration error');
     }
 
-    // Exchange code for access token
     const tokenData = await exchangeCodeForToken(code, appId, appSecret, redirectUri);
-    
-    // Get user profile
     const profile = await getInstagramProfile(tokenData.access_token);
 
-    // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-    // Update user profile in database
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
