@@ -16,11 +16,15 @@ serve(async (req) => {
       throw new Error('Facebook App ID not configured');
     }
 
+    // Parse the request to get the redirect path
+    const { redirectPath } = await req.json();
+    console.log('Received redirect path:', redirectPath);
+    
     // Generate a random state parameter for security
     const state = crypto.randomUUID();
     
-    // Use the format provided by Meta console
-    const redirectUri = `https://ahtozhqhjdkivyaqskko.supabase.com/functions/v1/instagram-auth/callback`;
+    // Use the format provided by Meta console with the callback endpoint
+    const redirectUri = `https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback`;
     
     console.log('Using redirect URI:', redirectUri);
     console.log('Using app ID:', appId);

@@ -79,7 +79,10 @@ export const InstagramConnect = () => {
 
       // Get the OAuth URL from our edge function
       const { data, error } = await supabase.functions.invoke('instagram-auth/oauth-url', {
-        body: { state },
+        body: { 
+          state,
+          redirectPath: '/influencer' // Explicitly set the redirect path
+        },
       });
 
       if (error) {
