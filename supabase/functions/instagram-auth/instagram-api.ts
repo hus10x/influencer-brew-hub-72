@@ -46,6 +46,7 @@ export const getInstagramProfile = async (accessToken: string) => {
   console.log('Fetching Instagram profile...');
   
   try {
+    // Instead of using Authorization header, append access_token as query parameter
     console.log('Making profile request...');
     const response = await fetch(
       `https://graph.instagram.com/me?fields=id,username&access_token=${accessToken}`
