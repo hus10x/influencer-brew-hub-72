@@ -24,10 +24,7 @@ export const exchangeCodeForToken = async (
     console.log('Making token exchange request to:', tokenUrl);
     const response = await fetch(tokenUrl, {
       method: 'POST',
-      body: formData,
-      headers: {
-        'Accept': 'application/json',
-      }
+      body: formData
     });
 
     if (!response.ok) {
@@ -53,15 +50,11 @@ export const getInstagramProfile = async (accessToken: string) => {
   console.log('Starting Instagram profile fetch...');
   
   try {
+    // Use access_token as a query parameter instead of Authorization header
     const url = `https://graph.instagram.com/me?fields=id,username&access_token=${encodeURIComponent(accessToken)}`;
     console.log('Making profile request to Instagram API');
     
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      }
-    });
+    const response = await fetch(url);
 
     if (!response.ok) {
       const errorText = await response.text();

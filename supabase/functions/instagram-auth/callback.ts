@@ -5,7 +5,6 @@ import { exchangeCodeForToken, getInstagramProfile } from './instagram-api.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.47.0'
 
 serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -32,11 +31,11 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const appId = '1314871332853944';
+    const appId = Deno.env.get('FACEBOOK_APP_ID');
     const appSecret = Deno.env.get('FACEBOOK_APP_SECRET');
     const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
 
-    if (!appSecret || !supabaseUrl || !supabaseServiceRoleKey) {
+    if (!appSecret || !supabaseUrl || !supabaseServiceRoleKey || !appId) {
       console.error('Missing required environment variables');
       return createErrorHtml('Server configuration error');
     }
