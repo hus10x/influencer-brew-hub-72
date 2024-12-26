@@ -19,14 +19,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        // Special case for specific email
-        if (session.user.email === 'husainalhamadd@gmail.com') {
-          setUserType('influencer');
-          setIsAuthenticated(true);
-          setIsLoading(false);
-          return;
-        }
-
         // First try to get the existing profile
         const { data: profile, error: fetchError } = await supabase
           .from('profiles')
