@@ -50,8 +50,8 @@ export const getInstagramProfile = async (accessToken: string) => {
   console.log('Starting Instagram profile fetch...');
   
   try {
-    // Updated to use v18.0 of the Graph API
-    const url = `https://graph.instagram.com/v18.0/me?fields=id,username&access_token=${encodeURIComponent(accessToken)}`;
+    // Updated to use v21.0 of the Graph API
+    const url = `https://graph.instagram.com/v21.0/me?fields=id,username&access_token=${encodeURIComponent(accessToken)}`;
     console.log('Making profile request to Instagram API');
     
     const response = await fetch(url);
