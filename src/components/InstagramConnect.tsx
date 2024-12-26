@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { InstagramService } from "@/services/instagram";
 
 export const InstagramConnect = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -21,12 +22,26 @@ export const InstagramConnect = () => {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('instagram_connected, instagram_handle')
+        .select('instagram_connected, instagram_handle, instagram_access_token')
         .eq('id', user.id)
         .single();
 
-      if (profile?.instagram_connected) {
-        setIsConnected(true);
+      if (profile?.instagram_connected && profile?.instagram_access_token) {
+        const instagramService = new InstagramService(profile.instagram_access_token);
+        try {
+          await instagramService.getUserProfile();
+          setIsConnected(true);
+        } catch (error) {
+          console.error('Error verifying Instagram connection:', error);
+          // Token might be invalid, update profile
+          await supabase
+            .from('profiles')
+            .update({
+              instagram_connected: false,
+              instagram_access_token: null
+            })
+            .eq('id', user.id);
+        }
       }
     } catch (error) {
       console.error('Error checking Instagram connection:', error);
