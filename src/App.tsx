@@ -26,6 +26,7 @@ const App = () => {
 
     const initializeAuth = async () => {
       try {
+        console.log('Initializing auth...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -42,6 +43,7 @@ const App = () => {
         }
 
         if (session) {
+          console.log('Session found, fetching profile...');
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('user_type')
@@ -58,10 +60,12 @@ const App = () => {
           }
 
           if (mounted) {
+            console.log('Setting user type:', profile?.user_type);
             setUserType(profile?.user_type || null);
             setIsLoggedIn(true);
           }
         } else {
+          console.log('No session found');
           if (mounted) {
             setIsLoggedIn(false);
           }
@@ -84,6 +88,7 @@ const App = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
+      console.log('Auth state changed:', event);
       if (event === 'TOKEN_REFRESHED') {
         setIsLoggedIn(true);
       } else if (event === 'SIGNED_OUT') {
