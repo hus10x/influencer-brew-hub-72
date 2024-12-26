@@ -19,6 +19,7 @@ export class InstagramService {
     console.log('Making Instagram API request:', {
       url: `${baseUrl}${endpoint}`,
       hasToken: !!this.access_token,
+      hasAuthHeader: !!headers.Authorization,
       headers: Object.keys(headers)
     });
 
@@ -33,7 +34,8 @@ export class InstagramService {
         status: response.status,
         statusText: response.statusText,
         error: errorText,
-        endpoint
+        endpoint,
+        hasAuthHeader: !!headers.Authorization
       });
       throw new Error(`Instagram API Error: ${errorText}`);
     }
