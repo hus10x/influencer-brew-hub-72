@@ -85,7 +85,7 @@ export const InstagramConnect = () => {
         },
       });
 
-      if (error) {
+      if (error || !data?.url) {
         console.error('Error getting OAuth URL:', error);
         throw new Error('Failed to initialize Instagram connection');
       }
@@ -95,6 +95,7 @@ export const InstagramConnect = () => {
     } catch (error) {
       console.error('Error connecting to Instagram:', error);
       toast.error('Failed to connect to Instagram. Please try again.');
+    } finally {
       setIsLoading(false);
     }
   };
