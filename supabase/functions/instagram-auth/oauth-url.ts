@@ -23,12 +23,13 @@ serve(async (req) => {
     // Generate a random state parameter for security
     const state = crypto.randomUUID();
     
-    // Use the format provided by Meta console with the callback endpoint
+    // Use the exact format provided by Meta console
     const redirectUri = `https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback`;
     
     console.log('Using redirect URI:', redirectUri);
     console.log('Using app ID:', appId);
     
+    // Construct URL exactly as provided by Meta console
     const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
       `?client_id=${appId}` +
       "&enable_fb_login=0" +
