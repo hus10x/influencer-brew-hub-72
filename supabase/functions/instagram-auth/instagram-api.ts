@@ -4,15 +4,16 @@ export const exchangeCodeForToken = async (
   appSecret: string,
   redirectUri: string
 ) => {
-  console.log('Exchanging code for token with params:', { 
-    appId, 
-    redirectUri,
+  console.log('Starting token exchange process...', { 
     hasCode: !!code,
-    hasSecret: !!appSecret 
+    hasAppId: !!appId,
+    hasSecret: !!appSecret,
+    redirectUri 
   });
   
   const tokenUrl = 'https://api.instagram.com/oauth/access_token';
   
+  // Create FormData object for the token exchange
   const formData = new FormData();
   formData.append('client_id', appId);
   formData.append('client_secret', appSecret);
@@ -21,20 +22,24 @@ export const exchangeCodeForToken = async (
   formData.append('code', code);
 
   try {
-    console.log('Making token exchange request...');
+    console.log('Making token exchange request to:', tokenUrl);
     const response = await fetch(tokenUrl, {
       method: 'POST',
       body: formData,
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error('Token exchange failed:', error);
-      throw new Error(`Failed to exchange code for token: ${error}`);
+      const errorText = await response.text();
+      console.error('Token exchange failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText
+      });
+      throw new Error(`Failed to exchange code for token: ${errorText}`);
     }
 
     const data = await response.json();
-    console.log('Token exchange successful');
+    console.log('Token exchange successful:', { hasAccessToken: !!data.access_token });
     return data;
   } catch (error) {
     console.error('Error in token exchange:', error);
@@ -43,26 +48,33 @@ export const exchangeCodeForToken = async (
 };
 
 export const getInstagramProfile = async (accessToken: string) => {
-  console.log('Fetching Instagram profile...');
+  console.log('Starting Instagram profile fetch...');
   
   try {
-    // Instead of using Authorization header, append access_token as query parameter
-    console.log('Making profile request...');
-    const response = await fetch(
-      `https://graph.instagram.com/me?fields=id,username&access_token=${accessToken}`
-    );
+    // Append access_token as query parameter instead of using Authorization header
+    const url = `https://graph.instagram.com/me?fields=id,username&access_token=${accessToken}`;
+    console.log('Making profile request to Instagram API');
+    
+    const response = await fetch(url);
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error('Profile fetch failed:', error);
-      throw new Error(`Failed to fetch Instagram profile: ${error}`);
+      const errorText = await response.text();
+      console.error('Profile fetch failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText
+      });
+      throw new Error(`Failed to fetch Instagram profile: ${errorText}`);
     }
 
     const data = await response.json();
-    console.log('Profile fetch successful:', { username: data.username });
+    console.log('Profile fetch successful:', { 
+      hasUsername: !!data.username,
+      hasId: !!data.id 
+    });
     return data;
   } catch (error) {
-    console.error('Error fetching profile:', error);
+    console.error('Error fetching Instagram profile:', error);
     throw error;
   }
 };
