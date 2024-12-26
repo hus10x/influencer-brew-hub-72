@@ -20,38 +20,43 @@ const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   useEffect(() => {
-    // Initialize auth state
-    const initializeAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Session error:', error);
-          if (error.message.includes('refresh_token_not_found')) {
-            await supabase.auth.signOut();
-            toast.error("Session expired. Please login again.");
-          }
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Session error:', error);
+        setIsLoggedIn(false);
+        return;
+      }
+      setIsLoggedIn(!!session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, !!session);
+      
+      if (event === 'SIGNED_OUT') {
+        setIsLoggedIn(false);
+        return;
+      }
+
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        if (!session) {
+          console.error('No session after sign in/token refresh');
           setIsLoggedIn(false);
           return;
         }
         
-        setIsLoggedIn(!!session);
-      } catch (error) {
-        console.error('Error checking auth status:', error);
-        setIsLoggedIn(false);
-      }
-    };
-
-    initializeAuth();
-
-    // Subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'TOKEN_REFRESHED') {
-        setIsLoggedIn(true);
-      } else if (event === 'SIGNED_OUT') {
-        setIsLoggedIn(false);
-      } else {
-        setIsLoggedIn(!!session);
+        try {
+          const { error: sessionError } = await supabase.auth.getUser();
+          if (sessionError) throw sessionError;
+          
+          setIsLoggedIn(true);
+        } catch (error) {
+          console.error('Error verifying session:', error);
+          toast.error("Session verification failed. Please login again.");
+          await supabase.auth.signOut();
+          setIsLoggedIn(false);
+        }
       }
     });
 
@@ -60,7 +65,6 @@ const App = () => {
     };
   }, []);
 
-  // Show loading state while checking auth
   if (isLoggedIn === null) {
     return <div>Loading...</div>;
   }
