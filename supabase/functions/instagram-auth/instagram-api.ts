@@ -6,9 +6,8 @@ export async function exchangeCodeForToken(
   appSecret: string,
   redirectUri: string
 ) {
-  console.log('Exchanging code for token with app ID:', appId);
+  console.log('Exchanging code for token...');
   
-  // Token exchange must use POST as per Meta's API requirements
   const tokenUrl = 'https://api.instagram.com/oauth/access_token';
   const formData = new FormData();
   formData.append('client_id', appId);
@@ -29,20 +28,30 @@ export async function exchangeCodeForToken(
   }
 
   const data = await response.json();
-  console.log('Token exchange successful');
+  
+  // Get the long-lived token
+  const longLivedTokenUrl = `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${appSecret}&access_token=${data.access_token}`;
+  
+  const longLivedResponse = await fetch(longLivedTokenUrl);
+  if (!longLivedResponse.ok) {
+    const error = await longLivedResponse.text();
+    console.error('Long-lived token exchange error:', error);
+    throw new Error(`Failed to get long-lived token: ${error}`);
+  }
+
+  const longLivedData = await longLivedResponse.json();
   
   return {
-    access_token: data.access_token,
-    user_id: data.user_id
+    access_token: longLivedData.access_token,
+    expires_in: longLivedData.expires_in
   };
 }
 
 export async function getInstagramProfile(accessToken: string) {
   console.log('Fetching Instagram profile...');
   
-  // Use GET request for fetching profile data
   const url = new URL('https://graph.instagram.com/me');
-  url.searchParams.append('fields', 'id,username');
+  url.searchParams.append('fields', 'id,username,account_type');
   url.searchParams.append('access_token', accessToken);
   
   const response = await fetch(url.toString(), {
@@ -64,6 +73,7 @@ export async function getInstagramProfile(accessToken: string) {
   
   return {
     id: data.id,
-    username: data.username
+    username: data.username,
+    account_type: data.account_type
   };
 }

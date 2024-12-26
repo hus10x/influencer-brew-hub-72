@@ -22,7 +22,7 @@ export const InstagramConnect = () => {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('instagram_connected, instagram_handle, instagram_access_token')
+        .select('instagram_connected, instagram_username, instagram_access_token')
         .eq('id', user.id)
         .single();
 
@@ -38,7 +38,11 @@ export const InstagramConnect = () => {
             .from('profiles')
             .update({
               instagram_connected: false,
-              instagram_access_token: null
+              instagram_access_token: null,
+              instagram_username: null,
+              instagram_id: null,
+              instagram_account_type: null,
+              instagram_token_expires_at: null
             })
             .eq('id', user.id);
         }
@@ -50,12 +54,10 @@ export const InstagramConnect = () => {
 
   const handleInstagramConnect = async () => {
     try {
-      console.log('Starting Instagram connection process...');
       setIsLoading(true);
       
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.error('No authenticated user found');
         toast.error('Please log in to connect your Instagram account');
         navigate('/login');
         return;
@@ -63,13 +65,12 @@ export const InstagramConnect = () => {
 
       const state = crypto.randomUUID();
       
-      console.log('Storing OAuth state...');
-      
       const { error: stateError } = await supabase
         .from('instagram_oauth_states')
         .insert({
           state: state,
-          user_id: user.id
+          user_id: user.id,
+          redirect_path: '/influencer'
         });
 
       if (stateError) {
@@ -77,12 +78,8 @@ export const InstagramConnect = () => {
         throw new Error('Failed to initialize Instagram connection');
       }
 
-      // Get the OAuth URL from our edge function
       const { data, error } = await supabase.functions.invoke('instagram-auth/oauth-url', {
-        body: { 
-          state,
-          redirectPath: '/influencer' // Explicitly set the redirect path
-        },
+        body: { state }
       });
 
       if (error || !data?.url) {
@@ -90,7 +87,6 @@ export const InstagramConnect = () => {
         throw new Error('Failed to initialize Instagram connection');
       }
 
-      console.log('Redirecting to Instagram OAuth URL:', data.url);
       window.location.href = data.url;
     } catch (error) {
       console.error('Error connecting to Instagram:', error);

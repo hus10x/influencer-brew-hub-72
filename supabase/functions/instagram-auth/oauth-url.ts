@@ -2,32 +2,22 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from './response.ts'
 
 serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    console.log('Starting OAuth URL generation...');
-    
     const appId = Deno.env.get('FACEBOOK_APP_ID');
     if (!appId) {
-      console.error('Facebook App ID not configured');
       throw new Error('Facebook App ID not configured');
     }
 
-    // Parse the request to get the redirect path
-    const { redirectPath } = await req.json();
-    console.log('Received redirect path:', redirectPath);
+    const { state } = await req.json();
+    if (!state) {
+      throw new Error('State parameter is required');
+    }
     
-    // Generate a random state parameter for security
-    const state = crypto.randomUUID();
-    
-    // Use the exact format provided by Meta console
     const redirectUri = `https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback`;
-    
-    console.log('Using redirect URI:', redirectUri);
-    console.log('Using app ID:', appId);
     
     // Construct URL exactly as provided by Meta console
     const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
@@ -39,13 +29,8 @@ serve(async (req) => {
       "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish" +
       `&state=${state}`;
 
-    console.log('Generated Instagram OAuth URL:', instagramUrl);
-
     return new Response(
-      JSON.stringify({ 
-        url: instagramUrl, 
-        state: state 
-      }),
+      JSON.stringify({ url: instagramUrl }),
       {
         headers: {
           ...corsHeaders,
@@ -57,9 +42,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error generating OAuth URL:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error.message || 'Failed to generate OAuth URL'
-      }),
+      JSON.stringify({ error: error.message }),
       {
         headers: {
           ...corsHeaders,
