@@ -18,9 +18,9 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [userType, setUserType] = useState<string | null>(null);
 
   useEffect(() => {
-    // Initialize auth state
     const initializeAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -34,6 +34,16 @@ const App = () => {
           setIsLoggedIn(false);
           return;
         }
+
+        if (session) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('user_type')
+            .eq('id', session.user.id)
+            .maybeSingle();
+
+          setUserType(profile?.user_type || null);
+        }
         
         setIsLoggedIn(!!session);
       } catch (error) {
@@ -44,14 +54,22 @@ const App = () => {
 
     initializeAuth();
 
-    // Subscribe to auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'TOKEN_REFRESHED') {
         setIsLoggedIn(true);
       } else if (event === 'SIGNED_OUT') {
         setIsLoggedIn(false);
+        setUserType(null);
       } else {
         setIsLoggedIn(!!session);
+        if (session) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('user_type')
+            .eq('id', session.user.id)
+            .maybeSingle();
+          setUserType(profile?.user_type || null);
+        }
       }
     });
 
@@ -73,7 +91,20 @@ const App = () => {
             <Toaster />
             <Sonner />
             <Routes>
-              <Route path="/" element={<Index />} />
+              <Route 
+                path="/" 
+                element={
+                  isLoggedIn ? (
+                    userType === 'influencer' ? (
+                      <Navigate to="/influencer" replace />
+                    ) : (
+                      <Navigate to="/client" replace />
+                    )
+                  ) : (
+                    <Index />
+                  )
+                } 
+              />
               <Route 
                 path="/influencer" 
                 element={
@@ -93,13 +124,29 @@ const App = () => {
               <Route 
                 path="/login" 
                 element={
-                  isLoggedIn ? <Navigate to="/" replace /> : <Login />
+                  isLoggedIn ? (
+                    userType === 'influencer' ? (
+                      <Navigate to="/influencer" replace />
+                    ) : (
+                      <Navigate to="/client" replace />
+                    )
+                  ) : (
+                    <Login />
+                  )
                 } 
               />
               <Route 
                 path="/signup" 
                 element={
-                  isLoggedIn ? <Navigate to="/" replace /> : <SignUp />
+                  isLoggedIn ? (
+                    userType === 'influencer' ? (
+                      <Navigate to="/influencer" replace />
+                    ) : (
+                      <Navigate to="/client" replace />
+                    )
+                  ) : (
+                    <SignUp />
+                  )
                 } 
               />
             </Routes>
