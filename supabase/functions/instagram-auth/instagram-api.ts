@@ -24,7 +24,10 @@ export const exchangeCodeForToken = async (
     console.log('Making token exchange request to:', tokenUrl);
     const response = await fetch(tokenUrl, {
       method: 'POST',
-      body: formData
+      body: formData,
+      headers: {
+        'Accept': 'application/json'
+      }
     });
 
     if (!response.ok) {
@@ -50,11 +53,16 @@ export const getInstagramProfile = async (accessToken: string) => {
   console.log('Starting Instagram profile fetch...');
   
   try {
-    // Updated to use v21.0 of the Graph API
+    // Using v21.0 of the Graph API with proper headers
     const url = `https://graph.instagram.com/v21.0/me?fields=id,username&access_token=${encodeURIComponent(accessToken)}`;
     console.log('Making profile request to Instagram API');
     
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
