@@ -76,21 +76,19 @@ export const InstagramConnect = () => {
         console.error('Error storing OAuth state:', stateError);
         throw new Error('Failed to initialize Instagram connection');
       }
-      
-      const appId = '482497881531780';
-      const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
-      
-      const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
-        `?client_id=${appId}` +
-        "&enable_fb_login=0" +
-        "&force_authentication=1" +
-        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-        "&response_type=code" +
-        "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish" +
-        `&state=${state}`;
-      
-      console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
-      window.location.href = instagramUrl;
+
+      // Get the OAuth URL from our edge function
+      const { data, error } = await supabase.functions.invoke('instagram-auth/oauth-url', {
+        body: { state },
+      });
+
+      if (error) {
+        console.error('Error getting OAuth URL:', error);
+        throw new Error('Failed to initialize Instagram connection');
+      }
+
+      console.log('Redirecting to Instagram OAuth URL:', data.url);
+      window.location.href = data.url;
     } catch (error) {
       console.error('Error connecting to Instagram:', error);
       toast.error('Failed to connect to Instagram. Please try again.');

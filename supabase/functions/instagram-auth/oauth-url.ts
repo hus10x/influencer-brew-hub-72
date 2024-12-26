@@ -10,7 +10,7 @@ serve(async (req) => {
   try {
     console.log('Starting OAuth URL generation...');
     
-    const appId = '482497881531780';
+    const appId = Deno.env.get('FACEBOOK_APP_ID');
     if (!appId) {
       console.error('Facebook App ID not configured');
       throw new Error('Facebook App ID not configured');
