@@ -56,17 +56,16 @@ export const getInstagramProfile = async (accessToken: string) => {
   console.log('Starting Instagram profile fetch...');
   
   try {
+    // Note: We include the access_token in the URL as per Instagram's API requirements
     const url = `https://graph.instagram.com/v21.0/me?fields=id,username&access_token=${encodeURIComponent(accessToken)}`;
     console.log('Making profile request to Instagram API');
     
     const headers = {
       'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`
+      'Content-Type': 'application/json'
     };
 
     console.log('Request headers:', {
-      hasAuthHeader: !!headers.Authorization,
       headers: Object.keys(headers)
     });
     
