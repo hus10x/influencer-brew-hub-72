@@ -41,7 +41,10 @@ export const exchangeCodeForToken = async (
     }
 
     const data = await response.json();
-    console.log('Token exchange successful:', { hasAccessToken: !!data.access_token });
+    console.log('Token exchange successful:', { 
+      hasAccessToken: !!data.access_token,
+      responseData: data 
+    });
     return data;
   } catch (error) {
     console.error('Error in token exchange:', error);
@@ -77,7 +80,8 @@ export const getInstagramProfile = async (accessToken: string) => {
     const data = await response.json();
     console.log('Profile fetch successful:', { 
       hasUsername: !!data.username,
-      hasId: !!data.id 
+      hasId: !!data.id,
+      responseData: data
     });
     return data;
   } catch (error) {

@@ -16,6 +16,12 @@ export class InstagramService {
       ...options.headers
     };
 
+    console.log('Making Instagram API request:', {
+      url: `${baseUrl}${endpoint}`,
+      hasToken: !!this.access_token,
+      headers: Object.keys(headers)
+    });
+
     const response = await fetch(`${baseUrl}${endpoint}`, {
       ...options,
       headers
@@ -26,12 +32,15 @@ export class InstagramService {
       console.error('Instagram API Error:', {
         status: response.status,
         statusText: response.statusText,
-        error: errorText
+        error: errorText,
+        endpoint
       });
       throw new Error(`Instagram API Error: ${errorText}`);
     }
 
-    return response.json();
+    const data = await response.json();
+    console.log('Instagram API response:', { endpoint, data });
+    return data;
   }
 
   async getUserProfile() {
