@@ -13,6 +13,7 @@ const Login = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
         try {
+          // Get user profile to check user type
           const { data: profile, error } = await supabase
             .from('profiles')
             .select('user_type')
@@ -20,22 +21,19 @@ const Login = () => {
             .maybeSingle();
 
           if (error) {
-            console.error('Error fetching profile:', error);
             toast.error("Error fetching profile");
             return;
           }
 
           if (!profile) {
-            console.error('Profile not found');
             toast.error("Profile not found");
             return;
           }
 
-          // Immediate redirect based on user type
-          const dashboardRoute = profile.user_type === 'influencer' ? '/influencer' : '/client';
-          navigate(dashboardRoute, { replace: true });
+          // Redirect based on user type
+          navigate(profile.user_type === 'influencer' ? '/influencer' : '/client');
         } catch (error) {
-          console.error('Error during login:', error);
+          console.error('Error checking profile:', error);
           toast.error("Error during login");
         }
       }

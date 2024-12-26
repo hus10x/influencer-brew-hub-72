@@ -1,9 +1,8 @@
 import { Suspense, lazy } from "react";
-import { Navigate } from "react-router-dom";
 import { Hero } from "@/components/Hero";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuth } from "@/contexts/AuthContext";
 
+// Lazy load components that aren't immediately visible
 const Features = lazy(() => import("@/components/Features"));
 const HowItWorks = lazy(() => import("@/components/HowItWorks"));
 const Footer = lazy(() => import("@/components/Footer"));
@@ -75,20 +74,6 @@ const FooterLoadingSkeleton = () => (
 );
 
 const Index = () => {
-  const { isLoggedIn, userType, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (isLoggedIn) {
-    return <Navigate to={userType === 'influencer' ? '/influencer' : '/client'} replace />;
-  }
-
   return (
     <div className="min-h-screen bg-white font-sans">
       <Hero />
