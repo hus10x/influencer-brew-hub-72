@@ -19,8 +19,11 @@ const queryClient = new QueryClient();
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [userType, setUserType] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     const initializeAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -31,30 +34,56 @@ const App = () => {
             await supabase.auth.signOut();
             toast.error("Session expired. Please login again.");
           }
-          setIsLoggedIn(false);
+          if (mounted) {
+            setIsLoggedIn(false);
+            setIsLoading(false);
+          }
           return;
         }
 
         if (session) {
-          const { data: profile } = await supabase
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('user_type')
             .eq('id', session.user.id)
             .maybeSingle();
 
-          setUserType(profile?.user_type || null);
+          if (profileError) {
+            console.error('Profile error:', profileError);
+            if (mounted) {
+              setIsLoggedIn(false);
+              setIsLoading(false);
+            }
+            return;
+          }
+
+          if (mounted) {
+            setUserType(profile?.user_type || null);
+            setIsLoggedIn(true);
+          }
+        } else {
+          if (mounted) {
+            setIsLoggedIn(false);
+          }
         }
         
-        setIsLoggedIn(!!session);
+        if (mounted) {
+          setIsLoading(false);
+        }
       } catch (error) {
         console.error('Error checking auth status:', error);
-        setIsLoggedIn(false);
+        if (mounted) {
+          setIsLoggedIn(false);
+          setIsLoading(false);
+        }
       }
     };
 
     initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+
       if (event === 'TOKEN_REFRESHED') {
         setIsLoggedIn(true);
       } else if (event === 'SIGNED_OUT') {
@@ -68,19 +97,27 @@ const App = () => {
             .select('user_type')
             .eq('id', session.user.id)
             .maybeSingle();
-          setUserType(profile?.user_type || null);
+          
+          if (mounted) {
+            setUserType(profile?.user_type || null);
+          }
         }
       }
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
 
   // Show loading state while checking auth
-  if (isLoggedIn === null) {
-    return <div>Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   return (
