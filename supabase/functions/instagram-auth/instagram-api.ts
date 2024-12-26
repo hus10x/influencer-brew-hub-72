@@ -8,6 +8,7 @@ export async function exchangeCodeForToken(
 ) {
   console.log('Exchanging code for token with app ID:', appId);
   
+  // Token exchange must use POST as per Meta's API requirements
   const tokenUrl = 'https://api.instagram.com/oauth/access_token';
   const formData = new FormData();
   formData.append('client_id', appId);
@@ -39,12 +40,18 @@ export async function exchangeCodeForToken(
 export async function getInstagramProfile(accessToken: string) {
   console.log('Fetching Instagram profile...');
   
-  const response = await fetch(
-    `https://graph.instagram.com/me?fields=id,username&access_token=${accessToken}`,
-    {
-      headers: corsHeaders,
+  // Use GET request for fetching profile data
+  const url = new URL('https://graph.instagram.com/me');
+  url.searchParams.append('fields', 'id,username');
+  url.searchParams.append('access_token', accessToken);
+  
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: {
+      ...corsHeaders,
+      'Accept': 'application/json',
     }
-  );
+  });
 
   if (!response.ok) {
     const error = await response.text();
