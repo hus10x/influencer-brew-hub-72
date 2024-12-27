@@ -81,17 +81,23 @@ export const InstagramConnect = () => {
       const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
       
       // Fetch the app configuration from Edge Function
-      const { data: config, error: configError } = await supabase.functions.invoke('instagram-auth/config');
+      const { data, error: configError } = await supabase.functions.invoke('instagram-auth/config', {
+        method: 'POST'
+      });
       
-      if (configError || !config?.appId) {
+      if (configError) {
         console.error('Error fetching Instagram configuration:', configError);
-        console.log('Config response:', config);
         throw new Error('Failed to load Instagram configuration');
       }
 
-      console.log('Retrieved app ID from config:', config.appId);
+      if (!data?.appId) {
+        console.error('Invalid configuration received:', data);
+        throw new Error('Invalid Instagram configuration');
+      }
 
-      const instagramUrl = `https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=${config.appId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish&state=${state}`;
+      console.log('Retrieved app ID from config:', data.appId);
+
+      const instagramUrl = `https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=${data.appId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish&state=${state}`;
       
       console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
       window.location.href = instagramUrl;
