@@ -8,56 +8,21 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log('Config function called with method:', req.method);
-  
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    console.log('Handling CORS preflight request');
-    return new Response(null, { 
-      headers: corsHeaders
-    });
+    return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    const appId = Deno.env.get('FACEBOOK_APP_ID');
-    console.log('Retrieved Facebook App ID:', appId ? 'Found' : 'Not found');
-
-    if (!appId) {
-      console.error('Facebook App ID not configured');
-      return new Response(
-        JSON.stringify({ 
-          error: 'Facebook App ID not configured',
-          success: false
-        }),
-        {
-          status: 500,
-          headers: corsHeaders
-        }
-      );
-    }
-
-    console.log('Sending successful response with App ID');
+  const appId = Deno.env.get('FACEBOOK_APP_ID');
+  
+  if (!appId) {
     return new Response(
-      JSON.stringify({ 
-        appId,
-        success: true
-      }),
-      {
-        headers: corsHeaders,
-        status: 200,
-      }
-    );
-  } catch (error) {
-    console.error('Error in config function:', error);
-    return new Response(
-      JSON.stringify({ 
-        error: error.message || 'Internal server error',
-        success: false
-      }),
-      {
-        headers: corsHeaders,
-        status: 500,
-      }
+      JSON.stringify({ error: 'Configuration error', success: false }),
+      { headers: corsHeaders, status: 500 }
     );
   }
+
+  return new Response(
+    JSON.stringify({ appId, success: true }),
+    { headers: corsHeaders, status: 200 }
+  );
 })
