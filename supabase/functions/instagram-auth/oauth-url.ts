@@ -26,14 +26,21 @@ serve(async (req) => {
       state
     });
 
-    // Construct URL exactly as provided by Meta console
-    const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
-      `?client_id=${appId}` +
-      "&enable_fb_login=0" +
-      "&force_authentication=1" +
+    const scope = [
+      'instagram_business_basic',
+      'instagram_business_manage_messages',
+      'instagram_business_manage_comments',
+      'instagram_business_content_publish'
+    ].join('%2C');
+
+    // Construct URL exactly as provided
+    const instagramUrl = `https://www.instagram.com/oauth/authorize` +
+      `?enable_fb_login=0` +
+      `&force_authentication=1` +
+      `&client_id=${appId}` +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-      "&response_type=code" +
-      "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish" +
+      `&response_type=code` +
+      `&scope=${scope}` +
       `&state=${state}`;
 
     console.log('Generated Instagram URL:', instagramUrl);
