@@ -3,6 +3,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Content-Type': 'application/json'
 }
 
 serve(async (req) => {
@@ -12,17 +14,14 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') {
     console.log('Handling CORS preflight request');
     return new Response(null, { 
-      headers: {
-        ...corsHeaders,
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      }
+      headers: corsHeaders
     });
   }
 
   try {
     const appId = Deno.env.get('FACEBOOK_APP_ID');
-    console.log('Config function called, Facebook App ID:', appId ? 'Found' : 'Not found'); 
-    
+    console.log('Retrieved Facebook App ID:', appId ? 'Found' : 'Not found');
+
     if (!appId) {
       console.error('Facebook App ID not configured');
       return new Response(
@@ -32,31 +31,22 @@ serve(async (req) => {
         }),
         {
           status: 500,
-          headers: {
-            ...corsHeaders,
-            'Content-Type': 'application/json',
-          },
+          headers: corsHeaders
         }
       );
     }
 
-    const response = {
-      appId,
-      success: true
-    };
-
-    console.log('Sending successful response:', { hasAppId: !!response.appId });
-
+    console.log('Sending successful response with App ID');
     return new Response(
-      JSON.stringify(response),
+      JSON.stringify({ 
+        appId,
+        success: true
+      }),
       {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
+        headers: corsHeaders,
         status: 200,
-      },
-    )
+      }
+    );
   } catch (error) {
     console.error('Error in config function:', error);
     return new Response(
@@ -65,12 +55,9 @@ serve(async (req) => {
         success: false
       }),
       {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
+        headers: corsHeaders,
         status: 500,
-      },
-    )
+      }
+    );
   }
 })
