@@ -98,7 +98,8 @@ export const InstagramConnect = () => {
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
         "&response_type=code" +
         "&scope=pages_show_list,instagram_basic,instagram_manage_comments,instagram_manage_insights,instagram_content_publish,instagram_manage_messages,pages_read_engagement" +
-        `&state=${state}`;
+        `&state=${state}` +
+        "&v=18.0";  // Added API version parameter
       
       console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
       window.location.href = instagramUrl;
