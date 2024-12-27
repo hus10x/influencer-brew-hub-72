@@ -9,29 +9,23 @@ serve(async (req) => {
   try {
     const appId = Deno.env.get('INSTAGRAM_APP_ID');
     if (!appId) {
-      console.error('Instagram App ID not configured');
+      console.error('Instagram App ID not found in environment variables');
       throw new Error('Instagram App ID not configured');
     }
 
     const { state } = await req.json();
     if (!state) {
+      console.error('No state parameter provided');
       throw new Error('State parameter is required');
     }
     
     const redirectUri = `https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback`;
     
     console.log('Generating Instagram OAuth URL with:', {
-      appId: appId ? 'present' : 'missing',
+      appId,
       redirectUri,
       state
     });
-
-    const scope = [
-      'instagram_business_basic',
-      'instagram_business_manage_messages',
-      'instagram_business_manage_comments',
-      'instagram_business_content_publish'
-    ].join('%2C');
 
     // Construct URL exactly as provided
     const instagramUrl = `https://www.instagram.com/oauth/authorize` +
@@ -40,7 +34,7 @@ serve(async (req) => {
       `&client_id=${appId}` +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
       `&response_type=code` +
-      `&scope=${scope}` +
+      `&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish` +
       `&state=${state}`;
 
     console.log('Generated Instagram URL:', instagramUrl);
