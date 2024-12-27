@@ -20,7 +20,6 @@ export const InstagramConnect = () => {
         if (sessionError) {
           console.error('Session error:', sessionError);
           if (mounted) {
-            // Handle session errors by signing out and redirecting
             await supabase.auth.signOut();
             toast.error('Your session has expired. Please log in again.');
             navigate('/login');
@@ -31,18 +30,6 @@ export const InstagramConnect = () => {
         if (!session) {
           console.log('No active session found');
           if (mounted) {
-            navigate('/login');
-          }
-          return;
-        }
-
-        // Check if the session is valid
-        const { data: user, error: userError } = await supabase.auth.getUser();
-        if (userError) {
-          console.error('User validation error:', userError);
-          if (mounted) {
-            await supabase.auth.signOut();
-            toast.error('Authentication error. Please log in again.');
             navigate('/login');
           }
           return;
@@ -73,12 +60,10 @@ export const InstagramConnect = () => {
     checkConnectionStatus();
 
     // Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
-        if (mounted) {
-          setIsConnected(false);
-          navigate('/login');
-        }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT' && mounted) {
+        setIsConnected(false);
+        navigate('/login');
       }
     });
 
@@ -98,16 +83,6 @@ export const InstagramConnect = () => {
       if (sessionError || !session) {
         console.error('Session error:', sessionError);
         toast.error('Please log in to connect your Instagram account');
-        navigate('/login');
-        return;
-      }
-
-      // Verify user session is still valid
-      const { error: userError } = await supabase.auth.getUser();
-      if (userError) {
-        console.error('User validation error:', userError);
-        await supabase.auth.signOut();
-        toast.error('Session expired. Please log in again.');
         navigate('/login');
         return;
       }
