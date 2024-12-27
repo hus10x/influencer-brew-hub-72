@@ -46,9 +46,19 @@ export const getInstagramProfile = async (accessToken: string) => {
   console.log('Fetching Instagram profile...');
   
   try {
+    // Properly encode the access token
+    const encodedToken = encodeURIComponent(accessToken);
+    
+    // Set up headers with Bearer token
+    const headers = new Headers();
+    headers.append('Authorization', `Bearer ${encodedToken}`);
+    
     console.log('Making profile request...');
     const response = await fetch(
-      `https://graph.instagram.com/me?fields=id,username&access_token=${accessToken}`
+      `https://graph.instagram.com/me?fields=id,username`,
+      {
+        headers: headers
+      }
     );
 
     if (!response.ok) {
