@@ -82,16 +82,19 @@ export const InstagramConnect = () => {
       
       console.log('Fetching Instagram configuration...');
       const { data, error: configError } = await supabase.functions.invoke('instagram-auth/config', {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
-      
-      console.log('Config response:', data);
       
       if (configError) {
         console.error('Error fetching Instagram configuration:', configError);
         throw new Error('Failed to load Instagram configuration');
       }
 
+      console.log('Config response:', data);
+      
       if (!data?.appId) {
         console.error('Invalid configuration received:', data);
         throw new Error('Instagram configuration is missing required data');
