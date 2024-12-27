@@ -33,7 +33,6 @@ export const InstagramConnect = () => {
           setIsConnected(true);
         } catch (error) {
           console.error('Error verifying Instagram connection:', error);
-          // Token might be invalid, update profile
           await supabase
             .from('profiles')
             .update({
@@ -50,20 +49,16 @@ export const InstagramConnect = () => {
 
   const handleInstagramConnect = async () => {
     try {
-      console.log('Starting Instagram connection process...');
       setIsLoading(true);
       
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.error('No authenticated user found');
         toast.error('Please log in to connect your Instagram account');
         navigate('/login');
         return;
       }
 
       const state = crypto.randomUUID();
-      
-      console.log('Storing OAuth state...');
       
       const { error: stateError } = await supabase
         .from('instagram_oauth_states')
@@ -74,38 +69,23 @@ export const InstagramConnect = () => {
         });
 
       if (stateError) {
-        console.error('Error storing OAuth state:', stateError);
         throw new Error('Failed to initialize Instagram connection');
       }
       
       const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
       
-      console.log('Fetching Instagram configuration...');
       const { data, error: configError } = await supabase.functions.invoke('instagram-auth/config', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({}), // Add empty body to ensure proper POST request
+        body: { redirectUri }
       });
       
-      if (configError) {
-        console.error('Error fetching Instagram configuration:', configError);
+      if (configError || !data?.appId) {
+        console.error('Error fetching Instagram configuration:', configError || 'No app ID received');
         throw new Error('Failed to load Instagram configuration');
       }
 
-      console.log('Config response:', data);
-      
-      if (!data?.appId || !data.success) {
-        console.error('Invalid configuration received:', data);
-        throw new Error(data?.error || 'Instagram configuration is missing required data');
-      }
-
-      console.log('Retrieved app ID from config:', data.appId);
-
       const instagramUrl = `https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=${data.appId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish&state=${state}`;
       
-      console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
       window.location.href = instagramUrl;
     } catch (error) {
       console.error('Error connecting to Instagram:', error);

@@ -12,11 +12,20 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  if (req.method !== 'POST') {
+    return new Response(
+      JSON.stringify({ error: 'Method not allowed', success: false }),
+      { headers: corsHeaders, status: 405 }
+    );
+  }
+
   const appId = Deno.env.get('FACEBOOK_APP_ID');
+  console.log('Retrieved FACEBOOK_APP_ID:', !!appId);
   
   if (!appId) {
+    console.error('FACEBOOK_APP_ID not found in environment');
     return new Response(
-      JSON.stringify({ error: 'Configuration error', success: false }),
+      JSON.stringify({ error: 'FACEBOOK_APP_ID not configured', success: false }),
       { headers: corsHeaders, status: 500 }
     );
   }
