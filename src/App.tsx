@@ -10,6 +10,7 @@ import InfluencerDashboard from "./pages/InfluencerDashboard";
 import ClientDashboard from "./pages/ClientDashboard";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
+import { InstagramCallback } from "@/components/auth/InstagramCallback";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -101,6 +102,10 @@ const App = () => {
                 element={
                   isLoggedIn ? <Navigate to="/" replace /> : <SignUp />
                 } 
+              />
+              <Route 
+                path="/auth/instagram/callback" 
+                element={<InstagramCallback />} 
               />
             </Routes>
           </BrowserRouter>
