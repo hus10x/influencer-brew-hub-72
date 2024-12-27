@@ -80,10 +80,12 @@ export const InstagramConnect = () => {
       
       const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
       
-      // Fetch the app configuration from Edge Function
+      console.log('Fetching Instagram configuration...');
       const { data, error: configError } = await supabase.functions.invoke('instagram-auth/config', {
         method: 'POST'
       });
+      
+      console.log('Config response:', data);
       
       if (configError) {
         console.error('Error fetching Instagram configuration:', configError);
@@ -92,7 +94,7 @@ export const InstagramConnect = () => {
 
       if (!data?.appId) {
         console.error('Invalid configuration received:', data);
-        throw new Error('Invalid Instagram configuration');
+        throw new Error('Instagram configuration is missing required data');
       }
 
       console.log('Retrieved app ID from config:', data.appId);

@@ -9,18 +9,22 @@ serve(async (req) => {
 
   try {
     const appId = Deno.env.get('FACEBOOK_APP_ID');
-    console.log('Retrieved Facebook App ID:', appId ? 'Found' : 'Not found'); 
+    console.log('Config function called, Facebook App ID:', appId ? 'Found' : 'Not found'); 
     
     if (!appId) {
       console.error('Facebook App ID not configured');
       throw new Error('Facebook App ID not configured');
     }
 
+    const response = {
+      appId,
+      success: true
+    };
+
+    console.log('Sending successful response:', { hasAppId: !!response.appId });
+
     return new Response(
-      JSON.stringify({ 
-        appId,
-        success: true
-      }),
+      JSON.stringify(response),
       {
         headers: {
           ...corsHeaders,
