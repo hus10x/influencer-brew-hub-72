@@ -86,6 +86,7 @@ export const InstagramConnect = () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({}), // Add empty body to ensure proper POST request
       });
       
       if (configError) {
@@ -95,9 +96,9 @@ export const InstagramConnect = () => {
 
       console.log('Config response:', data);
       
-      if (!data?.appId) {
+      if (!data?.appId || !data.success) {
         console.error('Invalid configuration received:', data);
-        throw new Error('Instagram configuration is missing required data');
+        throw new Error(data?.error || 'Instagram configuration is missing required data');
       }
 
       console.log('Retrieved app ID from config:', data.appId);
