@@ -8,7 +8,8 @@ export const exchangeCodeForToken = async (
     appId, 
     redirectUri,
     hasCode: !!code,
-    hasSecret: !!appSecret 
+    hasSecret: !!appSecret,
+    codeLength: code.length
   });
   
   const tokenUrl = 'https://api.instagram.com/oauth/access_token';
@@ -28,13 +29,20 @@ export const exchangeCodeForToken = async (
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error('Token exchange failed:', error);
-      throw new Error(`Failed to exchange code for token: ${error}`);
+      const errorText = await response.text();
+      console.error('Token exchange failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText
+      });
+      throw new Error(`Failed to exchange code for token: ${errorText}`);
     }
 
     const data = await response.json();
-    console.log('Token exchange successful');
+    console.log('Token exchange successful:', {
+      hasAccessToken: !!data.access_token,
+      tokenType: data.token_type
+    });
     return data;
   } catch (error) {
     console.error('Error in token exchange:', error);
@@ -46,7 +54,6 @@ export const getInstagramProfile = async (accessToken: string) => {
   console.log('Fetching Instagram profile...');
   
   try {
-    // Set up headers with Bearer token (no need to encode the token in the Authorization header)
     const headers = new Headers({
       'Authorization': `Bearer ${accessToken}`,
       'Accept': 'application/json',
@@ -62,13 +69,20 @@ export const getInstagramProfile = async (accessToken: string) => {
     );
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error('Profile fetch failed:', error);
-      throw new Error(`Failed to fetch Instagram profile: ${error}`);
+      const errorText = await response.text();
+      console.error('Profile fetch failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText
+      });
+      throw new Error(`Failed to fetch Instagram profile: ${errorText}`);
     }
 
     const data = await response.json();
-    console.log('Profile fetch successful:', { username: data.username });
+    console.log('Profile fetch successful:', { 
+      username: data.username,
+      hasId: !!data.id 
+    });
     return data;
   } catch (error) {
     console.error('Error fetching profile:', error);

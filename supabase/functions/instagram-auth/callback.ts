@@ -18,7 +18,12 @@ serve(async (req) => {
     const state = url.searchParams.get('state');
     const error = url.searchParams.get('error');
     
-    console.log('URL Parameters:', { code: !!code, state, error });
+    console.log('URL Parameters:', { 
+      code: code ? 'present' : 'missing',
+      codeLength: code?.length,
+      state, 
+      error 
+    });
     
     if (error) {
       console.error('Instagram OAuth error:', error);
@@ -37,7 +42,11 @@ serve(async (req) => {
     const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
 
     if (!appSecret || !supabaseUrl || !supabaseServiceRoleKey) {
-      console.error('Missing required environment variables');
+      console.error('Missing required environment variables:', {
+        hasAppSecret: !!appSecret,
+        hasSupabaseUrl: !!supabaseUrl,
+        hasServiceKey: !!supabaseServiceRoleKey
+      });
       return createErrorHtml('Server configuration error');
     }
 
@@ -79,13 +88,25 @@ serve(async (req) => {
 
     console.log('Exchanging code for token...');
     const tokenData = await exchangeCodeForToken(code, appId, appSecret, redirectUri);
-    console.log('Token received:', { hasAccessToken: !!tokenData.access_token });
+    console.log('Token exchange response:', {
+      hasAccessToken: !!tokenData.access_token,
+      tokenType: tokenData.token_type,
+      error: tokenData.error,
+      errorDescription: tokenData.error_description
+    });
+    
+    if (!tokenData.access_token) {
+      console.error('Failed to exchange code for token:', tokenData);
+      return createErrorHtml('Failed to obtain Instagram access token');
+    }
     
     console.log('Fetching Instagram profile...');
     const profile = await getInstagramProfile(tokenData.access_token);
     console.log('Instagram profile fetched:', {
       username: profile.username,
-      hasProfile: !!profile
+      hasProfile: !!profile,
+      error: profile.error,
+      errorType: profile.error_type
     });
 
     console.log('Updating user profile with Instagram data...');
