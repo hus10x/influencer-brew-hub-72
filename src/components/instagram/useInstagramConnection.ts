@@ -87,20 +87,10 @@ export const useInstagramConnection = () => {
       // Store state in localStorage for additional verification
       localStorage.setItem('instagram_oauth_state', state);
 
-      // Construct Instagram OAuth URL with proper encoding
-      const params = new URLSearchParams({
-        enable_fb_login: '0',
-        force_authentication: '1',
-        client_id: '950071187030893',
-        redirect_uri: window.location.origin + '/instagram/callback',
-        response_type: 'code',
-        scope: 'instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish',
-        state: state
-      });
-
-      const instagramUrl = `https://www.instagram.com/oauth/authorize?${params.toString()}`;
-      console.log('Redirecting to Instagram auth URL:', instagramUrl);
+      // Use the new Instagram OAuth URL format
+      const instagramUrl = `https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=950071187030893&redirect_uri=${encodeURIComponent(window.location.origin + '/instagram/callback')}&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish&state=${state}`;
       
+      console.log('Redirecting to Instagram auth URL:', instagramUrl);
       window.location.href = instagramUrl;
     } catch (error) {
       console.error('Error connecting to Instagram:', error);
