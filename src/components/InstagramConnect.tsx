@@ -87,15 +87,8 @@ export const InstagramConnect = () => {
         console.error('Error fetching Instagram configuration:', configError);
         throw new Error('Failed to load Instagram configuration');
       }
-      
-      const instagramUrl = "https://www.instagram.com/oauth/authorize" +
-        `?client_id=${config.appId}` +
-        "&enable_fb_login=0" +
-        "&force_authentication=1" +
-        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-        "&response_type=code" +
-        "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish" +
-        `&state=${state}`;
+
+      const instagramUrl = `https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=${config.appId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish&state=${state}`;
       
       console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
       window.location.href = instagramUrl;
