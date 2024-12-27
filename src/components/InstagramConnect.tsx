@@ -82,15 +82,21 @@ export const InstagramConnect = () => {
         body: { state }
       });
 
-      if (error || !data?.url) {
+      if (error) {
         console.error('Error getting OAuth URL:', error);
-        throw new Error('Failed to initialize Instagram connection');
+        throw new Error(error.message || 'Failed to initialize Instagram connection');
       }
 
+      if (!data?.url) {
+        console.error('No URL returned from OAuth URL endpoint');
+        throw new Error('Failed to get Instagram authorization URL');
+      }
+
+      console.log('Redirecting to Instagram auth URL:', data.url);
       window.location.href = data.url;
     } catch (error) {
       console.error('Error connecting to Instagram:', error);
-      toast.error('Failed to connect to Instagram. Please try again.');
+      toast.error(error.message || 'Failed to connect to Instagram. Please try again.');
     } finally {
       setIsLoading(false);
     }
