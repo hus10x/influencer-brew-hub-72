@@ -55,7 +55,6 @@ export const InstagramConnect = () => {
       console.log('Starting Instagram connection process...');
       setIsLoading(true);
       
-      // Get current user
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       
       if (authError) {
@@ -72,12 +71,10 @@ export const InstagramConnect = () => {
         return;
       }
 
-      // Generate a random state for security
       const state = crypto.randomUUID();
       
       console.log('Storing OAuth state...');
       
-      // Store the state in the database with current path as redirect_path
       const { error: stateError } = await supabase
         .from('instagram_oauth_states')
         .insert({
@@ -91,7 +88,6 @@ export const InstagramConnect = () => {
         throw new Error('Failed to initialize Instagram connection');
       }
       
-      // Build the Instagram OAuth URL with the new app ID
       const appId = '950071187030893';
       const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
       
@@ -101,7 +97,7 @@ export const InstagramConnect = () => {
         "&force_authentication=1" +
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
         "&response_type=code" +
-        "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish" +
+        "&scope=business_management,instagram_basic,instagram_manage_comments,instagram_manage_insights,instagram_content_publish,instagram_manage_messages,pages_read_engagement" +
         `&state=${state}`;
       
       console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
