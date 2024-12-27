@@ -32,7 +32,7 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const appId = '1314871332853944';
+    const appId = '950071187030893';
     const appSecret = Deno.env.get('FACEBOOK_APP_SECRET');
     const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
 
@@ -92,9 +92,9 @@ serve(async (req) => {
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
-        instagram_handle: profile.username,
+        instagram_username: profile.username,
         instagram_connected: true,
-        instagram_business_account: true,
+        instagram_account_type: 'BUSINESS',
         instagram_access_token: tokenData.access_token,
         updated_at: new Date().toISOString(),
       })
