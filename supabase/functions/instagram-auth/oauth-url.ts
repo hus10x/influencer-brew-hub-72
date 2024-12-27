@@ -7,9 +7,10 @@ serve(async (req) => {
   }
 
   try {
-    const appId = Deno.env.get('FACEBOOK_APP_ID');
+    const appId = Deno.env.get('INSTAGRAM_APP_ID');
     if (!appId) {
-      throw new Error('Facebook App ID not configured');
+      console.error('Instagram App ID not configured');
+      throw new Error('Instagram App ID not configured');
     }
 
     const { state } = await req.json();
@@ -19,6 +20,12 @@ serve(async (req) => {
     
     const redirectUri = `https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback`;
     
+    console.log('Generating Instagram OAuth URL with:', {
+      appId: appId ? 'present' : 'missing',
+      redirectUri,
+      state
+    });
+
     // Construct URL exactly as provided by Meta console
     const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
       `?client_id=${appId}` +
@@ -28,6 +35,8 @@ serve(async (req) => {
       "&response_type=code" +
       "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish" +
       `&state=${state}`;
+
+    console.log('Generated Instagram URL:', instagramUrl);
 
     return new Response(
       JSON.stringify({ url: instagramUrl }),
