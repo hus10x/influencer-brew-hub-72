@@ -32,7 +32,3 @@ verify_jwt = false
 [[functions]]
 name = "instagram-auth/callback"
 verify_jwt = false
-
-[[functions]]
-name = "instagram-auth/config"
-verify_jwt = false

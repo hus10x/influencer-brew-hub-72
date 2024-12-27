@@ -5,6 +5,7 @@ import { exchangeCodeForToken, getInstagramProfile } from './instagram-api.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.47.0'
 
 serve(async (req) => {
+  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -13,21 +14,11 @@ serve(async (req) => {
     console.log('Instagram auth callback function called with URL:', req.url);
     
     const url = new URL(req.url);
-    // Remove any hash fragments from the URL
-    const cleanUrl = url.toString().split('#')[0];
-    const params = new URLSearchParams(new URL(cleanUrl).search);
+    const code = url.searchParams.get('code');
+    const state = url.searchParams.get('state');
+    const error = url.searchParams.get('error');
     
-    const code = params.get('code');
-    const state = params.get('state');
-    const error = params.get('error');
-    
-    console.log('Parsed URL Parameters:', { 
-      hasCode: !!code, 
-      hasState: !!state, 
-      error,
-      originalUrl: req.url,
-      cleanUrl 
-    });
+    console.log('URL Parameters:', { code: !!code, state, error });
     
     if (error) {
       console.error('Instagram OAuth error:', error);
@@ -41,11 +32,11 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const appId = Deno.env.get('FACEBOOK_APP_ID');
+    const appId = '1314871332853944';
     const appSecret = Deno.env.get('FACEBOOK_APP_SECRET');
     const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
 
-    if (!appSecret || !supabaseUrl || !supabaseServiceRoleKey || !appId) {
+    if (!appSecret || !supabaseUrl || !supabaseServiceRoleKey) {
       console.error('Missing required environment variables');
       return createErrorHtml('Server configuration error');
     }
@@ -86,18 +77,9 @@ serve(async (req) => {
 
     console.log('Successfully marked OAuth state as used');
 
-    console.log('Exchanging code for token...', {
-      hasCode: !!code,
-      hasAppId: !!appId,
-      hasAppSecret: !!appSecret,
-      redirectUri
-    });
-    
+    console.log('Exchanging code for token...');
     const tokenData = await exchangeCodeForToken(code, appId, appSecret, redirectUri);
-    console.log('Token exchange response:', { 
-      success: !!tokenData.access_token,
-      hasAccessToken: !!tokenData.access_token
-    });
+    console.log('Token received:', { hasAccessToken: !!tokenData.access_token });
     
     console.log('Fetching Instagram profile...');
     const profile = await getInstagramProfile(tokenData.access_token);

@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { InstagramService } from "@/services/instagram";
 
 export const InstagramConnect = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -17,99 +16,69 @@ export const InstagramConnect = () => {
 
   const checkConnectionStatus = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        console.log('No authenticated session found');
-        navigate('/login');
-        return;
-      }
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile } = await supabase
         .from('profiles')
-        .select('instagram_connected, instagram_username, instagram_access_token')
-        .eq('id', session.user.id)
+        .select('instagram_connected, instagram_handle')
+        .eq('id', user.id)
         .single();
 
-      if (profileError) {
-        console.error('Error fetching profile:', profileError);
-        return;
-      }
-
-      console.log('Instagram connection status:', profile);
-
-      if (profile?.instagram_connected && profile?.instagram_access_token) {
-        const instagramService = new InstagramService(profile.instagram_access_token);
-        try {
-          await instagramService.getUserProfile();
-          setIsConnected(true);
-        } catch (error) {
-          console.error('Error verifying Instagram connection:', error);
-          await supabase
-            .from('profiles')
-            .update({
-              instagram_connected: false,
-              instagram_access_token: null
-            })
-            .eq('id', session.user.id);
-        }
+      if (profile?.instagram_connected) {
+        setIsConnected(true);
       }
     } catch (error) {
       console.error('Error checking Instagram connection:', error);
-      if (error.message?.includes('session_not_found')) {
-        toast.error('Session expired. Please login again.');
-        navigate('/login');
-      }
     }
   };
 
   const handleInstagramConnect = async () => {
     try {
+      console.log('Starting Instagram connection process...');
       setIsLoading(true);
       
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session) {
-        console.error('Session error:', sessionError);
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('No authenticated user found');
         toast.error('Please log in to connect your Instagram account');
         navigate('/login');
         return;
       }
 
+      // Generate a random state for security
       const state = crypto.randomUUID();
       
+      console.log('Storing OAuth state...');
+      
+      // Store the state in the database
       const { error: stateError } = await supabase
         .from('instagram_oauth_states')
         .insert({
           state: state,
-          user_id: session.user.id,
-          redirect_path: '/influencer'
+          user_id: user.id
         });
 
       if (stateError) {
+        console.error('Error storing OAuth state:', stateError);
         throw new Error('Failed to initialize Instagram connection');
       }
       
+      // Build the Instagram OAuth URL with force_authentication=true
+      const appId = '1314871332853944';
       const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
       
-      console.log('Calling config endpoint with session token:', session.access_token);
+      const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
+        `?client_id=${appId}` +
+        "&enable_fb_login=0" +
+        "&force_authentication=1" +
+        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+        "&response_type=code" +
+        "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish" +
+        `&state=${state}`;
       
-      const { data, error: configError } = await supabase.functions.invoke('instagram-auth/config', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
-      
-      console.log('Config response:', data);
-      
-      if (configError || !data?.appId) {
-        console.error('Config error:', configError);
-        console.error('Config data:', data);
-        throw new Error('Failed to load Instagram configuration');
-      }
-
-      const instagramUrl = `https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=${data.appId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish&state=${state}`;
-      
+      console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
       window.location.href = instagramUrl;
     } catch (error) {
       console.error('Error connecting to Instagram:', error);

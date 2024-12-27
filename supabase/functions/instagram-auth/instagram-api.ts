@@ -4,11 +4,11 @@ export const exchangeCodeForToken = async (
   appSecret: string,
   redirectUri: string
 ) => {
-  console.log('Starting token exchange process...', { 
+  console.log('Exchanging code for token with params:', { 
+    appId, 
+    redirectUri,
     hasCode: !!code,
-    hasAppId: !!appId,
-    hasSecret: !!appSecret,
-    redirectUri 
+    hasSecret: !!appSecret 
   });
   
   const tokenUrl = 'https://api.instagram.com/oauth/access_token';
@@ -21,30 +21,20 @@ export const exchangeCodeForToken = async (
   formData.append('code', code);
 
   try {
-    console.log('Making token exchange request to:', tokenUrl);
+    console.log('Making token exchange request...');
     const response = await fetch(tokenUrl, {
       method: 'POST',
       body: formData,
-      headers: {
-        'Accept': 'application/json'
-      }
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Token exchange failed:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorText
-      });
-      throw new Error(`Failed to exchange code for token: ${errorText}`);
+      const error = await response.text();
+      console.error('Token exchange failed:', error);
+      throw new Error(`Failed to exchange code for token: ${error}`);
     }
 
     const data = await response.json();
-    console.log('Token exchange successful:', { 
-      hasAccessToken: !!data.access_token,
-      responseData: data 
-    });
+    console.log('Token exchange successful');
     return data;
   } catch (error) {
     console.error('Error in token exchange:', error);
@@ -53,43 +43,25 @@ export const exchangeCodeForToken = async (
 };
 
 export const getInstagramProfile = async (accessToken: string) => {
-  console.log('Starting Instagram profile fetch...');
+  console.log('Fetching Instagram profile...');
   
   try {
-    // Note: We include the access_token in the URL as per Instagram's API requirements
-    const url = `https://graph.instagram.com/v21.0/me?fields=id,username&access_token=${encodeURIComponent(accessToken)}`;
-    console.log('Making profile request to Instagram API');
-    
-    const headers = {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    };
-
-    console.log('Request headers:', {
-      headers: Object.keys(headers)
-    });
-    
-    const response = await fetch(url, { headers });
+    console.log('Making profile request...');
+    const response = await fetch(
+      `https://graph.instagram.com/me?fields=id,username&access_token=${accessToken}`
+    );
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Profile fetch failed:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorText
-      });
-      throw new Error(`Failed to fetch Instagram profile: ${errorText}`);
+      const error = await response.text();
+      console.error('Profile fetch failed:', error);
+      throw new Error(`Failed to fetch Instagram profile: ${error}`);
     }
 
     const data = await response.json();
-    console.log('Profile fetch successful:', { 
-      hasUsername: !!data.username,
-      hasId: !!data.id,
-      responseData: data
-    });
+    console.log('Profile fetch successful:', { username: data.username });
     return data;
   } catch (error) {
-    console.error('Error fetching Instagram profile:', error);
+    console.error('Error fetching profile:', error);
     throw error;
   }
 };
