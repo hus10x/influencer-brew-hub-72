@@ -22,7 +22,7 @@ export const InstagramConnect = () => {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('instagram_connected, instagram_handle, instagram_access_token')
+        .select('instagram_connected, instagram_username, instagram_access_token')
         .eq('id', user.id)
         .single();
 
@@ -69,7 +69,8 @@ export const InstagramConnect = () => {
         .from('instagram_oauth_states')
         .insert({
           state: state,
-          user_id: user.id
+          user_id: user.id,
+          redirect_path: '/influencer'
         });
 
       if (stateError) {
