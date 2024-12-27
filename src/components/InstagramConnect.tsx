@@ -18,13 +18,18 @@ export const InstagramConnect = () => {
   const checkConnectionStatus = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.log('No authenticated user found');
+        return;
+      }
 
       const { data: profile } = await supabase
         .from('profiles')
         .select('instagram_connected, instagram_username, instagram_access_token')
         .eq('id', user.id)
         .single();
+
+      console.log('Instagram connection status:', profile);
 
       if (profile?.instagram_connected && profile?.instagram_access_token) {
         const instagramService = new InstagramService(profile.instagram_access_token);
@@ -75,8 +80,19 @@ export const InstagramConnect = () => {
       const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
       
       console.log('Calling config endpoint...');
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      if (!sessionData.session) {
+        toast.error('Please log in to continue');
+        navigate('/login');
+        return;
+      }
+
       const { data, error: configError } = await supabase.functions.invoke('instagram-auth/config', {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`
+        }
       });
       
       console.log('Config response:', data);
