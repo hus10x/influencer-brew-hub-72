@@ -74,13 +74,16 @@ export const InstagramConnect = () => {
       
       const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
       
+      console.log('Calling config endpoint...');
       const { data, error: configError } = await supabase.functions.invoke('instagram-auth/config', {
-        method: 'POST',
-        body: { redirectUri }
+        method: 'POST'
       });
       
+      console.log('Config response:', data);
+      
       if (configError || !data?.appId) {
-        console.error('Error fetching Instagram configuration:', configError || 'No app ID received');
+        console.error('Config error:', configError);
+        console.error('Config data:', data);
         throw new Error('Failed to load Instagram configuration');
       }
 
