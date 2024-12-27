@@ -88,7 +88,7 @@ export const InstagramConnect = () => {
         throw new Error('Failed to load Instagram configuration');
       }
       
-      const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
+      const instagramUrl = "https://www.instagram.com/oauth/authorize" +
         `?client_id=${config.appId}` +
         "&enable_fb_login=0" +
         "&force_authentication=1" +
