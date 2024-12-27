@@ -92,7 +92,7 @@ export const useInstagramConnection = () => {
         enable_fb_login: '0',
         force_authentication: '1',
         client_id: '950071187030893',
-        redirect_uri: 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback',
+        redirect_uri: window.location.origin + '/instagram/callback',
         response_type: 'code',
         scope: 'instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish',
         state: state
