@@ -15,20 +15,34 @@ export const InstagramConnect = () => {
 
     const checkConnectionStatus = async () => {
       try {
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           console.error('Session error:', sessionError);
           if (mounted) {
-            toast.error('Authentication error. Please try logging in again.');
+            // Handle session errors by signing out and redirecting
+            await supabase.auth.signOut();
+            toast.error('Your session has expired. Please log in again.');
             navigate('/login');
           }
           return;
         }
 
-        if (!sessionData.session) {
+        if (!session) {
           console.log('No active session found');
           if (mounted) {
+            navigate('/login');
+          }
+          return;
+        }
+
+        // Check if the session is valid
+        const { data: user, error: userError } = await supabase.auth.getUser();
+        if (userError) {
+          console.error('User validation error:', userError);
+          if (mounted) {
+            await supabase.auth.signOut();
+            toast.error('Authentication error. Please log in again.');
             navigate('/login');
           }
           return;
@@ -37,7 +51,7 @@ export const InstagramConnect = () => {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('instagram_connected, instagram_username, instagram_account_type')
-          .eq('id', sessionData.session.user.id)
+          .eq('id', session.user.id)
           .maybeSingle();
 
         if (profileError) {
@@ -50,13 +64,27 @@ export const InstagramConnect = () => {
         }
       } catch (error) {
         console.error('Error checking Instagram connection:', error);
+        if (mounted) {
+          toast.error('Error checking Instagram connection status');
+        }
       }
     };
 
     checkConnectionStatus();
 
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        if (mounted) {
+          setIsConnected(false);
+          navigate('/login');
+        }
+      }
+    });
+
     return () => {
       mounted = false;
+      subscription.unsubscribe();
     };
   }, [navigate]);
 
@@ -67,16 +95,19 @@ export const InstagramConnect = () => {
       
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      if (sessionError) {
+      if (sessionError || !session) {
         console.error('Session error:', sessionError);
         toast.error('Please log in to connect your Instagram account');
         navigate('/login');
         return;
       }
 
-      if (!session) {
-        console.error('No active session');
-        toast.error('Please log in to connect your Instagram account');
+      // Verify user session is still valid
+      const { error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        console.error('User validation error:', userError);
+        await supabase.auth.signOut();
+        toast.error('Session expired. Please log in again.');
         navigate('/login');
         return;
       }
