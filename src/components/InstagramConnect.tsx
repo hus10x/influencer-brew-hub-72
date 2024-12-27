@@ -11,61 +11,71 @@ export const InstagramConnect = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    let mounted = true;
+
+    const checkConnectionStatus = async () => {
+      try {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          if (mounted) {
+            toast.error('Authentication error. Please try logging in again.');
+            navigate('/login');
+          }
+          return;
+        }
+
+        if (!sessionData.session) {
+          console.log('No active session found');
+          if (mounted) {
+            navigate('/login');
+          }
+          return;
+        }
+
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('instagram_connected, instagram_username, instagram_account_type')
+          .eq('id', sessionData.session.user.id)
+          .maybeSingle();
+
+        if (profileError) {
+          console.error('Error checking Instagram connection:', profileError);
+          return;
+        }
+
+        if (mounted && profile?.instagram_connected) {
+          setIsConnected(true);
+        }
+      } catch (error) {
+        console.error('Error checking Instagram connection:', error);
+      }
+    };
+
     checkConnectionStatus();
-  }, []);
 
-  const checkConnectionStatus = async () => {
-    try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      
-      if (authError) {
-        console.error('Authentication error:', authError);
-        toast.error('Please log in to continue');
-        navigate('/login');
-        return;
-      }
-
-      if (!user) {
-        console.log('No authenticated user found');
-        navigate('/login');
-        return;
-      }
-
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('instagram_connected, instagram_username, instagram_account_type')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (profileError) {
-        console.error('Error checking Instagram connection:', profileError);
-        return;
-      }
-
-      if (profile?.instagram_connected) {
-        setIsConnected(true);
-      }
-    } catch (error) {
-      console.error('Error checking Instagram connection:', error);
-    }
-  };
+    return () => {
+      mounted = false;
+    };
+  }, [navigate]);
 
   const handleInstagramConnect = async () => {
     try {
       console.log('Starting Instagram connection process...');
       setIsLoading(true);
       
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      if (authError) {
-        console.error('Authentication error:', authError);
+      if (sessionError) {
+        console.error('Session error:', sessionError);
         toast.error('Please log in to connect your Instagram account');
         navigate('/login');
         return;
       }
 
-      if (!user) {
-        console.error('No authenticated user found');
+      if (!session) {
+        console.error('No active session');
         toast.error('Please log in to connect your Instagram account');
         navigate('/login');
         return;
@@ -79,7 +89,7 @@ export const InstagramConnect = () => {
         .from('instagram_oauth_states')
         .insert({
           state: state,
-          user_id: user.id,
+          user_id: session.user.id,
           redirect_path: window.location.pathname
         });
 
