@@ -91,7 +91,7 @@ export const InstagramConnect = () => {
       
       const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
       
-      console.log('Calling config endpoint...');
+      console.log('Calling config endpoint with session token:', session.access_token);
       
       const { data, error: configError } = await supabase.functions.invoke('instagram-auth/config', {
         method: 'POST',
