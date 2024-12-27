@@ -31,21 +31,29 @@ export const useInstagramConnection = () => {
           setIsConnected(true);
         } catch (error) {
           console.error('Error verifying Instagram connection:', error);
-          await supabase
-            .from('profiles')
-            .update({
-              instagram_connected: false,
-              instagram_access_token: null,
-              instagram_username: null,
-              instagram_id: null,
-              instagram_account_type: null,
-              instagram_token_expires_at: null
-            })
-            .eq('id', user.id);
+          await disconnectInstagram(user.id);
         }
       }
     } catch (error) {
       console.error('Error checking Instagram connection:', error);
+    }
+  };
+
+  const disconnectInstagram = async (userId: string) => {
+    try {
+      await supabase
+        .from('profiles')
+        .update({
+          instagram_connected: false,
+          instagram_access_token: null,
+          instagram_username: null,
+          instagram_id: null,
+          instagram_account_type: null,
+          instagram_token_expires_at: null
+        })
+        .eq('id', userId);
+    } catch (error) {
+      console.error('Error disconnecting Instagram:', error);
     }
   };
 
@@ -61,6 +69,7 @@ export const useInstagramConnection = () => {
       }
 
       const state = crypto.randomUUID();
+      console.log('Generated OAuth state:', state);
       
       const { error: stateError } = await supabase
         .from('instagram_oauth_states')
@@ -75,14 +84,27 @@ export const useInstagramConnection = () => {
         throw new Error('Failed to initialize Instagram connection');
       }
 
-      // Use the direct Instagram OAuth URL with the dynamic state parameter
-      const instagramUrl = `https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=950071187030893&redirect_uri=https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish&state=${state}`;
+      // Store state in localStorage for additional verification
+      localStorage.setItem('instagram_oauth_state', state);
 
+      // Construct Instagram OAuth URL with proper encoding
+      const params = new URLSearchParams({
+        enable_fb_login: '0',
+        force_authentication: '1',
+        client_id: '950071187030893',
+        redirect_uri: 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback',
+        response_type: 'code',
+        scope: 'instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish',
+        state: state
+      });
+
+      const instagramUrl = `https://www.instagram.com/oauth/authorize?${params.toString()}`;
       console.log('Redirecting to Instagram auth URL:', instagramUrl);
+      
       window.location.href = instagramUrl;
     } catch (error) {
       console.error('Error connecting to Instagram:', error);
-      toast.error(error.message || 'Failed to connect to Instagram. Please try again.');
+      toast.error('Failed to connect to Instagram. Please try again.');
     } finally {
       setIsLoading(false);
     }
