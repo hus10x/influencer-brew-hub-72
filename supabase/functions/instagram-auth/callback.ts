@@ -14,15 +14,19 @@ serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    const code = url.searchParams.get('code');
-    const state = url.searchParams.get('state');
-    const error = url.searchParams.get('error');
+    // Remove any fragments from the URL
+    const cleanUrl = url.toString().split('#')[0];
+    const searchParams = new URLSearchParams(new URL(cleanUrl).search);
+    
+    const code = searchParams.get('code');
+    const state = searchParams.get('state');
+    const error = searchParams.get('error');
     
     console.log('URL Parameters:', { 
-      code: code ? 'present' : 'missing',
-      codeLength: code?.length,
-      state, 
-      error 
+      code: code ? `${code.substring(0, 10)}...` : 'missing',
+      state,
+      error,
+      rawUrl: cleanUrl
     });
     
     if (error) {
@@ -31,8 +35,8 @@ serve(async (req) => {
     }
 
     if (!code || !state) {
-      console.error('Missing code or state');
-      return createErrorHtml('Invalid OAuth parameters');
+      console.error('Missing required parameters:', { hasCode: !!code, hasState: !!state });
+      return createErrorHtml('Invalid OAuth parameters: Missing code or state');
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -56,7 +60,7 @@ serve(async (req) => {
     console.log('Fetching OAuth state from database...');
     const { data: oauthState, error: stateError } = await supabase
       .from('instagram_oauth_states')
-      .select('user_id, used')
+      .select('user_id, used, redirect_path')
       .eq('state', state)
       .single();
 
@@ -72,6 +76,7 @@ serve(async (req) => {
 
     console.log('Found valid OAuth state for user:', oauthState.user_id);
     const userId = oauthState.user_id;
+    const redirectPath = oauthState.redirect_path || '/influencer';
 
     // Mark the state as used immediately to prevent reuse
     const { error: updateStateError } = await supabase
@@ -117,6 +122,7 @@ serve(async (req) => {
         instagram_connected: true,
         instagram_account_type: 'BUSINESS',
         instagram_access_token: tokenData.access_token,
+        instagram_token_expires_at: new Date(Date.now() + (tokenData.expires_in * 1000)).toISOString(),
         updated_at: new Date().toISOString(),
       })
       .eq('id', userId);
@@ -127,7 +133,7 @@ serve(async (req) => {
     }
 
     console.log('Successfully connected Instagram account for user:', userId);
-    return createSuccessHtml({ username: profile.username }, '/influencer');
+    return createSuccessHtml({ username: profile.username }, redirectPath);
 
   } catch (error) {
     console.error('Error in Instagram auth:', error);
