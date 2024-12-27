@@ -21,7 +21,7 @@ export const InstagramConnect = () => {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('instagram_connected, instagram_handle')
+        .select('instagram_connected')
         .eq('id', user.id)
         .single();
 
@@ -52,12 +52,13 @@ export const InstagramConnect = () => {
       
       console.log('Storing OAuth state...');
       
-      // Store the state in the database
+      // Store the state in the database with current path as redirect_path
       const { error: stateError } = await supabase
         .from('instagram_oauth_states')
         .insert({
           state: state,
-          user_id: user.id
+          user_id: user.id,
+          redirect_path: window.location.pathname
         });
 
       if (stateError) {
