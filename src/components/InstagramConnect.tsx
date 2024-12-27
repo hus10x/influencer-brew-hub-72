@@ -18,7 +18,7 @@ export const InstagramConnect = () => {
       `?client_id=${appId}` +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
       "&response_type=code" +
-      "&scope=user_profile,user_media" +
+      "&scope=instagram_basic,instagram_content_publish" +
       `&state=${state}`;
     
     console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
