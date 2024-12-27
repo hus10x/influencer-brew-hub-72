@@ -26,7 +26,8 @@ export const InstagramConnect = () => {
         .from('instagram_oauth_states')
         .insert({
           state: state,
-          user_id: user.id
+          user_id: user.id,
+          redirect_path: '/influencer' // Add the required redirect_path
         });
 
       if (stateError) {
