@@ -6,7 +6,7 @@ export const checkInstagramConnection = async (email: string) => {
     
     const { data, error } = await supabase
       .from('profiles')
-      .select('instagram_connected, instagram_username, instagram_account_type')
+      .select('instagram_connected, instagram_handle, instagram_business_account')
       .eq('email', email)
       .maybeSingle();
 

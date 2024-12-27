@@ -245,8 +245,6 @@ export type Database = {
         Row: {
           created_at: string | null
           expires_at: string | null
-          id: string
-          redirect_path: string
           state: string
           used: boolean | null
           user_id: string
@@ -254,8 +252,6 @@ export type Database = {
         Insert: {
           created_at?: string | null
           expires_at?: string | null
-          id?: string
-          redirect_path: string
           state: string
           used?: boolean | null
           user_id: string
@@ -263,8 +259,6 @@ export type Database = {
         Update: {
           created_at?: string | null
           expires_at?: string | null
-          id?: string
-          redirect_path?: string
           state?: string
           used?: boolean | null
           user_id?: string
@@ -279,11 +273,9 @@ export type Database = {
           full_name: string | null
           id: string
           instagram_access_token: string | null
-          instagram_account_type: string | null
+          instagram_business_account: boolean | null
           instagram_connected: boolean | null
-          instagram_id: string | null
-          instagram_token_expires_at: string | null
-          instagram_username: string | null
+          instagram_handle: string | null
           updated_at: string | null
           user_type: string
         }
@@ -294,11 +286,9 @@ export type Database = {
           full_name?: string | null
           id: string
           instagram_access_token?: string | null
-          instagram_account_type?: string | null
+          instagram_business_account?: boolean | null
           instagram_connected?: boolean | null
-          instagram_id?: string | null
-          instagram_token_expires_at?: string | null
-          instagram_username?: string | null
+          instagram_handle?: string | null
           updated_at?: string | null
           user_type: string
         }
@@ -309,11 +299,9 @@ export type Database = {
           full_name?: string | null
           id?: string
           instagram_access_token?: string | null
-          instagram_account_type?: string | null
+          instagram_business_account?: boolean | null
           instagram_connected?: boolean | null
-          instagram_id?: string | null
-          instagram_token_expires_at?: string | null
-          instagram_username?: string | null
+          instagram_handle?: string | null
           updated_at?: string | null
           user_type?: string
         }
@@ -372,10 +360,6 @@ export type Database = {
     }
     Functions: {
       cleanup_expired_oauth_states: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_instagram_oauth_states: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
