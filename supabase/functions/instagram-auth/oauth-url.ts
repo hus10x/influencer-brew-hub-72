@@ -7,12 +7,9 @@ serve(async (req) => {
   }
 
   try {
-    const appId = Deno.env.get('INSTAGRAM_APP_ID');
-    if (!appId) {
-      console.error('Instagram App ID not found in environment variables');
-      throw new Error('Instagram App ID not configured');
-    }
-
+    // Use the hardcoded App ID that works
+    const appId = '950071187030893';
+    
     const { state } = await req.json();
     if (!state) {
       console.error('No state parameter provided');

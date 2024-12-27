@@ -33,7 +33,6 @@ export const InstagramConnect = () => {
           setIsConnected(true);
         } catch (error) {
           console.error('Error verifying Instagram connection:', error);
-          // Token might be invalid, update profile
           await supabase
             .from('profiles')
             .update({
