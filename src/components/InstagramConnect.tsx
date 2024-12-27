@@ -14,11 +14,17 @@ export const InstagramConnect = () => {
     const { state, appId } = authData;
     const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
     
+    const scopes = [
+      'instagram_basic',
+      'instagram_content_publish',
+      'public_profile'
+    ].join(',');
+
     const instagramUrl = "https://api.instagram.com/oauth/authorize" + 
       `?client_id=${appId}` +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
       "&response_type=code" +
-      "&scope=instagram_basic,instagram_content_publish" +
+      `&scope=${scopes}` +
       `&state=${state}`;
     
     console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
