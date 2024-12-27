@@ -5,7 +5,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState, useCallback } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const images = [
@@ -13,30 +13,31 @@ const images = [
   "/lovable-uploads/05b8806a-6915-464c-9518-63b9c8007a70.png",
   "/lovable-uploads/0bc3ee17-68a8-49d5-b5c1-1db53b59e416.png",
   "/lovable-uploads/1bd0382b-9245-47d9-9071-9cddd6dbfa66.png",
-];
+] as const;
+
+const CarouselImage = memo(({ src, index, onLoad }: { src: string; index: number; onLoad: () => void }) => (
+  <img
+    src={src}
+    alt={`Slide ${index + 1}`}
+    className="rounded-3xl shadow-xl w-full object-cover aspect-[4/3] transition-opacity duration-300"
+    loading={index === 0 ? "eager" : "lazy"}
+    onLoad={onLoad}
+  />
+));
+CarouselImage.displayName = "CarouselImage";
 
 export const HeroCarousel = () => {
-  const [imagesLoaded, setImagesLoaded] = useState<boolean[]>(new Array(images.length).fill(false));
+  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
   const [allImagesLoaded, setAllImagesLoaded] = useState(false);
 
-  useEffect(() => {
-    const imagePromises = images.map((src, index) => {
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.src = src;
-        img.onload = () => {
-          setImagesLoaded(prev => {
-            const newState = [...prev];
-            newState[index] = true;
-            return newState;
-          });
-          resolve(true);
-        };
-      });
-    });
-
-    Promise.all(imagePromises).then(() => {
-      setAllImagesLoaded(true);
+  const handleImageLoad = useCallback((index: number) => {
+    setLoadedImages(prev => {
+      const newSet = new Set(prev);
+      newSet.add(index);
+      if (newSet.size === images.length) {
+        setAllImagesLoaded(true);
+      }
+      return newSet;
     });
   }, []);
 
@@ -45,16 +46,13 @@ export const HeroCarousel = () => {
       <CarouselContent>
         {images.map((image, index) => (
           <CarouselItem key={index} className="relative">
-            {!imagesLoaded[index] && (
+            {!loadedImages.has(index) && (
               <Skeleton className="w-full rounded-3xl aspect-[4/3] absolute inset-0" />
             )}
-            <img
+            <CarouselImage
               src={image}
-              alt={`Slide ${index + 1}`}
-              className={`rounded-3xl shadow-xl w-full object-cover aspect-[4/3] transition-opacity duration-300 ${
-                imagesLoaded[index] ? 'opacity-100' : 'opacity-0'
-              }`}
-              loading="eager"
+              index={index}
+              onLoad={() => handleImageLoad(index)}
             />
           </CarouselItem>
         ))}
