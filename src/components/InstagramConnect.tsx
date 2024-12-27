@@ -17,17 +17,23 @@ export const InstagramConnect = () => {
 
   const checkConnectionStatus = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log('No authenticated user found');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.log('No authenticated session found');
+        navigate('/login');
         return;
       }
 
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('instagram_connected, instagram_username, instagram_access_token')
-        .eq('id', user.id)
+        .eq('id', session.user.id)
         .single();
+
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        return;
+      }
 
       console.log('Instagram connection status:', profile);
 
@@ -44,11 +50,15 @@ export const InstagramConnect = () => {
               instagram_connected: false,
               instagram_access_token: null
             })
-            .eq('id', user.id);
+            .eq('id', session.user.id);
         }
       }
     } catch (error) {
       console.error('Error checking Instagram connection:', error);
+      if (error.message?.includes('session_not_found')) {
+        toast.error('Session expired. Please login again.');
+        navigate('/login');
+      }
     }
   };
 
@@ -56,8 +66,10 @@ export const InstagramConnect = () => {
     try {
       setIsLoading(true);
       
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        console.error('Session error:', sessionError);
         toast.error('Please log in to connect your Instagram account');
         navigate('/login');
         return;
@@ -69,7 +81,7 @@ export const InstagramConnect = () => {
         .from('instagram_oauth_states')
         .insert({
           state: state,
-          user_id: user.id,
+          user_id: session.user.id,
           redirect_path: '/influencer'
         });
 
@@ -80,18 +92,11 @@ export const InstagramConnect = () => {
       const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
       
       console.log('Calling config endpoint...');
-      const { data: sessionData } = await supabase.auth.getSession();
       
-      if (!sessionData.session) {
-        toast.error('Please log in to continue');
-        navigate('/login');
-        return;
-      }
-
       const { data, error: configError } = await supabase.functions.invoke('instagram-auth/config', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${sessionData.session.access_token}`
+          Authorization: `Bearer ${session.access_token}`
         }
       });
       
