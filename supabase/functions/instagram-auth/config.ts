@@ -8,7 +8,10 @@ serve(async (req) => {
 
   try {
     const appId = Deno.env.get('FACEBOOK_APP_ID');
+    console.log('Retrieved Facebook App ID:', appId); // Add logging
+    
     if (!appId) {
+      console.error('Facebook App ID not configured');
       throw new Error('Facebook App ID not configured');
     }
 
@@ -25,6 +28,7 @@ serve(async (req) => {
       },
     )
   } catch (error) {
+    console.error('Error in config function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {

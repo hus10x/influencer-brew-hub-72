@@ -83,10 +83,13 @@ export const InstagramConnect = () => {
       // Fetch the app configuration from Edge Function
       const { data: config, error: configError } = await supabase.functions.invoke('instagram-auth/config');
       
-      if (configError) {
+      if (configError || !config?.appId) {
         console.error('Error fetching Instagram configuration:', configError);
+        console.log('Config response:', config);
         throw new Error('Failed to load Instagram configuration');
       }
+
+      console.log('Retrieved app ID from config:', config.appId);
 
       const instagramUrl = `https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=${config.appId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish&state=${state}`;
       
