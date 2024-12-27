@@ -78,11 +78,18 @@ export const InstagramConnect = () => {
         throw new Error('Failed to initialize Instagram connection');
       }
       
-      const appId = '1314871332853944';
       const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
       
+      // Fetch the app configuration from Edge Function
+      const { data: config, error: configError } = await supabase.functions.invoke('instagram-auth/config');
+      
+      if (configError) {
+        console.error('Error fetching Instagram configuration:', configError);
+        throw new Error('Failed to load Instagram configuration');
+      }
+      
       const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
-        `?client_id=${appId}` +
+        `?client_id=${config.appId}` +
         "&enable_fb_login=0" +
         "&force_authentication=1" +
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
