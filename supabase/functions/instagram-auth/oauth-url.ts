@@ -2,42 +2,45 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from './response.ts'
 
 serve(async (req) => {
+  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    // Use the hardcoded App ID that works
-    const appId = '950071187030893';
+    console.log('Starting OAuth URL generation...');
     
-    const { state } = await req.json();
-    if (!state) {
-      console.error('No state parameter provided');
-      throw new Error('State parameter is required');
+    const appId = Deno.env.get('FACEBOOK_APP_ID');
+    if (!appId) {
+      console.error('Facebook App ID not configured');
+      throw new Error('Facebook App ID not configured');
     }
-    
-    const redirectUri = `https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback`;
-    
-    console.log('Generating Instagram OAuth URL with:', {
-      appId,
-      redirectUri,
-      state
-    });
 
-    // Construct URL exactly as provided
-    const instagramUrl = `https://www.instagram.com/oauth/authorize` +
-      `?enable_fb_login=0` +
-      `&force_authentication=1` +
-      `&client_id=${appId}` +
+    // Generate a random state parameter for security
+    const state = crypto.randomUUID();
+    
+    // Use the format provided by Meta console
+    const redirectUri = `https://ahtozhqhjdkivyaqskko.supabase.com/functions/v1/instagram-auth/callback`;
+    
+    console.log('Using redirect URI:', redirectUri);
+    console.log('Using app ID:', appId);
+    
+    const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
+      `?client_id=${appId}` +
+      "&enable_fb_login=0" +
+      "&force_authentication=1" +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-      `&response_type=code` +
-      `&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish` +
+      "&response_type=code" +
+      "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish" +
       `&state=${state}`;
 
-    console.log('Generated Instagram URL:', instagramUrl);
+    console.log('Generated Instagram OAuth URL:', instagramUrl);
 
     return new Response(
-      JSON.stringify({ url: instagramUrl }),
+      JSON.stringify({ 
+        url: instagramUrl, 
+        state: state 
+      }),
       {
         headers: {
           ...corsHeaders,
@@ -49,7 +52,9 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error generating OAuth URL:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || 'Failed to generate OAuth URL'
+      }),
       {
         headers: {
           ...corsHeaders,

@@ -1,5 +1,4 @@
 import { Check } from "lucide-react";
-import { memo } from "react";
 
 const steps = [
   {
@@ -17,28 +16,9 @@ const steps = [
     title: "Collaborate",
     description: "Accept collaborations and manage the entire process through our platform.",
   },
-] as const;
+];
 
-const StepCard = memo(({ step, index }: { step: typeof steps[number]; index: number }) => (
-  <div
-    className="relative p-8 bg-background border border-border rounded-2xl shadow-sm hover:shadow-md transition-shadow animate-fade-up dark:shadow-none"
-    style={{ animationDelay: `${index * 100}ms` }}
-  >
-    <div className="flex items-center mb-4">
-      <span className="text-4xl font-bold text-primary/20 dark:text-primary/10">
-        {step.number}
-      </span>
-      <div className="ml-auto bg-primary/10 p-2 rounded-full">
-        <Check className="w-5 h-5 text-primary" />
-      </div>
-    </div>
-    <h3 className="text-xl font-semibold text-foreground mb-2">{step.title}</h3>
-    <p className="text-muted-foreground">{step.description}</p>
-  </div>
-));
-StepCard.displayName = "StepCard";
-
-const HowItWorks = () => {
+export const HowItWorks = () => {
   return (
     <section className="py-24 bg-muted/50 dark:bg-background/95 px-6">
       <div className="container mx-auto">
@@ -53,12 +33,25 @@ const HowItWorks = () => {
         </div>
         <div className="grid lg:grid-cols-3 gap-8">
           {steps.map((step, index) => (
-            <StepCard key={step.number} step={step} index={index} />
+            <div
+              key={step.number}
+              className="relative p-8 bg-background border border-border rounded-2xl shadow-sm hover:shadow-md transition-shadow animate-fade-up dark:shadow-none"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <div className="flex items-center mb-4">
+                <span className="text-4xl font-bold text-primary/20 dark:text-primary/10">
+                  {step.number}
+                </span>
+                <div className="ml-auto bg-primary/10 p-2 rounded-full">
+                  <Check className="w-5 h-5 text-primary" />
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">{step.title}</h3>
+              <p className="text-muted-foreground">{step.description}</p>
+            </div>
           ))}
         </div>
       </div>
     </section>
   );
 };
-
-export default HowItWorks;

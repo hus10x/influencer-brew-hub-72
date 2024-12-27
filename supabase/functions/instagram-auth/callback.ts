@@ -11,11 +11,12 @@ serve(async (req) => {
 
   try {
     console.log('Instagram auth callback function called');
-    
     const url = new URL(req.url);
     const code = url.searchParams.get('code');
     const state = url.searchParams.get('state');
     const error = url.searchParams.get('error');
+    
+    console.log('URL Parameters:', { code: !!code, state, error });
     
     if (error) {
       console.error('Instagram OAuth error:', error);
@@ -29,20 +30,26 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const appId = Deno.env.get('FACEBOOK_APP_ID');
+    const appId = '493461117098279';
     const appSecret = Deno.env.get('FACEBOOK_APP_SECRET');
+    const redirectUri = 'https://preview--influencer-brew-hub-72.lovable.app/';
 
-    if (!appSecret || !supabaseUrl || !supabaseServiceRoleKey || !appId) {
-      console.error('Missing required environment variables');
+    if (!appSecret || !supabaseUrl || !supabaseServiceRoleKey) {
+      console.error('Missing required environment variables:', {
+        hasAppSecret: !!appSecret,
+        hasSupabaseUrl: !!supabaseUrl,
+        hasServiceRoleKey: !!supabaseServiceRoleKey
+      });
       return createErrorHtml('Server configuration error');
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     console.log('Fetching OAuth state from database...');
+    // Get the user ID from the stored state and ensure it's not already used
     const { data: oauthState, error: stateError } = await supabase
       .from('instagram_oauth_states')
-      .select('user_id, used, redirect_path')
+      .select('user_id, used')
       .eq('state', state)
       .single();
 
@@ -56,44 +63,75 @@ serve(async (req) => {
       return createErrorHtml('This authentication link has already been used');
     }
 
-    const redirectUri = `https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback`;
+    console.log('Found valid OAuth state for user:', oauthState.user_id);
+    const userId = oauthState.user_id;
+
+    // Mark the state as used immediately to prevent reuse
+    const { error: updateStateError } = await supabase
+      .from('instagram_oauth_states')
+      .update({ 
+        used: true,
+        updated_at: new Date().toISOString()
+      })
+      .eq('state', state)
+      .eq('used', false); // Only update if it's not already used
+
+    if (updateStateError) {
+      console.error('Error marking OAuth state as used:', updateStateError);
+      return createErrorHtml('Failed to process authentication');
+    }
+
+    console.log('Successfully marked OAuth state as used');
 
     console.log('Exchanging code for token...');
     const tokenData = await exchangeCodeForToken(code, appId, appSecret, redirectUri);
+    console.log('Token received:', { hasAccessToken: !!tokenData.access_token });
     
     console.log('Fetching Instagram profile...');
     const profile = await getInstagramProfile(tokenData.access_token);
+    console.log('Instagram profile fetched:', {
+      username: profile.username,
+      hasProfile: !!profile
+    });
 
-    // Mark the state as used
-    await supabase
-      .from('instagram_oauth_states')
-      .update({ used: true })
-      .eq('state', state);
+    // Get user's role from profiles table
+    console.log('Fetching user profile...');
+    const { data: userProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('user_type')
+      .eq('id', userId)
+      .single();
 
-    console.log('Updating profile with Instagram data:', profile.username);
+    if (profileError) {
+      console.error('Error fetching user profile:', profileError);
+      return createErrorHtml('Error fetching user profile');
+    }
+
+    console.log('Updating user profile with Instagram data...');
+    // Update the user's profile with Instagram info
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
-        instagram_id: profile.id,
-        instagram_username: profile.username,
+        instagram_handle: profile.username,
         instagram_connected: true,
+        instagram_business_account: true,
         instagram_access_token: tokenData.access_token,
-        instagram_account_type: profile.account_type,
-        instagram_token_expires_at: new Date(Date.now() + tokenData.expires_in * 1000).toISOString(),
         updated_at: new Date().toISOString(),
       })
-      .eq('id', oauthState.user_id);
+      .eq('id', userId);
 
     if (updateError) {
-      console.error('Database update error:', updateError);
+      console.error('Error updating profile:', updateError);
       return createErrorHtml(`Failed to update profile: ${updateError.message}`);
     }
 
-    console.log('Successfully connected Instagram account');
-    return createSuccessHtml(
-      { username: profile.username }, 
-      oauthState.redirect_path || '/influencer'
-    );
+    console.log('Successfully connected Instagram account for user:', userId);
+    
+    // Determine redirect path based on user type
+    const redirectPath = userProfile.user_type === 'influencer' ? '/influencer' : '/client';
+    console.log(`Redirecting user to ${redirectPath}`);
+    
+    return createSuccessHtml({ username: profile.username }, redirectPath);
 
   } catch (error) {
     console.error('Error in Instagram auth:', error);

@@ -17,7 +17,7 @@ const navigation = {
   ],
 };
 
-const Footer = () => {
+export const Footer = () => {
   return (
     <footer className="bg-background border-t">
       <div className="mx-auto max-w-7xl px-6 py-12 lg:py-16">
@@ -94,5 +94,3 @@ const Footer = () => {
     </footer>
   );
 };
-
-export default Footer;
