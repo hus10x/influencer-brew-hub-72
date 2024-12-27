@@ -5,14 +5,14 @@ import { exchangeCodeForToken, getInstagramProfile } from './instagram-api.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.47.0'
 
 serve(async (req) => {
+  console.log('Instagram auth callback function called with URL:', req.url);
+  
   // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    console.log('Instagram auth callback function called with URL:', req.url);
-    
     const url = new URL(req.url);
     const code = url.searchParams.get('code');
     const state = url.searchParams.get('state');
