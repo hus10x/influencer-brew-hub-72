@@ -101,15 +101,12 @@ export const InstagramConnect = () => {
       const appId = '950071187030893';
       const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
       
-      const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
+      const instagramUrl = "https://api.instagram.com/oauth/authorize" + 
         `?client_id=${appId}` +
-        "&enable_fb_login=0" +
-        "&force_authentication=1" +
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
         "&response_type=code" +
-        "&scope=pages_show_list,instagram_basic,instagram_manage_comments,instagram_manage_insights,instagram_content_publish,instagram_manage_messages,pages_read_engagement" +
-        `&state=${state}` +
-        "&v=21.0";  // Updated to latest API version (v21.0)
+        "&scope=user_profile,user_media" +
+        `&state=${state}`;
       
       console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
       window.location.href = instagramUrl;
