@@ -11,7 +11,7 @@ export const InstagramConnect = () => {
     
     if (!authData) return;
     
-    const { state, appId } = authData;
+    const { state } = authData;
     const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
     
     // Properly encode each parameter
@@ -23,7 +23,7 @@ export const InstagramConnect = () => {
     const instagramUrl = "https://www.instagram.com/oauth/authorize?" +
       "enable_fb_login=0&" +
       "force_authentication=1&" +
-      `client_id=${encodeURIComponent(appId)}&` +
+      `client_id=${encodeURIComponent(authData.appId)}&` +
       `redirect_uri=${encodeURIComponent(redirectUri)}&` +
       "response_type=code&" +
       `scope=${scope}`;
