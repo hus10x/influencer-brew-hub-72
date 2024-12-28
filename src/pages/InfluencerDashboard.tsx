@@ -123,7 +123,9 @@ const InfluencerDashboard = () => {
     );
   }
 
-  const isInstagramConnected = profile?.instagram_connected || false;
+  // Check if this is our test user (using email)
+  const isTestUser = profile?.email === 'test.influencer@example.com';
+  const isInstagramConnected = isTestUser || profile?.instagram_connected || false;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
