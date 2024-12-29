@@ -55,18 +55,9 @@ export const getInstagramProfile = async (accessToken: string) => {
   console.log('Fetching Instagram profile...');
   
   try {
-    const headers = new Headers({
-      'Authorization': `Bearer ${accessToken}`,
-      'Accept': 'application/json',
-    });
-    
-    console.log('Making profile request with Authorization header...');
+    const fields = 'id,username,account_type,media_count';
     const response = await fetch(
-      'https://graph.instagram.com/me?fields=id,username',
-      {
-        method: 'GET',
-        headers: headers
-      }
+      `https://graph.instagram.com/me?fields=${fields}&access_token=${accessToken}`
     );
 
     if (!response.ok) {
@@ -82,6 +73,7 @@ export const getInstagramProfile = async (accessToken: string) => {
     const data = await response.json();
     console.log('Profile fetch successful:', { 
       username: data.username,
+      accountType: data.account_type,
       hasId: !!data.id 
     });
     return data;
