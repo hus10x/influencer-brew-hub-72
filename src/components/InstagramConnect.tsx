@@ -12,7 +12,8 @@ export const InstagramConnect = () => {
     if (!authData) return;
     
     const { state } = authData;
-    const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth/callback';
+    // Update redirect URI to match Edge Function path
+    const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth';
     
     // Properly encode each parameter
     const scope = encodeURIComponent(
