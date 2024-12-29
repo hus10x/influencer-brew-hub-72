@@ -10,6 +10,19 @@ serve(async (req) => {
   try {
     console.log('Starting OAuth URL generation...');
     
+    // Get the Authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('No authorization header present');
+      return new Response(
+        JSON.stringify({ error: 'No authorization header present' }),
+        { 
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+    
     const appId = Deno.env.get('FACEBOOK_APP_ID');
     if (!appId) {
       console.error('Facebook App ID not configured');
@@ -24,11 +37,11 @@ serve(async (req) => {
     console.log('Using redirect URI:', redirectUri);
     console.log('Using app ID:', appId);
     
-    // Construct URL according to latest Instagram API docs
+    // Construct URL according to latest Instagram Graph API docs
     const instagramUrl = "https://api.instagram.com/oauth/authorize" +
       `?client_id=${appId}` +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-      "&scope=instagram_business_basic,instagram_business_content_publish,instagram_business_manage_comments,instagram_business_manage_messages" +
+      "&scope=user_profile,user_media" + // Updated scopes as per latest docs
       "&response_type=code" +
       `&state=${state}`;
 

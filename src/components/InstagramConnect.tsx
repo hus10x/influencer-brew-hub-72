@@ -14,11 +14,11 @@ export const InstagramConnect = () => {
     const { state, appId } = authData;
     const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth';
     
-    // Construct URL according to latest Instagram API docs
+    // Construct URL according to latest Instagram Graph API docs
     const instagramUrl = "https://api.instagram.com/oauth/authorize" +
       `?client_id=${appId}` +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-      "&scope=instagram_business_basic,instagram_business_content_publish,instagram_business_manage_comments,instagram_business_manage_messages" +
+      "&scope=user_profile,user_media" + // Updated scopes as per latest docs
       "&response_type=code" +
       `&state=${state}`;
     
