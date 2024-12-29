@@ -11,7 +11,7 @@ export const InstagramConnect = () => {
     
     if (!authData) return;
     
-    const { state } = authData;
+    const { state, appId } = authData;
     // Update redirect URI to match Edge Function path
     const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth';
     
