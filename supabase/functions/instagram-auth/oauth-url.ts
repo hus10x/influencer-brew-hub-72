@@ -24,11 +24,11 @@ serve(async (req) => {
     console.log('Using redirect URI:', redirectUri);
     console.log('Using app ID:', appId);
     
-    // Construct URL exactly as per Instagram API docs
+    // Construct URL according to latest Instagram API docs
     const instagramUrl = "https://api.instagram.com/oauth/authorize" +
       `?client_id=${appId}` +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-      "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish" +
+      "&scope=instagram_business_basic,instagram_business_content_publish,instagram_business_manage_comments,instagram_business_manage_messages" +
       "&response_type=code" +
       `&state=${state}`;
 
