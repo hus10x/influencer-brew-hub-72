@@ -31,7 +31,7 @@ serve(async (req) => {
       "&force_authentication=1" +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
       "&response_type=code" +
-      "&scope=pages_show_list,instagram_basic,instagram_manage_comments,instagram_manage_insights,instagram_content_publish,instagram_manage_messages,pages_read_engagement" +
+      "&scope=instagram_basic,instagram_manage_comments,instagram_manage_insights,instagram_content_publish,instagram_manage_messages,pages_read_engagement" +
       `&state=${state}`;
 
     console.log('Generated Instagram OAuth URL:', instagramUrl);
