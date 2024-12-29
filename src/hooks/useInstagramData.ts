@@ -21,36 +21,47 @@ interface InstagramMedia {
 
 export const useInstagramData = () => {
   const fetchInstagramData = async () => {
+    console.log('Fetching Instagram data...');
+    
     const { data: profile } = await supabase
       .from('profiles')
       .select('instagram_access_token, instagram_username')
       .single();
 
     if (!profile?.instagram_access_token) {
+      console.error('No Instagram access token found');
       throw new Error('No Instagram access token found');
     }
 
-    // Fetch user data
+    console.log('Found access token, fetching user data...');
+
+    // Fetch user data with access token in URL (as per Instagram API docs)
     const userResponse = await fetch(
       `https://graph.instagram.com/v21.0/me?fields=id,username,followers_count,media_count,profile_picture_url&access_token=${profile.instagram_access_token}`
     );
 
     if (!userResponse.ok) {
-      throw new Error('Failed to fetch Instagram user data');
+      const error = await userResponse.json();
+      console.error('Instagram API error:', error);
+      throw new Error(`Failed to fetch Instagram user data: ${error.message}`);
     }
 
     const userData: InstagramUserData = await userResponse.json();
+    console.log('User data fetched:', userData);
 
-    // Fetch media data
+    // Fetch media data with access token in URL
     const mediaResponse = await fetch(
-      `https://graph.instagram.com/v21.0/${userData.id}/media?fields=id,caption,media_type,media_url,timestamp,permalink&access_token=${profile.instagram_access_token}`
+      `https://graph.instagram.com/v21.0/me/media?fields=id,caption,media_type,media_url,timestamp,permalink&access_token=${profile.instagram_access_token}`
     );
 
     if (!mediaResponse.ok) {
-      throw new Error('Failed to fetch Instagram media');
+      const error = await mediaResponse.json();
+      console.error('Instagram API error:', error);
+      throw new Error(`Failed to fetch Instagram media: ${error.message}`);
     }
 
     const mediaData = await mediaResponse.json();
+    console.log('Media data fetched:', mediaData);
 
     return {
       user: userData,
@@ -62,7 +73,7 @@ export const useInstagramData = () => {
     queryKey: ['instagram-data'],
     queryFn: fetchInstagramData,
     meta: {
-      onError: (error: Error) => {
+      error: (error: Error) => {
         toast.error(error.message);
       }
     }
