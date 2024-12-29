@@ -21,7 +21,7 @@ export const InstagramConnect = () => {
     );
     
     // Use the exact URL structure with properly encoded parameters
-    const instagramUrl = "https://www.instagram.com/oauth/authorize?" +
+    const instagramUrl = "https://api.instagram.com/oauth/authorize?" +
       "enable_fb_login=0&" +
       "force_authentication=1&" +
       `client_id=${encodeURIComponent(authData.appId)}&` +
