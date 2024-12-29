@@ -14,6 +14,7 @@ export const exchangeCodeForToken = async (
   
   const tokenUrl = 'https://api.instagram.com/oauth/access_token';
   
+  // Create form data exactly as specified in the Instagram API docs
   const formData = new FormData();
   formData.append('client_id', appId);
   formData.append('client_secret', appSecret);
@@ -41,7 +42,7 @@ export const exchangeCodeForToken = async (
     const data = await response.json();
     console.log('Token exchange successful:', {
       hasAccessToken: !!data.access_token,
-      tokenType: data.token_type
+      hasUserId: !!data.user_id
     });
     return data;
   } catch (error) {

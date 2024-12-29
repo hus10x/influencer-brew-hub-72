@@ -19,19 +19,17 @@ serve(async (req) => {
     // Generate a random state parameter for security
     const state = crypto.randomUUID();
     
-    // Use the format provided by Meta console
     const redirectUri = `https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth`;
     
     console.log('Using redirect URI:', redirectUri);
     console.log('Using app ID:', appId);
     
-    const instagramUrl = "https://api.instagram.com/oauth/authorize?" + 
-      `client_id=${appId}` +
-      "&enable_fb_login=0" +
-      "&force_authentication=1" +
+    // Construct URL exactly as per Instagram API docs
+    const instagramUrl = "https://api.instagram.com/oauth/authorize" +
+      `?client_id=${appId}` +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-      "&response_type=code" +
       "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish" +
+      "&response_type=code" +
       `&state=${state}`;
 
     console.log('Generated Instagram OAuth URL:', instagramUrl);
