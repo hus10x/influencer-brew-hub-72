@@ -61,8 +61,10 @@ export const useInstagramData = () => {
   return useQuery({
     queryKey: ['instagram-data'],
     queryFn: fetchInstagramData,
-    onError: (error: Error) => {
-      toast.error(error.message);
+    meta: {
+      onError: (error: Error) => {
+        toast.error(error.message);
+      }
     }
   });
 };
