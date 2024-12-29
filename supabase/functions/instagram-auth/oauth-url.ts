@@ -20,7 +20,7 @@ serve(async (req) => {
     const state = crypto.randomUUID();
     
     // Use the format provided by Meta console
-    const redirectUri = `https://ahtozhqhjdkivyaqskko.supabase.com/functions/v1/instagram-auth/callback`;
+    const redirectUri = `https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth`;
     
     console.log('Using redirect URI:', redirectUri);
     console.log('Using app ID:', appId);
