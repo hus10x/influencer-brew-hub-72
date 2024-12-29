@@ -25,7 +25,7 @@ serve(async (req) => {
     console.log('Using redirect URI:', redirectUri);
     console.log('Using app ID:', appId);
     
-    const instagramUrl = "https://www.instagram.com/oauth/authorize" + 
+    const instagramUrl = "https://api.instagram.com/oauth/authorize" + 
       `?client_id=${appId}` +
       "&enable_fb_login=0" +
       "&force_authentication=1" +
