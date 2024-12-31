@@ -11,6 +11,7 @@ export const InstagramConnect = () => {
     const [efLoading, setEfLoading] = useState(false);
 
     const handleInstagramConnect = async () => {
+        console.log("handleInstagramConnect function called!"); // *** THIS IS THE CRITICAL LINE ***
         setEfLoading(true);
         const session = supabase.auth.session();
 
@@ -39,7 +40,7 @@ export const InstagramConnect = () => {
             console.error("Error invoking function", error);
             toast.error("An unexpected error occurred. Please try again.");
             setEfLoading(false);
-        } finally{
+        } finally {
             setEfLoading(false);
         }
     };
