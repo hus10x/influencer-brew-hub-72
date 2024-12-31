@@ -21,21 +21,27 @@ export const useInstagramAuth = () => {
         return null;
       }
 
-      const state = crypto.randomUUID();
+      // Call the Edge Function to get the OAuth URL
+      const { data, error } = await supabase.functions.invoke('instagram-auth/oauth-url', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) {
+        console.error('Error generating OAuth URL:', error);
+        toast.error(error.message || 'Failed to generate OAuth URL');
+        return null;
+      }
+
+      const { url: instagramUrl, state } = data;
       console.log('Storing OAuth state...');
       
-      const { error: stateError } = await supabase
-        .from('instagram_oauth_states')
-        .insert({
-          state: state,
-          user_id: session.user.id,
-          redirect_path: window.location.pathname
-        });
-
-      if (stateError) {
-        console.error('Error storing OAuth state:', stateError);
-        throw new Error('Failed to initialize Instagram connection');
-      }
+      // Store the state in localStorage for verification
+      localStorage.setItem('oauthState', state);
+      
+      console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
+      window.location.href = instagramUrl;
 
       return { state, appId: '950071187030893' };
     } catch (error) {
