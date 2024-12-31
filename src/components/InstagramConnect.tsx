@@ -2,46 +2,52 @@ import { useState } from "react";
 import { useInstagramAuth } from "@/hooks/useInstagramAuth";
 import { useInstagramConnection } from "@/hooks/useInstagramConnection";
 import { ConnectButton } from "./instagram/ConnectButton";
-import { supabase } from "@/integrations/supabase/client"; // Import supabase
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const InstagramConnect = () => {
-    const { isLoading, initializeInstagramAuth } = useInstagramAuth();
+    const { isLoading: authIsLoading, initializeInstagramAuth } = useInstagramAuth();
     const { isConnected } = useInstagramConnection();
-    const [efLoading, setEfLoading] = useState(false)
+    const [efLoading, setEfLoading] = useState(false);
 
     const handleInstagramConnect = async () => {
-        setEfLoading(true)
-        const authData = await initializeInstagramAuth();
+        setEfLoading(true);
+        const session = supabase.auth.session();
 
-        if (authData) {
-            try {
-                const { data, error } = await supabase.functions.invoke('instagram-auth/oauth-url', {
-                    headers: {
-                        Authorization: `Bearer ${supabase.auth.session()?.access_token}`,
-                    },
-                });
-
-                if (error) {
-                    console.error('Error calling Edge Function:', error);
-                    setEfLoading(false)
-                    // Handle error (e.g., display error message)
-                    return;
-                }
-
-                const { url } = data;
-                window.location.href = url; // Redirect to Instagram
-            } catch (error) {
-                console.error("Error invoking function", error)
-                setEfLoading(false)
-            }
+        if (!session) {
+            console.error("User not authenticated.");
+            toast.error("Please log in to connect your Instagram account.");
+            setEfLoading(false);
+            return;
         }
-        setEfLoading(false)
+
+        try {
+            const authData = await initializeInstagramAuth();
+            if(!authData) {
+                toast.error("Error initializing instagram auth")
+                setEfLoading(false)
+                return
+            }
+
+            await supabase.functions.invoke('instagram-auth/oauth-url', {
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+            });
+
+        } catch (error) {
+            console.error("Error invoking function", error);
+            toast.error("An unexpected error occurred. Please try again.");
+            setEfLoading(false);
+        } finally{
+            setEfLoading(false);
+        }
     };
 
     return (
         <ConnectButton
             isConnected={isConnected}
-            isLoading={isLoading || efLoading} // Use isLoading from both places
+            isLoading={authIsLoading || efLoading}
             onClick={handleInstagramConnect}
         />
     );
