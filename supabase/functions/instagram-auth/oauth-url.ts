@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from './response.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.47.0'
 
 serve(async (req) => {
   // Handle CORS
@@ -75,13 +76,13 @@ serve(async (req) => {
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
       "&response_type=code" +
       "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish" +
-      `&state=${state}`;
+      `&state=${encodeURIComponent(state)}`;
 
     console.log('Generated Instagram OAuth URL:', instagramUrl);
 
     return new Response(
       JSON.stringify({ 
-        url: instagramUrl, 
+        url: instagramUrl,
         state 
       }),
       {
