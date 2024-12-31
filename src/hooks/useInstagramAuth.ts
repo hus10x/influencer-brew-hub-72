@@ -21,38 +21,23 @@ export const useInstagramAuth = () => {
         return null;
       }
 
-      console.log('Session found, calling Edge Function...');
-
-      // Call the Edge Function to get the OAuth URL
-      const { data, error } = await supabase.functions.invoke('instagram-auth/oauth-url', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-
-      if (error) {
-        console.error('Error generating OAuth URL:', error);
-        toast.error(error.message || 'Failed to generate OAuth URL');
-        return null;
-      }
-
-      console.log('Edge Function response:', data);
-
-      if (!data?.state || !data?.url) {
-        console.error('Invalid response from Edge Function:', data);
-        toast.error('Failed to initialize Instagram authentication');
-        return null;
-      }
-
-      // Store the state in localStorage for verification
-      localStorage.setItem('instagram_oauth_state', data.state);
-      console.log('Stored state in localStorage:', data.state);
+      const state = crypto.randomUUID();
+      console.log('Storing OAuth state...');
       
-      // Redirect to Instagram OAuth URL
-      console.log('Redirecting to Instagram URL:', data.url);
-      window.location.href = data.url;
+      const { error: stateError } = await supabase
+        .from('instagram_oauth_states')
+        .insert({
+          state: state,
+          user_id: session.user.id,
+          redirect_path: window.location.pathname
+        });
 
-      return { state: data.state, appId: '950071187030893' };
+      if (stateError) {
+        console.error('Error storing OAuth state:', stateError);
+        throw new Error('Failed to initialize Instagram connection');
+      }
+
+      return { state, appId: '950071187030893' };
     } catch (error) {
       console.error('Error in Instagram auth:', error);
       toast.error('Failed to connect to Instagram. Please try again.');
