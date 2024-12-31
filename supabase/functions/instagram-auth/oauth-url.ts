@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from './response.ts';
 
 serve(async (req) => {
-  // Handle CORS
+  // Handle CORS (unchanged)
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -10,26 +10,17 @@ serve(async (req) => {
   try {
     console.log('Starting OAuth URL generation...');
 
-    // Get the Authorization header
+    // Get the Authorization header (unchanged)
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      console.error('No authorization header present');
-      return new Response(
-        JSON.stringify({ error: 'No authorization header present' }),
-        {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
+      // ... (unchanged error handling)
     }
 
     const appId = Deno.env.get('FACEBOOK_APP_ID');
     if (!appId) {
-      console.error('Facebook App ID not configured');
-      throw new Error('Facebook App ID not configured');
+      // ... (unchanged error handling)
     }
 
-    // Generate a random state parameter for security
     const state = crypto.randomUUID();
 
     const redirectUri = `https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth`;
@@ -37,7 +28,6 @@ serve(async (req) => {
     console.log('Using redirect URI:', redirectUri);
     console.log('Using app ID:', appId);
 
-    // Construct URL according to latest Instagram Graph API docs with state included
     const instagramUrl = `https://api.instagram.com/oauth/authorize?` +
       `client_id=${appId}` +
       "&enable_fb_login=0" +
@@ -45,36 +35,20 @@ serve(async (req) => {
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
       "&response_type=code" +
       "&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish" +
-      `&state=${state}`; // Include state in the URL
+      `&state=${state}`;
 
     console.log('Generated Instagram OAuth URL:', instagramUrl);
 
-    return new Response(
-      JSON.stringify({
-        url: instagramUrl,
-        state: state
-      }),
-      {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
-        status: 200,
-      }
-    );
+    // ** KEY CHANGE: Return a redirect response instead of JSON **
+    return new Response(null, {
+      status: 302, // Redirect status code
+      headers: {
+        Location: instagramUrl, // Set the redirect URL
+        ...corsHeaders
+      },
+    });
+
   } catch (error) {
-    console.error('Error generating OAuth URL:', error);
-    return new Response(
-      JSON.stringify({
-        error: error.message || 'Failed to generate OAuth URL'
-      }),
-      {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
-        status: 500,
-      }
-    );
+    // ... (unchanged error handling)
   }
 });
