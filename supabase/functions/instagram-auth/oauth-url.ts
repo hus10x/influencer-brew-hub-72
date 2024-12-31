@@ -10,20 +10,19 @@ serve(async (req) => {
   try {
     console.log('Starting OAuth URL generation...');
 
-    // Extract user ID from request headers or query parameters
-    const userId = req.headers.get('x-user-id') || req.url.searchParams.get('userId'); 
+    const userId = req.headers.get('x-user-id'); 
     if (!userId) {
-      return new Response('Missing user ID', { status: 400 }); 
+      return new Response('Missing user ID in request headers', { status: 400 }); 
     }
 
     const appId = Deno.env.get('FACEBOOK_APP_ID');
     if (!appId) {
-      // ... (unchanged error handling)
+      return new Response('Missing FACEBOOK_APP_ID environment variable', { status: 500 });
     }
 
     const state = crypto.randomUUID();
 
-    const redirectUri = `https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth`;
+    const redirectUri = `https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth`; 
 
     console.log('Using redirect URI:', redirectUri);
     console.log('Using app ID:', appId);
@@ -39,17 +38,16 @@ serve(async (req) => {
 
     console.log('Generated Instagram OAuth URL:', instagramUrl);
 
-    // ** Improvement: Add a success message in the response body **
-    return new Response(JSON.stringify({ message: 'Successfully generated Instagram OAuth URL' }), {
-      status: 302, // Redirect status code
-      headers: {
-        Location: instagramUrl, // Set the redirect URL
-        ...corsHeaders
-      },
-    });
+    return new Response(JSON.stringify({ url: instagramUrl }), { 
+      status: 200, 
+      headers: { 
+        'Content-Type': 'application/json', 
+        ...corsHeaders 
+      } 
+    }); 
 
   } catch (error) {
-    console.error('Error in OAuth URL generation:', error);
-    return new Response('Error generating OAuth URL', { status: 500 });
+    console.error('Error generating OAuth URL:', error);
+    return new Response('Error generating OAuth URL', { status: 500 }); 
   }
 });
