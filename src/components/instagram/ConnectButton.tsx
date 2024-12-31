@@ -13,7 +13,7 @@ export const ConnectButton = ({ isConnected }: ConnectButtonProps) => {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleClick = async () => {
-        setIsLoading(true); // Set loading state before starting the process
+        setIsLoading(true);
         const authData = await initializeInstagramAuth();
 
         if (authData) {
@@ -26,16 +26,15 @@ export const ConnectButton = ({ isConnected }: ConnectButtonProps) => {
 
                 if (error) {
                     console.error('Error calling Edge Function:', error);
-                    // Handle error (e.g., display error message)
-                    setIsLoading(false); // Reset loading state on error
+                    setIsLoading(false);
                     return;
                 }
 
                 const { url } = data;
-                window.location.href = url; // Redirect to Instagram
+                window.location.href = url;
             } catch (error) {
                 console.error("Error invoking function", error)
-                setIsLoading(false); // Reset loading state on error
+                setIsLoading(false);
             }
         }
         setIsLoading(false);
@@ -43,11 +42,7 @@ export const ConnectButton = ({ isConnected }: ConnectButtonProps) => {
 
     if (isConnected) {
         return (
-            <Button
-                disabled
-                className="group relative flex items-center gap-2 overflow-hidden px-6 bg-green-500 hover:bg-green-600"
-                size="lg"
-            >
+            <Button disabled className="group relative flex items-center gap-2 overflow-hidden px-6 bg-green-500 hover:bg-green-600" size="lg">
                 <Instagram className="w-5 h-5" />
                 Connected to Instagram
             </Button>
@@ -55,17 +50,8 @@ export const ConnectButton = ({ isConnected }: ConnectButtonProps) => {
     }
 
     return (
-        <Button
-            onClick={handleClick}
-            disabled={isLoading}
-            className="group relative flex items-center gap-2 overflow-hidden px-6 transition-all duration-300 hover:bg-primary/90"
-            size="lg"
-        >
-            {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-                <Instagram className="w-5 h-5 transition-transform group-hover:scale-110" />
-            )}
+        <Button onClick={handleClick} disabled={isLoading} className="group relative flex items-center gap-2 overflow-hidden px-6 transition-all duration-300 hover:bg-primary/90" size="lg">
+            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Instagram className="w-5 h-5 transition-transform group-hover:scale-110" />}
             {isLoading ? 'Connecting...' : 'Connect Instagram'}
             <span className="absolute -right-8 -top-8 aspect-square w-16 translate-x-full translate-y-full rounded-full bg-white/20 transition-transform group-hover:translate-x-0 group-hover:translate-y-0" />
         </Button>
