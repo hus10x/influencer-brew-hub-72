@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from './response.ts';
 
 serve(async (req) => {
-  // Handle CORS (unchanged)
+  // Handle CORS 
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -10,10 +10,10 @@ serve(async (req) => {
   try {
     console.log('Starting OAuth URL generation...');
 
-    // Get the Authorization header (unchanged)
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      // ... (unchanged error handling)
+    // Extract user ID from request headers or query parameters
+    const userId = req.headers.get('x-user-id') || req.url.searchParams.get('userId'); 
+    if (!userId) {
+      return new Response('Missing user ID', { status: 400 }); 
     }
 
     const appId = Deno.env.get('FACEBOOK_APP_ID');
@@ -49,6 +49,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    // ... (unchanged error handling)
+    console.error('Error in OAuth URL generation:', error);
+    return new Response('Error generating OAuth URL', { status: 500 });
   }
 });
