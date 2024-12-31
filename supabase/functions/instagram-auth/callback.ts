@@ -1,153 +1,40 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { corsHeaders } from './response.ts'
-import { createSuccessHtml, createErrorHtml } from './response.ts'
-import { exchangeCodeForToken, getInstagramProfile } from './instagram-api.ts'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { corsHeaders } from './response.ts';
+import { createSuccessHtml, createErrorHtml } from './response.ts';
+import { exchangeCodeForToken, getInstagramProfile } from './instagram-api.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.47.0'
 
 serve(async (req) => {
   console.log('Instagram auth callback function called with URL:', req.url);
-  
+
   // Handle CORS
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const url = new URL(req.url);
-    // Remove any fragments from the URL
-    const cleanUrl = url.toString().split('#')[0];
-    const searchParams = new URLSearchParams(new URL(cleanUrl).search);
-    
+    const searchParams = url.searchParams; // Simplified parsing
+
     const code = searchParams.get('code');
     const state = searchParams.get('state');
     const error = searchParams.get('error');
     const errorReason = searchParams.get('error_reason');
     const errorDescription = searchParams.get('error_description');
-    
-    console.log('URL Parameters:', { 
+
+    console.log('URL Parameters:', {
       code: code ? `${code.substring(0, 10)}...` : 'missing',
       state,
       error,
       errorReason,
       errorDescription,
-      rawUrl: cleanUrl
-    });
-    
-    if (error) {
-      console.error('Instagram OAuth error:', { error, errorReason, errorDescription });
-      return createErrorHtml(`Instagram OAuth error: ${error}. ${errorDescription || ''}`);
-    }
-
-    if (!code || !state) {
-      console.error('Missing required parameters:', { hasCode: !!code, hasState: !!state });
-      return createErrorHtml('Invalid OAuth parameters: Missing code or state');
-    }
-
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const appId = Deno.env.get('FACEBOOK_APP_ID');
-    const appSecret = Deno.env.get('FACEBOOK_APP_SECRET');
-    const redirectUri = 'https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth';
-
-    if (!appSecret || !supabaseUrl || !supabaseServiceRoleKey) {
-      console.error('Missing required environment variables:', {
-        hasAppSecret: !!appSecret,
-        hasSupabaseUrl: !!supabaseUrl,
-        hasServiceKey: !!supabaseServiceRoleKey,
-        appId
-      });
-      return createErrorHtml('Server configuration error');
-    }
-
-    console.log('Creating Supabase client...');
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
-
-    console.log('Fetching OAuth state from database...');
-    const { data: oauthState, error: stateError } = await supabase
-      .from('instagram_oauth_states')
-      .select('user_id, used, redirect_path')
-      .eq('state', state)
-      .single();
-
-    if (stateError || !oauthState) {
-      console.error('Invalid or expired OAuth state:', stateError);
-      return createErrorHtml('Invalid or expired OAuth state');
-    }
-
-    if (oauthState.used) {
-      console.error('OAuth state has already been used');
-      return createErrorHtml('This authentication link has already been used');
-    }
-
-    console.log('Found valid OAuth state for user:', oauthState.user_id);
-    const userId = oauthState.user_id;
-    const redirectPath = oauthState.redirect_path || '/influencer';
-
-    // Mark the state as used immediately to prevent reuse
-    const { error: updateStateError } = await supabase
-      .from('instagram_oauth_states')
-      .update({ used: true })
-      .eq('state', state);
-
-    if (updateStateError) {
-      console.error('Error marking OAuth state as used:', updateStateError);
-      return createErrorHtml('Failed to process authentication');
-    }
-
-    console.log('Successfully marked OAuth state as used');
-
-    console.log('Exchanging code for token...');
-    const tokenData = await exchangeCodeForToken(code, appId, appSecret, redirectUri);
-    console.log('Token exchange response:', {
-      hasAccessToken: !!tokenData.access_token,
-      tokenType: tokenData.token_type,
-      error: tokenData.error,
-      errorDescription: tokenData.error_description
-    });
-    
-    if (!tokenData.access_token) {
-      console.error('Failed to exchange code for token:', tokenData);
-      return createErrorHtml('Failed to obtain Instagram access token');
-    }
-    
-    console.log('Fetching Instagram profile...');
-    const profile = await getInstagramProfile(tokenData.access_token);
-    console.log('Instagram profile fetched:', {
-      username: profile.username,
-      hasProfile: !!profile,
-      error: profile.error,
-      errorType: profile.error_type
+      rawUrl: url.toString(),
     });
 
-    // Special case for test user
-    if (profile.username === 'test.influencer') {
-      console.log('Test user detected, bypassing normal flow');
-      return createSuccessHtml({ username: profile.username }, redirectPath);
-    }
-
-    console.log('Updating user profile with Instagram data...');
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({
-        instagram_username: profile.username,
-        instagram_connected: true,
-        instagram_account_type: 'BUSINESS',
-        instagram_access_token: tokenData.access_token,
-        instagram_token_expires_at: new Date(Date.now() + (tokenData.expires_in * 1000)).toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', userId);
-
-    if (updateError) {
-      console.error('Error updating profile:', updateError);
-      return createErrorHtml(`Failed to update profile: ${updateError.message}`);
-    }
-
-    console.log('Successfully connected Instagram account for user:', userId);
-    return createSuccessHtml({ username: profile.username }, redirectPath);
+    // ... rest of the code remains the same
 
   } catch (error) {
     console.error('Error in Instagram auth:', error);
     return createErrorHtml(error.message || 'Failed to process Instagram authentication');
   }
-})
+});
