@@ -24,22 +24,21 @@ export const InstagramConnect = () => {
 
       const userId = user.id; 
 
-      const { data, error: invokeError } = await supabase.functions.invoke('instagram-auth/oauth-url', {
+      const { data, error } = await supabase.functions.invoke('instagram-auth/oauth-url', {
         headers: { 
           'x-user-id': userId, 
         },
       });
 
-      if (invokeError) {
-        console.error("Error invoking function:", invokeError);
+      if (error) {
+        console.error("Error invoking function:", error);
         toast.error("An error occurred while generating the OAuth URL. Please try again.");
         setEfLoading(false);
         return;
       }
 
-      // Handle successful response from oauth-url Edge Function
-      if (data && data.message === 'Successfully generated Instagram OAuth URL') {
-        window.location.href = data.url; // Redirect to the generated Instagram OAuth URL
+      if (data && data.url) {
+        window.location.href = data.url; 
       } else {
         console.error("Unexpected response from oauth-url Edge Function:", data);
         toast.error("An unexpected error occurred. Please try again.");
