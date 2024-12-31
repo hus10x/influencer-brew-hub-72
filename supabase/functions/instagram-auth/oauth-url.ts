@@ -38,6 +38,35 @@ serve(async (req) => {
     console.log('Using redirect URI:', redirectUri);
     console.log('Using app ID:', appId);
     
+    // Store the state in the database for verification
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Extract user ID from the Authorization header
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
+    
+    if (userError || !user) {
+      console.error('Error getting user:', userError);
+      throw new Error('Failed to authenticate user');
+    }
+
+    // Store the state in the database
+    const { error: stateError } = await supabaseClient
+      .from('instagram_oauth_states')
+      .insert({
+        state,
+        user_id: user.id,
+        redirect_path: '/influencer'
+      });
+
+    if (stateError) {
+      console.error('Error storing state:', stateError);
+      throw new Error('Failed to store OAuth state');
+    }
+
     // Construct URL according to latest Instagram Graph API docs
     const instagramUrl = "https://api.instagram.com/oauth/authorize?" + 
       `client_id=${appId}` +
@@ -53,7 +82,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         url: instagramUrl, 
-        state: state 
+        state 
       }),
       {
         headers: {
