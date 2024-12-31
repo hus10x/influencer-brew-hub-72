@@ -6,50 +6,58 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const InstagramConnect = () => {
-    const { isLoading: authIsLoading, initializeInstagramAuth } = useInstagramAuth();
-    const { isConnected } = useInstagramConnection();
-    const [efLoading, setEfLoading] = useState(false);
+  const { isLoading: authIsLoading, initializeInstagramAuth } = useInstagramAuth();
+  const { isConnected } = useInstagramConnection();
+  const [efLoading, setEfLoading] = useState(false);
 
-    const handleInstagramConnect = async () => {
-        console.log("handleInstagramConnect function called!"); // *** THIS IS THE CRITICAL LINE ***
-        setEfLoading(true);
-        const session = supabase.auth.session();
+  const handleInstagramConnect = async () => {
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser(); 
+      if (error) {
+        console.error("Error getting user:", error);
+        toast.error("An error occurred while getting user data.");
+        return;
+      }
 
-        if (!session) {
-            console.error("User not authenticated.");
-            toast.error("Please log in to connect your Instagram account.");
-            setEfLoading(false);
-            return;
-        }
+      const userId = user.id; 
 
-        try {
-            const authData = await initializeInstagramAuth();
-            if(!authData) {
-                toast.error("Error initializing instagram auth")
-                setEfLoading(false)
-                return
-            }
+      setEfLoading(true); 
+      const authData = await initializeInstagramAuth(); 
+      if (!authData) { 
+        toast.error("Error initializing instagram auth"); 
+        setEfLoading(false); 
+        return; 
+      }
 
-            await supabase.functions.invoke('instagram-auth/oauth-url', {
-                headers: {
-                    Authorization: `Bearer ${session.access_token}`,
-                },
-            });
+      const { data, error } = await supabase.functions.invoke('instagram-auth/oauth-url', {
+        headers: { 
+          'x-user-id': userId, 
+        },
+      });
 
-        } catch (error) {
-            console.error("Error invoking function", error);
-            toast.error("An unexpected error occurred. Please try again.");
-            setEfLoading(false);
-        } finally {
-            setEfLoading(false);
-        }
-    };
+      if (error) {
+        console.error("Error invoking function", error);
+        toast.error("An unexpected error occurred. Please try again.");
+        setEfLoading(false);
+      } else {
+        // Redirect to the generated Instagram OAuth URL
+        window.location.href = data; 
+      }
 
-    return (
-        <ConnectButton
-            isConnected={isConnected}
-            isLoading={authIsLoading || efLoading}
-            onClick={handleInstagramConnect}
-        />
-    );
+    } catch (error) {
+      console.error("Error invoking function", error);
+      toast.error("An unexpected error occurred. Please try again.");
+      setEfLoading(false);
+    } finally {
+      setEfLoading(false);
+    }
+  };
+
+  return (
+    <ConnectButton 
+      isConnected={isConnected} 
+      isLoading={authIsLoading || efLoading} 
+      onClick={handleInstagramConnect} 
+    />
+  );
 };
