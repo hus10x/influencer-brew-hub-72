@@ -5,7 +5,7 @@ import { exchangeCodeForToken, getInstagramProfile } from './instagram-api.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.47.0';
 
 serve(async (req) => {
-  // Handle CORS 
+  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -19,9 +19,9 @@ serve(async (req) => {
 
     const code = searchParams.get('code');
     const state = searchParams.get('state');
-    const userId = searchParams.get('userId'); 
+    const userId = searchParams.get('userId');
 
-    // ... (rest of the code, excluding the session access part)
+    // ... (rest of your code for processing the code and state)
 
   } catch (error) {
     console.error('Error in Instagram auth:', error);
