@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -11,9 +11,9 @@ export const useInstagramAuth = () => {
     try {
       setIsLoading(true);
       console.log('Starting Instagram connection process...');
-      
+
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
+
       if (sessionError || !session) {
         console.error('Session error:', sessionError);
         toast.error('Please log in to connect your Instagram account');
@@ -21,13 +21,14 @@ export const useInstagramAuth = () => {
         return null;
       }
 
+      // Generate and store OAuth state (unchanged)
       const state = crypto.randomUUID();
       console.log('Storing OAuth state...');
-      
+
       const { error: stateError } = await supabase
         .from('instagram_oauth_states')
         .insert({
-          state: state,
+          state,
           user_id: session.user.id,
           redirect_path: window.location.pathname
         });
@@ -46,6 +47,36 @@ export const useInstagramAuth = () => {
       setIsLoading(false);
     }
   };
+
+  // Call Edge Function after hook initialization (new)
+  useEffect(() => {
+    const initiateConnection = async () => {
+      const authData = await initializeInstagramAuth();
+
+      if (authData) {
+        try {
+          const { data, error } = await supabase.functions.invoke('instagram-auth/oauth-url', {
+            headers: {
+              Authorization: `Bearer ${supabase.auth.session()?.access_token}`, // VERY IMPORTANT
+            },
+          });
+
+          if (error) {
+            console.error('Error calling Edge Function:', error);
+            // Handle error (e.g., display error message)
+            return;
+          }
+
+          const { url } = data;
+          window.location.href = url; // Redirect to Instagram
+        } catch (error) {
+          console.error("Error invoking function", error)
+        }
+      }
+    };
+
+    initiateConnection();
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   return {
     isLoading,
