@@ -31,6 +31,7 @@ serve(async (req) => {
 
     // Generate a random state parameter for security
     const state = crypto.randomUUID();
+    console.log('Generated state:', state);
     
     const redirectUri = `https://ahtozhqhjdkivyaqskko.supabase.co/functions/v1/instagram-auth`;
     

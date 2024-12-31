@@ -21,12 +21,16 @@ export const useInstagramAuth = () => {
         return null;
       }
 
+      console.log('Session found, calling Edge Function...');
+
       // Call the Edge Function to get the OAuth URL
       const { data, error } = await supabase.functions.invoke('instagram-auth/oauth-url', {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
       });
+
+      console.log('Edge Function response:', data);
 
       if (error) {
         console.error('Error generating OAuth URL:', error);
@@ -35,12 +39,21 @@ export const useInstagramAuth = () => {
       }
 
       const { url: instagramUrl, state } = data;
+
+      // Verify state before storing
+      if (!state) {
+        console.error('No state received from Edge Function');
+        toast.error('Authentication error: Missing state parameter');
+        return null;
+      }
+
       console.log('Storing OAuth state...');
       
       // Store the state in localStorage for verification
       localStorage.setItem('oauthState', state);
+      console.log('Stored state:', state);
       
-      console.log('Redirecting to Instagram OAuth URL:', instagramUrl);
+      console.log('Full Instagram URL:', instagramUrl);
       window.location.href = instagramUrl;
 
       return { state, appId: '950071187030893' };
