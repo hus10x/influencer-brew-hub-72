@@ -39,8 +39,8 @@ serve(async (req) => {
 
     console.log('Generated Instagram OAuth URL:', instagramUrl);
 
-    // ** KEY CHANGE: Return a redirect response instead of JSON **
-    return new Response(null, {
+    // ** Improvement: Add a success message in the response body **
+    return new Response(JSON.stringify({ message: 'Successfully generated Instagram OAuth URL' }), {
       status: 302, // Redirect status code
       headers: {
         Location: instagramUrl, // Set the redirect URL
