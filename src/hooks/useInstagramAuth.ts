@@ -30,33 +30,29 @@ export const useInstagramAuth = () => {
         },
       });
 
-      console.log('Edge Function response:', data);
-
       if (error) {
         console.error('Error generating OAuth URL:', error);
         toast.error(error.message || 'Failed to generate OAuth URL');
         return null;
       }
 
-      const { url: instagramUrl, state } = data;
+      console.log('Edge Function response:', data);
 
-      // Verify state before storing
-      if (!state) {
-        console.error('No state received from Edge Function');
-        toast.error('Authentication error: Missing state parameter');
+      if (!data?.state || !data?.url) {
+        console.error('Invalid response from Edge Function:', data);
+        toast.error('Failed to initialize Instagram authentication');
         return null;
       }
 
-      console.log('Storing OAuth state...');
-      
       // Store the state in localStorage for verification
-      localStorage.setItem('oauthState', state);
-      console.log('Stored state:', state);
+      localStorage.setItem('instagram_oauth_state', data.state);
+      console.log('Stored state in localStorage:', data.state);
       
-      console.log('Full Instagram URL:', instagramUrl);
-      window.location.href = instagramUrl;
+      // Redirect to Instagram OAuth URL
+      console.log('Redirecting to Instagram URL:', data.url);
+      window.location.href = data.url;
 
-      return { state, appId: '950071187030893' };
+      return { state: data.state, appId: '950071187030893' };
     } catch (error) {
       console.error('Error in Instagram auth:', error);
       toast.error('Failed to connect to Instagram. Please try again.');
