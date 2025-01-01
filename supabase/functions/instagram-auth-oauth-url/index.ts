@@ -2,7 +2,6 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -10,7 +9,6 @@ serve(async (req) => {
   try {
     console.log('Starting OAuth URL generation...');
 
-    // Validate request
     const userId = req.headers.get('x-user-id');
     if (!userId) {
       console.error('Missing user ID in request headers');
@@ -20,7 +18,6 @@ serve(async (req) => {
       );
     }
 
-    // Get required environment variables
     const appId = Deno.env.get('FACEBOOK_APP_ID');
     if (!appId) {
       console.error('Missing FACEBOOK_APP_ID environment variable');
@@ -30,7 +27,6 @@ serve(async (req) => {
       );
     }
 
-    // Get request body
     const { state } = await req.json();
     if (!state) {
       console.error('Missing state parameter in request body');
@@ -40,7 +36,7 @@ serve(async (req) => {
       );
     }
 
-    // Define required scopes for business functionality
+    // Updated permissions to include instagram_manage_messages
     const scopes = [
       'instagram_basic',
       'instagram_content_publish',
@@ -51,7 +47,6 @@ serve(async (req) => {
       'pages_read_engagement'
     ].join(',');
 
-    // Construct Facebook OAuth URL
     const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/instagram-auth-callback`;
     console.log('Using redirect URI:', redirectUri);
 

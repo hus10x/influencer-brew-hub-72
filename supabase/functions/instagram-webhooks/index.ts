@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.47.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,65 +12,60 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Instagram webhook received:', new Date().toISOString());
+    
     const url = new URL(req.url);
-    console.log('Received webhook request:', { method: req.method, url: req.url });
+    const mode = url.searchParams.get('hub.mode');
+    const token = url.searchParams.get('hub.verify_token');
+    const challenge = url.searchParams.get('hub.challenge');
 
-    // Handle webhook verification (GET request)
+    // Handle subscription verification
     if (req.method === 'GET') {
-      const mode = url.searchParams.get('hub.mode');
-      const token = url.searchParams.get('hub.verify_token');
-      const challenge = url.searchParams.get('hub.challenge');
-
-      console.log('Processing webhook verification:', { mode, token, challenge });
-
+      console.log('Verification request received:', { mode, token });
+      
       const verifyToken = Deno.env.get('INSTAGRAM_WEBHOOK_VERIFY_TOKEN');
+      
       if (!verifyToken) {
-        console.error('Missing INSTAGRAM_WEBHOOK_VERIFY_TOKEN');
-        return new Response('Configuration error', { 
-          status: 500, 
-          headers: corsHeaders 
-        });
+        console.error('INSTAGRAM_WEBHOOK_VERIFY_TOKEN not set');
+        throw new Error('Webhook verify token not configured');
       }
 
       if (mode === 'subscribe' && token === verifyToken) {
-        console.log('Webhook verification successful');
-        return new Response(challenge, {
-          headers: { ...corsHeaders, 'Content-Type': 'text/plain' }
+        console.log('Webhook verified successfully');
+        return new Response(challenge, { 
+          headers: { ...corsHeaders, 'Content-Type': 'text/plain' } 
         });
       }
 
-      console.error('Webhook verification failed');
-      return new Response('Forbidden', { 
-        status: 403, 
-        headers: corsHeaders 
-      });
+      console.error('Webhook verification failed:', { mode, token });
+      return new Response('Forbidden', { status: 403, headers: corsHeaders });
     }
 
-    // Handle webhook data (POST request)
+    // Handle webhook updates
     if (req.method === 'POST') {
-      // Initialize Supabase client
-      const supabaseUrl = Deno.env.get('SUPABASE_URL');
-      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-      
-      if (!supabaseUrl || !supabaseServiceKey) {
-        console.error('Missing Supabase configuration');
-        throw new Error('Missing Supabase configuration');
-      }
+      const body = await req.json();
+      console.log('Webhook update received:', JSON.stringify(body, null, 2));
 
-      const supabase = createClient(supabaseUrl, supabaseServiceKey);
-      
-      // Get and log the webhook payload
-      const payload = await req.json();
-      console.log('Received webhook payload:', JSON.stringify(payload));
+      // Process different types of updates
+      const updates = body.entry?.[0]?.changes || [];
+      for (const update of updates) {
+        console.log('Processing update:', {
+          field: update.field,
+          value: update.value
+        });
 
-      // Process the webhook data
-      for (const entry of payload.entry || []) {
-        for (const change of entry.changes || []) {
-          console.log('Processing change:', change);
-          
-          if (change.field === 'story_insights') {
-            await handleStoryInsights(supabase, change.value);
-          }
+        switch (update.field) {
+          case 'mentions':
+            console.log('Mention received:', update.value);
+            break;
+          case 'comments':
+            console.log('Comment received:', update.value);
+            break;
+          case 'story_insights':
+            console.log('Story insights received:', update.value);
+            break;
+          default:
+            console.log('Unknown update type:', update.field);
         }
       }
 
@@ -93,29 +87,3 @@ serve(async (req) => {
     });
   }
 });
-
-async function handleStoryInsights(supabase: any, data: any) {
-  console.log('Processing story insights:', data);
-  
-  try {
-    const { error } = await supabase
-      .from('story_verifications')
-      .update({
-        verification_details: {
-          ...data,
-          processed_at: new Date().toISOString()
-        }
-      })
-      .eq('story_id', data.media_id);
-
-    if (error) {
-      console.error('Error updating story insights:', error);
-      throw error;
-    }
-    
-    console.log('Successfully updated story insights');
-  } catch (error) {
-    console.error('Failed to process story insights:', error);
-    throw error;
-  }
-}
