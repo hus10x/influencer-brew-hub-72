@@ -37,7 +37,7 @@ export const useInstagramAuth = () => {
         return null;
       }
 
-      // Get OAuth URL from Edge Function with improved error handling
+      // Get OAuth URL from Edge Function
       const { data, error: functionError } = await supabase.functions.invoke('instagram-auth-oauth-url', {
         body: { state },
         headers: { 
