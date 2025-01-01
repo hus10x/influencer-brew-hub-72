@@ -22,8 +22,10 @@ serve(async (req) => {
 
       console.log('Received webhook verification request:', { mode, token });
 
+      const verifyToken = Deno.env.get('INSTAGRAM_WEBHOOK_VERIFY_TOKEN');
+      
       // Verify the webhook
-      if (mode === 'subscribe' && token === Deno.env.get('INSTAGRAM_WEBHOOK_VERIFY_TOKEN')) {
+      if (mode === 'subscribe' && token === verifyToken) {
         console.log('Webhook verified successfully');
         return new Response(challenge, { 
           headers: { ...corsHeaders, 'Content-Type': 'text/plain' } 
