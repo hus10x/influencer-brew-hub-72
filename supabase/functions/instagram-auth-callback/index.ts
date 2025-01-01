@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -14,6 +15,8 @@ serve(async (req) => {
   try {
     console.log('Instagram auth callback function called');
     const url = new URL(req.url);
+    
+    // Extract parameters from URL instead of body
     const code = url.searchParams.get('code');
     const state = url.searchParams.get('state');
     const error = url.searchParams.get('error');
@@ -71,19 +74,15 @@ serve(async (req) => {
     // Exchange code for access token
     const appId = Deno.env.get('FACEBOOK_APP_ID');
     const appSecret = Deno.env.get('FACEBOOK_APP_SECRET');
-    const redirectUri = `${supabaseUrl}/functions/v1/instagram-auth-callback`;
+    const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/instagram-auth-callback`;
 
-    // Get Facebook access token
-    const tokenResponse = await fetch('https://graph.facebook.com/v21.0/oauth/access_token', {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        client_id: appId,
-        client_secret: appSecret,
-        redirect_uri: redirectUri,
-        code: code,
-      }),
-    });
+    const tokenUrl = new URL('https://graph.facebook.com/v21.0/oauth/access_token');
+    tokenUrl.searchParams.append('client_id', appId!);
+    tokenUrl.searchParams.append('client_secret', appSecret!);
+    tokenUrl.searchParams.append('redirect_uri', redirectUri);
+    tokenUrl.searchParams.append('code', code);
+
+    const tokenResponse = await fetch(tokenUrl.toString());
 
     if (!tokenResponse.ok) {
       const error = await tokenResponse.text();
@@ -155,6 +154,8 @@ serve(async (req) => {
     // Redirect back to the application
     const redirectUrl = new URL(stateData.redirect_path, Deno.env.get('PUBLIC_URL'));
     redirectUrl.searchParams.set('success', 'true');
+
+    console.log('Successfully processed callback, redirecting to:', redirectUrl.toString());
 
     return new Response(null, {
       status: 302,
