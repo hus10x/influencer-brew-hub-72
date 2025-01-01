@@ -14,10 +14,9 @@ serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    console.log('Received request:', { method: req.method, url: req.url });
+    console.log('Received webhook request:', { method: req.method, url: req.url });
 
     // Handle webhook verification (GET request)
-    // This endpoint needs to be public (no JWT required)
     if (req.method === 'GET') {
       const mode = url.searchParams.get('hub.mode');
       const token = url.searchParams.get('hub.verify_token');
@@ -49,7 +48,6 @@ serve(async (req) => {
     }
 
     // Handle webhook data (POST request)
-    // This endpoint requires authentication
     if (req.method === 'POST') {
       // Initialize Supabase client
       const supabaseUrl = Deno.env.get('SUPABASE_URL');

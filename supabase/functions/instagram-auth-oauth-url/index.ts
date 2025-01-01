@@ -46,11 +46,12 @@ serve(async (req) => {
       'instagram_content_publish',
       'instagram_manage_comments',
       'instagram_manage_insights',
+      'instagram_manage_messages',
       'pages_show_list',
       'pages_read_engagement'
     ].join(',');
 
-    // Construct Facebook OAuth URL (using Facebook Login instead of Instagram Basic Display)
+    // Construct Facebook OAuth URL
     const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/instagram-auth-callback`;
     console.log('Using redirect URI:', redirectUri);
 
