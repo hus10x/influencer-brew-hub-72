@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useInstagramConnection } from "@/hooks/useInstagramConnection";
 import { ConnectButton } from "./instagram/ConnectButton";
+import { InstagramMetrics } from "./instagram/InstagramMetrics";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useInstagramAuth } from "@/hooks/useInstagramAuth";
@@ -44,10 +45,13 @@ export const InstagramConnect = () => {
   };
 
   return (
-    <ConnectButton 
-      isConnected={isConnected}
-      isLoading={isLoading || isProcessing}
-      onClick={handleInstagramConnect}
-    />
+    <div className="space-y-8">
+      <ConnectButton 
+        isConnected={isConnected}
+        isLoading={isLoading || isProcessing}
+        onClick={handleInstagramConnect}
+      />
+      {isConnected && <InstagramMetrics />}
+    </div>
   );
 };

@@ -1,12 +1,24 @@
 import { useInstagramData } from "@/hooks/useInstagramData";
 import { DashboardMetricCard } from "@/components/dashboard/DashboardMetricCard";
-import { Instagram, Users, Image } from "lucide-react";
+import { Instagram, Users, Image, Loader2 } from "lucide-react";
 
 export const InstagramMetrics = () => {
-  const { data, isLoading } = useInstagramData();
+  const { data, isLoading, error } = useInstagramData();
+
+  if (error) {
+    return (
+      <div className="text-center text-muted-foreground">
+        Failed to load Instagram metrics. Please try again later.
+      </div>
+    );
+  }
 
   if (isLoading) {
-    return <div>Loading metrics...</div>;
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   if (!data) {
