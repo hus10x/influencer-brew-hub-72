@@ -17,6 +17,8 @@ interface InstagramMedia {
   media_url: string;
   timestamp: string;
   permalink: string;
+  like_count?: number;
+  comments_count?: number;
 }
 
 export const useInstagramData = () => {
@@ -35,7 +37,7 @@ export const useInstagramData = () => {
 
     console.log('Found access token, fetching user data...');
 
-    // Fetch user data with access token in URL (as per Instagram API docs)
+    // Fetch user data
     const userResponse = await fetch(
       `https://graph.instagram.com/v21.0/me?fields=id,username,followers_count,media_count,profile_picture_url&access_token=${profile.instagram_access_token}`
     );
@@ -49,9 +51,9 @@ export const useInstagramData = () => {
     const userData: InstagramUserData = await userResponse.json();
     console.log('User data fetched:', userData);
 
-    // Fetch media data with access token in URL
+    // Fetch media data with engagement metrics
     const mediaResponse = await fetch(
-      `https://graph.instagram.com/v21.0/me/media?fields=id,caption,media_type,media_url,timestamp,permalink&access_token=${profile.instagram_access_token}`
+      `https://graph.instagram.com/v21.0/me/media?fields=id,caption,media_type,media_url,timestamp,permalink,like_count,comments_count&access_token=${profile.instagram_access_token}`
     );
 
     if (!mediaResponse.ok) {
