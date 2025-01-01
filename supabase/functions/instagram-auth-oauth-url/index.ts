@@ -44,18 +44,29 @@ serve(async (req) => {
     const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/instagram-auth-callback`;
     console.log('Using redirect URI:', redirectUri);
 
-    // Construct Instagram OAuth URL with correct scopes
-    const instagramUrl = `https://api.instagram.com/oauth/authorize?` +
-      `client_id=${appId}` +
-      "&response_type=code" +
-      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-      "&scope=instagram_basic_display,instagram_content_publish,instagram_manage_comments,instagram_manage_insights,pages_show_list,pages_read_engagement" +
-      `&state=${state}`;
+    // Define required scopes for business functionality
+    const scopes = [
+      'instagram_basic',
+      'instagram_content_publish',
+      'instagram_manage_comments',
+      'instagram_manage_insights',
+      'pages_show_list',
+      'pages_read_engagement'
+    ].join(',');
 
-    console.log('Generated Instagram OAuth URL successfully');
+    // Construct Facebook OAuth URL (using Facebook Login instead of Instagram Basic Display)
+    const authUrl = `https://www.facebook.com/v21.0/dialog/oauth?` +
+      `client_id=${appId}` +
+      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+      `&state=${state}` +
+      `&scope=${scopes}` +
+      `&response_type=code` +
+      `&extras=${encodeURIComponent(JSON.stringify({setup:{channel:"IG_API_ONBOARDING"}}))}`;
+
+    console.log('Generated Facebook OAuth URL successfully');
 
     return new Response(
-      JSON.stringify({ url: instagramUrl }), 
+      JSON.stringify({ url: authUrl }), 
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 

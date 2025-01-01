@@ -7,7 +7,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -28,7 +27,7 @@ serve(async (req) => {
     });
 
     if (error) {
-      console.error('Error from Instagram:', error, errorReason);
+      console.error('Error from Facebook:', error, errorReason);
       return new Response(
         JSON.stringify({ error: 'Authentication failed', details: error }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -74,14 +73,15 @@ serve(async (req) => {
     const appSecret = Deno.env.get('FACEBOOK_APP_SECRET');
     const redirectUri = `${supabaseUrl}/functions/v1/instagram-auth-callback`;
 
-    const tokenResponse = await fetch('https://api.instagram.com/oauth/access_token', {
-      method: 'POST',
-      body: new URLSearchParams({
-        client_id: appId!,
-        client_secret: appSecret!,
-        grant_type: 'authorization_code',
+    // Get Facebook access token
+    const tokenResponse = await fetch('https://graph.facebook.com/v21.0/oauth/access_token', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client_id: appId,
+        client_secret: appSecret,
         redirect_uri: redirectUri,
-        code,
+        code: code,
       }),
     });
 
@@ -92,36 +92,49 @@ serve(async (req) => {
     }
 
     const tokenData = await tokenResponse.json();
-    console.log('Received token data:', { 
-      hasAccessToken: !!tokenData.access_token,
-      hasUserId: !!tokenData.user_id 
-    });
+    const fbAccessToken = tokenData.access_token;
 
-    // Get user profile information
-    const profileResponse = await fetch(
-      `https://graph.instagram.com/me?fields=id,username,account_type&access_token=${tokenData.access_token}`
+    // Get user's Facebook Pages
+    const pagesResponse = await fetch(
+      `https://graph.facebook.com/v21.0/me/accounts?access_token=${fbAccessToken}`
     );
 
-    if (!profileResponse.ok) {
-      const error = await profileResponse.text();
-      console.error('Profile fetch failed:', error);
-      throw new Error(`Failed to fetch Instagram profile: ${error}`);
+    if (!pagesResponse.ok) {
+      throw new Error('Failed to fetch Facebook Pages');
     }
 
-    const profileData = await profileResponse.json();
-    console.log('Profile data fetched:', { 
-      username: profileData.username,
-      accountType: profileData.account_type
-    });
+    const pagesData = await pagesResponse.json();
+    const page = pagesData.data[0]; // Get first page for now
 
-    // Update profile in database
+    if (!page) {
+      throw new Error('No Facebook Pages found');
+    }
+
+    // Get Instagram Business Account connected to the Page
+    const igAccountResponse = await fetch(
+      `https://graph.facebook.com/v21.0/${page.id}?fields=instagram_business_account&access_token=${page.access_token}`
+    );
+
+    if (!igAccountResponse.ok) {
+      throw new Error('Failed to fetch Instagram Business Account');
+    }
+
+    const igAccountData = await igAccountResponse.json();
+    const igBusinessAccount = igAccountData.instagram_business_account;
+
+    if (!igBusinessAccount) {
+      throw new Error('No Instagram Business Account found');
+    }
+
+    // Update profile with Facebook and Instagram information
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
-        instagram_id: profileData.id,
-        instagram_username: profileData.username,
-        instagram_access_token: tokenData.access_token,
-        instagram_account_type: profileData.account_type,
+        facebook_user_id: tokenData.user_id,
+        facebook_page_id: page.id,
+        facebook_page_access_token: page.access_token,
+        facebook_page_name: page.name,
+        instagram_id: igBusinessAccount.id,
         instagram_connected: true,
         instagram_token_expires_at: new Date(Date.now() + 5184000000).toISOString(), // 60 days
         updated_at: new Date().toISOString(),
