@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -27,7 +27,7 @@ export const FacebookPageSelect = ({ onPageSelected, userAccessToken }: Facebook
   const [isLoading, setIsLoading] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
 
-  useState(() => {
+  useEffect(() => {
     const fetchPages = async () => {
       try {
         setIsLoading(true);
