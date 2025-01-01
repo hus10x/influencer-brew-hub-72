@@ -31,3 +31,8 @@ verify_jwt = true
 
 [functions.instagram-auth-callback]
 verify_jwt = false
+
+[
+functions.instagram-webhooks
+]
+verify_jwt = false
