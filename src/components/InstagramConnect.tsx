@@ -19,7 +19,6 @@ export const InstagramConnect = () => {
       setIsProcessing(true);
       console.log('Starting Instagram connection process...');
 
-      // Get current user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) {
         console.error("Error getting user:", userError);
@@ -52,6 +51,10 @@ export const InstagramConnect = () => {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
 
+      // Calculate token expiration (60 days from now)
+      const expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() + 60);
+
       const { error: updateError } = await supabase
         .from('profiles')
         .update({
@@ -60,12 +63,14 @@ export const InstagramConnect = () => {
           facebook_page_access_token: page.access_token,
           instagram_id: page.instagram_business_account.id,
           instagram_connected: true,
+          instagram_token_expires_at: expirationDate.toISOString(),
           updated_at: new Date().toISOString(),
         })
         .eq('id', user.id);
 
       if (updateError) throw updateError;
 
+      console.log('Successfully stored Instagram business tokens');
       toast.success("Successfully connected Instagram Business account");
       setShowPageSelect(false);
     } catch (error) {

@@ -34,7 +34,7 @@ export const useInstagramConnection = () => {
 
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('instagram_connected')
+          .select('instagram_connected, instagram_token_expires_at')
           .eq('id', session.user.id)
           .maybeSingle();
 
@@ -44,7 +44,18 @@ export const useInstagramConnection = () => {
         }
 
         if (mounted && profile?.instagram_connected) {
-          setIsConnected(true);
+          // Check if token is expired or will expire in the next 24 hours
+          const expirationDate = new Date(profile.instagram_token_expires_at);
+          const now = new Date();
+          const oneDayFromNow = new Date(now.getTime() + (24 * 60 * 60 * 1000));
+
+          if (expirationDate <= oneDayFromNow) {
+            console.log('Instagram token expired or expiring soon');
+            setIsConnected(false);
+            toast.error('Your Instagram connection has expired. Please reconnect.');
+          } else {
+            setIsConnected(true);
+          }
         }
       } catch (error) {
         console.error('Error checking Instagram connection:', error);
