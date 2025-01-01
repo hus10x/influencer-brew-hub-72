@@ -28,3 +28,6 @@ enabled = true
 
 [functions.instagram-auth-oauth-url]
 verify_jwt = true
+
+[functions.instagram-auth-callback]
+verify_jwt = false
