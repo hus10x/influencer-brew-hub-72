@@ -57,13 +57,12 @@ export const useInstagramAuth = () => {
         try {
           const { data, error } = await supabase.functions.invoke('instagram-auth/oauth-url', {
             headers: {
-              Authorization: `Bearer ${supabase.auth.session()?.access_token}`, // VERY IMPORTANT
+              Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
             },
           });
 
           if (error) {
             console.error('Error calling Edge Function:', error);
-            // Handle error (e.g., display error message)
             return;
           }
 
