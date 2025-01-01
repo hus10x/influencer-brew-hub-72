@@ -1,0 +1,4 @@
+project_id = "ahtozhqhjdkivyaqskko"
+
+[instagram-webhooks]
+verify_jwt = false
