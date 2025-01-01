@@ -40,10 +40,6 @@ serve(async (req) => {
       );
     }
 
-    // Construct redirect URI
-    const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/instagram-auth-callback`;
-    console.log('Using redirect URI:', redirectUri);
-
     // Define required scopes for business functionality
     const scopes = [
       'instagram_basic',
@@ -55,6 +51,9 @@ serve(async (req) => {
     ].join(',');
 
     // Construct Facebook OAuth URL (using Facebook Login instead of Instagram Basic Display)
+    const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/instagram-auth-callback`;
+    console.log('Using redirect URI:', redirectUri);
+
     const authUrl = `https://www.facebook.com/v21.0/dialog/oauth?` +
       `client_id=${appId}` +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
