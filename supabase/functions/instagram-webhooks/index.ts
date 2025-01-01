@@ -15,12 +15,13 @@ serve(async (req) => {
   try {
     // Handle webhook verification (GET request)
     if (req.method === 'GET') {
+      console.log('Received webhook verification request');
       const url = new URL(req.url);
       const mode = url.searchParams.get('hub.mode');
       const token = url.searchParams.get('hub.verify_token');
       const challenge = url.searchParams.get('hub.challenge');
 
-      console.log('Received webhook verification request:', { mode, token });
+      console.log('Verification params:', { mode, token });
 
       const verifyToken = Deno.env.get('INSTAGRAM_WEBHOOK_VERIFY_TOKEN');
       
