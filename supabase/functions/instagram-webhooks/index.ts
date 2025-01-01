@@ -24,6 +24,14 @@ serve(async (req) => {
 
       const verifyToken = Deno.env.get('INSTAGRAM_WEBHOOK_VERIFY_TOKEN');
       
+      if (!verifyToken) {
+        console.error('INSTAGRAM_WEBHOOK_VERIFY_TOKEN not set');
+        return new Response('Configuration error', { 
+          status: 500,
+          headers: corsHeaders 
+        });
+      }
+      
       // Verify the webhook
       if (mode === 'subscribe' && token === verifyToken) {
         console.log('Webhook verified successfully');
