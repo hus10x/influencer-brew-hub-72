@@ -1,30 +1,28 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export const useInstagramAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
   const initializeInstagramAuth = async () => {
     try {
       setIsLoading(true);
-      console.log('Starting Instagram connection process...');
+      console.log('Starting Instagram auth initialization...');
 
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
       if (sessionError || !session) {
         console.error('Session error:', sessionError);
         toast.error('Please log in to connect your Instagram account');
-        navigate('/login');
         return null;
       }
 
-      // Generate and store OAuth state (unchanged)
+      // Generate state for security
       const state = crypto.randomUUID();
-      console.log('Storing OAuth state...');
+      console.log('Generated state:', state);
 
+      // Store state in database with improved error handling
       const { error: stateError } = await supabase
         .from('instagram_oauth_states')
         .insert({
@@ -35,47 +33,42 @@ export const useInstagramAuth = () => {
 
       if (stateError) {
         console.error('Error storing OAuth state:', stateError);
-        throw new Error('Failed to initialize Instagram connection');
+        toast.error('Failed to initialize Instagram connection');
+        return null;
       }
 
-      return { state, appId: '950071187030893' };
+      // Get OAuth URL from Edge Function with improved error handling
+      const { data, error: functionError } = await supabase.functions.invoke('instagram-auth/oauth-url', {
+        body: { state },
+        headers: { 
+          Authorization: `Bearer ${session.access_token}`,
+          'x-user-id': session.user.id,
+        },
+      });
+
+      if (functionError) {
+        console.error('Error calling Edge Function:', functionError);
+        toast.error('Failed to generate Instagram connection URL');
+        return null;
+      }
+
+      if (!data?.url) {
+        console.error('No URL returned from Edge Function');
+        toast.error('Failed to generate Instagram connection URL');
+        return null;
+      }
+
+      console.log('Successfully generated Instagram OAuth URL');
+      return data.url;
+
     } catch (error) {
       console.error('Error in Instagram auth:', error);
-      toast.error('Failed to connect to Instagram. Please try again.');
+      toast.error('An unexpected error occurred');
       return null;
     } finally {
       setIsLoading(false);
     }
   };
-
-  // Call Edge Function after hook initialization (new)
-  useEffect(() => {
-    const initiateConnection = async () => {
-      const authData = await initializeInstagramAuth();
-
-      if (authData) {
-        try {
-          const { data, error } = await supabase.functions.invoke('instagram-auth/oauth-url', {
-            headers: {
-              Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-            },
-          });
-
-          if (error) {
-            console.error('Error calling Edge Function:', error);
-            return;
-          }
-
-          const { url } = data;
-          window.location.href = url; // Redirect to Instagram
-        } catch (error) {
-          console.error("Error invoking function", error)
-        }
-      }
-    };
-
-    initiateConnection();
-  }, []); // Empty dependency array ensures this runs only once on mount
 
   return {
     isLoading,
