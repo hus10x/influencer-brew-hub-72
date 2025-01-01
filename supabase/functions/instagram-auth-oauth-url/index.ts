@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
-  // Handle CORS
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -44,12 +44,12 @@ serve(async (req) => {
     const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/instagram-auth-callback`;
     console.log('Using redirect URI:', redirectUri);
 
-    // Construct Instagram OAuth URL
+    // Construct Instagram OAuth URL with all required scopes
     const instagramUrl = `https://api.instagram.com/oauth/authorize?` +
       `client_id=${appId}` +
       "&response_type=code" +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-      "&scope=instagram_basic,instagram_content_publish,instagram_manage_comments,instagram_manage_insights" +
+      "&scope=instagram_basic,instagram_content_publish,instagram_manage_comments,instagram_manage_insights,pages_show_list,pages_read_engagement" +
       `&state=${state}`;
 
     console.log('Generated Instagram OAuth URL successfully');

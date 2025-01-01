@@ -276,6 +276,10 @@ export type Database = {
           avatar_url: string | null
           created_at: string | null
           email: string
+          facebook_page_access_token: string | null
+          facebook_page_id: string | null
+          facebook_page_name: string | null
+          facebook_user_id: string | null
           full_name: string | null
           id: string
           instagram_access_token: string | null
@@ -291,6 +295,10 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string | null
           email: string
+          facebook_page_access_token?: string | null
+          facebook_page_id?: string | null
+          facebook_page_name?: string | null
+          facebook_user_id?: string | null
           full_name?: string | null
           id: string
           instagram_access_token?: string | null
@@ -306,6 +314,10 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string | null
           email?: string
+          facebook_page_access_token?: string | null
+          facebook_page_id?: string | null
+          facebook_page_name?: string | null
+          facebook_user_id?: string | null
           full_name?: string | null
           id?: string
           instagram_access_token?: string | null
