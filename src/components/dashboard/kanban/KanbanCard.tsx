@@ -1,15 +1,10 @@
 import { memo } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Tables } from "@/integrations/supabase/types";
+import type { Campaign } from "./types";
 import { CardHeader as CustomCardHeader } from "./card/CardHeader";
-import { CardMetrics } from "./card/CardMetrics";
-import { CollaborationsList } from "./card/CollaborationsList";
 
 interface KanbanCardProps {
-  campaign: Tables<"campaigns">;
-  collaborations: Tables<"collaborations">[];
-  onEdit: () => void;
-  onAddCollaboration: () => void;
+  campaign: Campaign;
   isSelected?: boolean;
   onSelect?: () => void;
   selectionMode?: boolean;
@@ -18,36 +13,28 @@ interface KanbanCardProps {
 export const KanbanCard = memo(
   ({
     campaign,
-    collaborations,
-    onEdit,
-    onAddCollaboration,
-    isSelected,
+    isSelected = false,
     onSelect,
-    selectionMode,
+    selectionMode = false,
   }: KanbanCardProps) => {
+    if (!campaign) return null;
+
     return (
       <Card className="w-full bg-card hover:shadow-md transition-shadow group">
         <CardHeader className="space-y-1 p-4">
           <CustomCardHeader
             title={campaign.title}
-            selectionMode={!!selectionMode}
-            isSelected={!!isSelected}
-            onSelect={() => onSelect?.()}
-            onEdit={onEdit}
+            selectionMode={selectionMode}
+            isSelected={isSelected}
+            onSelect={onSelect}
           />
           <p className="text-sm text-muted-foreground">{campaign.description}</p>
         </CardHeader>
         <CardContent className="p-4 pt-0">
-          <CardMetrics
-            totalSpots={collaborations.reduce((acc, collab) => acc + collab.max_spots, 0)}
-            filledSpots={collaborations.reduce((acc, collab) => acc + collab.filled_spots, 0)}
-            onAddCollaboration={onAddCollaboration}
-          />
-          <CollaborationsList
-            collaborations={collaborations}
-            isExpanded={false}
-            onToggle={() => {}}
-          />
+          <div className="text-sm text-muted-foreground">
+            <p>Start: {new Date(campaign.start_date).toLocaleDateString()}</p>
+            <p>End: {new Date(campaign.end_date).toLocaleDateString()}</p>
+          </div>
         </CardContent>
       </Card>
     );

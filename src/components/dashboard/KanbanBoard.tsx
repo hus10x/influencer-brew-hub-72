@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DragDropContext, Draggable } from "@hello-pangea/dnd";
+import { DragDropContext } from "@hello-pangea/dnd";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -36,7 +36,7 @@ export const KanbanBoard = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const { data: campaigns, isLoading } = useQuery({
+  const { data: campaigns = [], isLoading } = useQuery({
     queryKey: ["campaigns"],
     queryFn: async () => {
       const { data: userData } = await supabase.auth.getUser();
@@ -80,7 +80,7 @@ export const KanbanBoard = () => {
 
     updateCampaignStatus.mutate({
       campaignId: draggableId,
-      status: newStatus,
+      status: newStatus as Campaign['status'],
     });
   };
 

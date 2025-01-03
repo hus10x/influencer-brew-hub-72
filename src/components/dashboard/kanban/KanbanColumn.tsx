@@ -1,31 +1,24 @@
 import { Droppable } from "@hello-pangea/dnd";
 import { KanbanCard } from "./KanbanCard";
-import { Tables } from "@/integrations/supabase/types";
-import { useIsMobile } from "@/hooks/use-mobile";
+import type { Campaign } from "./types";
 
 interface KanbanColumnProps {
   status: string;
-  campaigns: Tables<"campaigns">[];
-  collaborations: Record<string, Tables<"collaborations">[]>;
-  onEditCampaign: (campaign: Tables<"campaigns">) => void;
-  onAddCollaboration: (campaign: Tables<"campaigns">) => void;
+  campaigns: Campaign[];
   selectedCampaigns?: Set<string>;
-  onSelectCampaign?: (id: string) => void;
+  onSelect?: (id: string) => void;
   selectionMode?: boolean;
+  windowWidth?: number;
 }
 
 export const KanbanColumn = ({
   status,
   campaigns,
-  collaborations,
-  onEditCampaign,
-  onAddCollaboration,
-  selectedCampaigns,
-  onSelectCampaign,
-  selectionMode,
+  selectedCampaigns = new Set(),
+  onSelect,
+  selectionMode = false,
+  windowWidth = 0,
 }: KanbanColumnProps) => {
-  const windowWidth = useIsMobile() ? window.innerWidth : 0;
-
   return (
     <Droppable droppableId={status}>
       {(provided, snapshot) => (
@@ -55,11 +48,8 @@ export const KanbanColumn = ({
                 <KanbanCard
                   key={campaign.id}
                   campaign={campaign}
-                  collaborations={collaborations[campaign.id] || []}
-                  onEdit={() => onEditCampaign(campaign)}
-                  onAddCollaboration={() => onAddCollaboration(campaign)}
                   isSelected={selectedCampaigns?.has(campaign.id)}
-                  onSelect={() => onSelectCampaign?.(campaign.id)}
+                  onSelect={() => onSelect?.(campaign.id)}
                   selectionMode={selectionMode}
                 />
               ))
