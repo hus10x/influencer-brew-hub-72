@@ -34,14 +34,14 @@ export const DashboardSidebar = ({ activeTab, onTabChange, sidebarItems }: Dashb
   };
 
   return (
-    <aside className="w-64 border-r border-border/90 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 h-screen sticky top-0 left-0">
+    <aside className="w-64 border-r border-border/90 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 min-h-screen sticky top-0 left-0 flex flex-col">
       <div className="p-6 border-b border-border/90 flex items-center space-x-3">
         <BookOpen className="h-6 w-6 text-primary drop-shadow-sm" />
         <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent font-sans text-2xl font-bold tracking-tight lowercase drop-shadow-sm">
           hikayat
         </span>
       </div>
-      <nav className="p-4 space-y-2">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {sidebarItems.map((item) => (
           <button
             key={item.id}
@@ -56,29 +56,29 @@ export const DashboardSidebar = ({ activeTab, onTabChange, sidebarItems }: Dashb
             {item.label}
           </button>
         ))}
-        <div className="pt-4 mt-4 border-t border-border/90 flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="hover:bg-primary/10"
-          >
-            {theme === "dark" ? (
-              <Sun className="h-5 w-5" />
-            ) : (
-              <Moon className="h-5 w-5" />
-            )}
-          </Button>
-          <Button 
-            variant="ghost" 
-            className="flex-1 flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary transition-all duration-200 ease-in-out transform hover:scale-[1.02]"
-            onClick={handleLogout}
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </Button>
-        </div>
       </nav>
+      <div className="p-4 border-t border-border/90 flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="hover:bg-primary/10"
+        >
+          {theme === "dark" ? (
+            <Sun className="h-5 w-5" />
+          ) : (
+            <Moon className="h-5 w-5" />
+          )}
+        </Button>
+        <Button 
+          variant="ghost" 
+          className="flex-1 flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary transition-all duration-200 ease-in-out transform hover:scale-[1.02]"
+          onClick={handleLogout}
+        >
+          <LogOut className="w-4 h-4" />
+          Logout
+        </Button>
+      </div>
     </aside>
   );
 };

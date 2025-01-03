@@ -52,7 +52,6 @@ export const KanbanColumn = ({
                   description={campaign.description || ""}
                   startDate={new Date(campaign.start_date)}
                   endDate={new Date(campaign.end_date)}
-                  collaborationsCount={0}
                   isSelected={selectedCampaigns.includes(campaign.id)}
                   onSelect={() => onSelect(campaign.id)}
                   index={index}

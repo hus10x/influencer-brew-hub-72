@@ -129,6 +129,7 @@ export const KanbanCard = ({
               <CollaborationForm
                 campaignId={id}
                 onSuccess={() => setIsCollabDialogOpen(false)}
+                isStandalone={false}
               />
             </DialogContent>
           </Dialog>
@@ -142,8 +143,14 @@ export const KanbanCard = ({
                 </DialogDescription>
               </DialogHeader>
               <CampaignForm
-                campaignId={id}
                 onSuccess={() => setIsEditDialogOpen(false)}
+                campaign={{
+                  id,
+                  title,
+                  description,
+                  start_date: startDate.toISOString(),
+                  end_date: endDate.toISOString(),
+                }}
               />
             </DialogContent>
           </Dialog>
