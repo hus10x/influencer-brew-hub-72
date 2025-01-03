@@ -28,6 +28,7 @@
     --radius: 0.5rem;
   }
 
+  /* Optimized dark mode with hardware acceleration */
   .dark {
     --background: 222 47% 4%;
     --foreground: 0 0% 98%;
@@ -48,6 +49,9 @@
     --border: 217.2 32.6% 12%;
     --input: 217.2 32.6% 12%;
     --ring: 252.2 95.4% 74.2%;
+    transform: translateZ(0);
+    will-change: background-color, color, border-color;
+    -webkit-font-smoothing: antialiased;
   }
 }
 
@@ -58,6 +62,9 @@
   
   body {
     @apply bg-background text-foreground font-sans;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    transform: translateZ(0);
+    -webkit-font-smoothing: antialiased;
   }
 
   /* Optimized Scrollbar Styles with GPU acceleration */
