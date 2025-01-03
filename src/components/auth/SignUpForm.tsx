@@ -33,18 +33,22 @@ export const SignUpForm = ({ userType, setUserType }: SignUpFormProps) => {
       },
       dark: {
         colors: {
-          inputBackground: 'hsl(222 47% 6%)', // Using card background color for dark mode
+          inputBackground: 'hsl(222 47% 6%)',
           inputBorder: 'hsl(217.2 32.6% 12%)',
           inputText: 'hsl(var(--foreground))',
           inputPlaceholder: 'hsl(var(--muted-foreground))',
+          messageText: 'hsl(var(--foreground))',
+          anchorTextColor: 'hsl(var(--primary))',
+          dividerBackground: 'hsl(var(--border))',
         },
       },
     },
     className: {
       container: 'w-full',
       button: 'bg-primary hover:bg-primary/90 text-primary-foreground',
-      input: 'bg-background border-input dark:bg-card',
+      input: 'bg-background border-input dark:bg-card dark:border-input',
       label: 'text-foreground',
+      anchor: 'text-primary hover:text-primary/90',
     },
   };
 
