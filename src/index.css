@@ -65,14 +65,16 @@
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus {
     -webkit-text-fill-color: hsl(var(--foreground));
-    -webkit-box-shadow: 0 0 0px 1000px hsl(var(--background)) inset;
+    -webkit-box-shadow: 0 0 0px 1000px hsl(var(--card)) inset;
     transition: background-color 5000s ease-in-out 0s;
+    caret-color: hsl(var(--foreground));
   }
 
   /* Handle Firefox */
   input:autofill {
-    background: hsl(var(--background)) !important;
+    background: hsl(var(--card)) !important;
     color: hsl(var(--foreground)) !important;
+    box-shadow: 0 0 0px 1000px hsl(var(--card)) inset;
   }
 
   .dark input:-webkit-autofill,
@@ -80,10 +82,12 @@
   .dark input:-webkit-autofill:focus {
     -webkit-text-fill-color: hsl(var(--foreground));
     -webkit-box-shadow: 0 0 0px 1000px hsl(var(--card)) inset;
+    caret-color: hsl(var(--foreground));
   }
 
   .dark input:autofill {
     background: hsl(var(--card)) !important;
     color: hsl(var(--foreground)) !important;
+    box-shadow: 0 0 0px 1000px hsl(var(--card)) inset;
   }
 }
