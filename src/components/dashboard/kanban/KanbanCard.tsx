@@ -17,18 +17,7 @@ import { CardMetrics } from "./card/CardMetrics";
 import { CollaborationsList } from "./card/CollaborationsList";
 import { CampaignForm } from "../CampaignForm";
 
-interface KanbanCardProps {
-  id: string;
-  title: string;
-  description: string;
-  startDate: Date;
-  endDate: Date;
-  isSelected: boolean;
-  onSelect: () => void;
-  index: number;
-  selectionMode: boolean;
-  collaborationsCount?: number;
-}
+// ... keep existing code (interfaces and types)
 
 export const KanbanCard = ({
   id,
@@ -45,29 +34,7 @@ export const KanbanCard = ({
   const [isCollabDialogOpen, setIsCollabDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  const { data: collaborations = [] } = useQuery({
-    queryKey: ["collaborations", id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("collaborations")
-        .select("*")
-        .eq("campaign_id", id);
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const totalSpots = collaborations.reduce((acc, collab) => acc + collab.max_spots, 0);
-  const filledSpots = collaborations.reduce((acc, collab) => acc + collab.filled_spots, 0);
-
-  const handleCollabDialogClose = () => {
-    setIsCollabDialogOpen(false);
-  };
-
-  const handleEditDialogClose = () => {
-    setIsEditDialogOpen(false);
-  };
+  // ... keep existing code (query and handlers)
 
   return (
     <Draggable draggableId={id} index={index}>
@@ -82,7 +49,7 @@ export const KanbanCard = ({
           }}
         >
           <Card 
-            className={`w-full bg-card dark:bg-card/95 hover:shadow-md transition-shadow relative ${
+            className={`w-full bg-card dark:bg-card hover:shadow-md transition-shadow relative ${
               isSelected ? 'ring-2 ring-primary' : ''
             } ${snapshot.isDragging ? 'shadow-lg' : ''}`}
           >
@@ -98,7 +65,7 @@ export const KanbanCard = ({
               <p className="text-sm text-foreground/80 dark:text-foreground/70 line-clamp-2">{description}</p>
               
               <div className="space-y-2">
-                <div className="flex items-center text-sm text-muted-foreground">
+                <div className="flex items-center text-sm text-muted-foreground dark:text-muted-foreground/70">
                   <CalendarDays className="mr-2 h-4 w-4 flex-shrink-0" />
                   <span className="truncate">
                     {startDate.toLocaleDateString()} - {endDate.toLocaleDateString()}
@@ -120,42 +87,7 @@ export const KanbanCard = ({
             </div>
           </Card>
 
-          <Dialog open={isCollabDialogOpen} onOpenChange={setIsCollabDialogOpen}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Create New Collaboration</DialogTitle>
-                <DialogDescription>
-                  Add a new collaboration to the campaign "{title}"
-                </DialogDescription>
-              </DialogHeader>
-              <CollaborationForm
-                campaignId={id}
-                onSuccess={handleCollabDialogClose}
-                isStandalone={false}
-              />
-            </DialogContent>
-          </Dialog>
-
-          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Edit Campaign</DialogTitle>
-                <DialogDescription>
-                  Update the campaign details
-                </DialogDescription>
-              </DialogHeader>
-              <CampaignForm
-                campaign={{
-                  id,
-                  title,
-                  description,
-                  start_date: startDate.toISOString(),
-                  end_date: endDate.toISOString(),
-                }}
-                onSuccess={handleEditDialogClose}
-              />
-            </DialogContent>
-          </Dialog>
+          {/* ... keep existing code (dialogs) */}
         </div>
       )}
     </Draggable>
