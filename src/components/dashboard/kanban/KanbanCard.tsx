@@ -82,7 +82,7 @@ export const KanbanCard = ({
           }}
         >
           <Card 
-            className={`w-full bg-white hover:shadow-md transition-shadow relative ${
+            className={`w-full bg-card dark:bg-card/95 hover:shadow-md transition-shadow relative ${
               isSelected ? 'ring-2 ring-primary' : ''
             } ${snapshot.isDragging ? 'shadow-lg' : ''}`}
           >
@@ -95,7 +95,7 @@ export const KanbanCard = ({
                 onEdit={() => setIsEditDialogOpen(true)}
               />
               
-              <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
+              <p className="text-sm text-foreground/80 dark:text-foreground/70 line-clamp-2">{description}</p>
               
               <div className="space-y-2">
                 <div className="flex items-center text-sm text-muted-foreground">
