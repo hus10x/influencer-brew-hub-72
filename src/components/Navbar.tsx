@@ -40,15 +40,15 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/90">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div 
             className="cursor-pointer flex items-center space-x-3" 
             onClick={() => navigate("/")}
           >
-            <BookOpen className="h-6 w-6 text-primary drop-shadow-sm" />
-            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent font-sans text-2xl font-bold tracking-tight lowercase drop-shadow-sm">
+            <BookOpen className="h-6 w-6 text-primary" />
+            <span className="font-sans text-2xl font-bold tracking-tight text-foreground lowercase">
               hikayat
             </span>
           </div>
@@ -60,7 +60,7 @@ export const Navbar = () => {
                     <LogIn className="mr-2 h-4 w-4" />
                     Login
                   </Button>
-                  <Button onClick={() => navigate("/signup")} className="bg-primary hover:bg-primary/90">
+                  <Button onClick={() => navigate("/signup")}>
                     <UserPlus className="mr-2 h-4 w-4" />
                     Sign Up
                   </Button>

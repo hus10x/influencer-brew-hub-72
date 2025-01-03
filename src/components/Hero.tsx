@@ -10,7 +10,7 @@ export const Hero = () => {
   return (
     <>
       <Navbar />
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-background to-background/80 px-6 pt-20 pb-12 md:pb-16 lg:pb-24">
+      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-background text-foreground px-6 pt-20 pb-12 md:pb-16 lg:pb-24">
         <div className="container mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8 animate-fade-up">
             <div>
@@ -27,14 +27,12 @@ export const Hero = () => {
             <div className="flex flex-wrap gap-4">
               <Button
                 size="lg"
-                className="bg-primary hover:bg-primary/90"
                 onClick={() => navigate("/influencer")}
               >
                 I'm an Influencer <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
               <Button
                 size="lg"
-                className="bg-primary hover:bg-primary/90"
                 onClick={() => navigate("/client")}
               >
                 I'm a Business <ArrowRight className="ml-2 h-4 w-4" />
