@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DragDropContext } from "@hello-pangea/dnd";
+import { DragDropContext, Draggable } from "@hello-pangea/dnd";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -36,7 +36,7 @@ export const KanbanBoard = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const { data: campaigns = [], isLoading } = useQuery({
+  const { data: campaigns, isLoading } = useQuery({
     queryKey: ["campaigns"],
     queryFn: async () => {
       const { data: userData } = await supabase.auth.getUser();
@@ -51,22 +51,9 @@ export const KanbanBoard = () => {
 
       const businessIds = userBusinesses.map((b) => b.id);
 
-      const { data: campaignsData, error } = await supabase
+      const { data, error } = await supabase
         .from("campaigns")
-        .select(`
-          *,
-          collaborations (
-            id,
-            title,
-            description,
-            requirements,
-            compensation,
-            deadline,
-            max_spots,
-            filled_spots,
-            status
-          )
-        `)
+        .select("*")
         .in("business_id", businessIds);
 
       if (error) {
@@ -74,7 +61,7 @@ export const KanbanBoard = () => {
         throw error;
       }
       
-      return campaignsData as Campaign[];
+      return data as Campaign[];
     },
   });
 
@@ -93,7 +80,7 @@ export const KanbanBoard = () => {
 
     updateCampaignStatus.mutate({
       campaignId: draggableId,
-      status: newStatus as Campaign['status'],
+      status: newStatus,
     });
   };
 
@@ -115,11 +102,6 @@ export const KanbanBoard = () => {
     draft: campaigns?.filter((c) => c.status === "draft") ?? [],
     active: campaigns?.filter((c) => c.status === "active") ?? [],
     completed: campaigns?.filter((c) => c.status === "completed") ?? [],
-  };
-
-  const handleEditCampaign = (campaignId: string) => {
-    // Handle edit campaign
-    console.info("Edit campaign:", campaignId);
   };
 
   return (
@@ -181,9 +163,8 @@ export const KanbanBoard = () => {
               <KanbanColumn
                 status={status}
                 campaigns={items}
-                selectedCampaigns={new Set(selectedCampaigns)}
+                selectedCampaigns={selectedCampaigns}
                 onSelect={toggleCampaignSelection}
-                onEdit={handleEditCampaign}
                 selectionMode={selectionMode}
                 windowWidth={windowWidth}
               />
