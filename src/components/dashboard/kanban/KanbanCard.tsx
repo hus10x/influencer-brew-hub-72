@@ -17,7 +17,17 @@ import { CardMetrics } from "./card/CardMetrics";
 import { CollaborationsList } from "./card/CollaborationsList";
 import { CampaignForm } from "../CampaignForm";
 
-// ... keep existing code (interfaces and types)
+interface KanbanCardProps {
+  id: string;
+  title: string;
+  description: string;
+  startDate: Date;
+  endDate: Date;
+  isSelected: boolean;
+  onSelect: () => void;
+  index: number;
+  selectionMode: boolean;
+}
 
 export const KanbanCard = ({
   id,
@@ -34,7 +44,26 @@ export const KanbanCard = ({
   const [isCollabDialogOpen, setIsCollabDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  // ... keep existing code (query and handlers)
+  const { data: collaborations = [], isLoading: isLoadingCollaborations } = useQuery({
+    queryKey: ["collaborations", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("collaborations")
+        .select("*")
+        .eq("campaign_id", id);
+
+      if (error) {
+        console.error("Error fetching collaborations:", error);
+        throw error;
+      }
+
+      return data || [];
+    },
+  });
+
+  // Calculate total spots and filled spots from all collaborations
+  const totalSpots = collaborations.reduce((sum, collab) => sum + (collab.max_spots || 0), 0);
+  const filledSpots = collaborations.reduce((sum, collab) => sum + (collab.filled_spots || 0), 0);
 
   return (
     <Draggable draggableId={id} index={index}>
@@ -49,7 +78,7 @@ export const KanbanCard = ({
           }}
         >
           <Card 
-            className={`w-full bg-card dark:bg-card hover:shadow-md transition-shadow relative ${
+            className={`w-full dark:bg-card bg-card hover:shadow-md transition-shadow relative ${
               isSelected ? 'ring-2 ring-primary' : ''
             } ${snapshot.isDragging ? 'shadow-lg' : ''}`}
           >
@@ -62,7 +91,9 @@ export const KanbanCard = ({
                 onEdit={() => setIsEditDialogOpen(true)}
               />
               
-              <p className="text-sm text-foreground/80 dark:text-foreground/70 line-clamp-2">{description}</p>
+              <p className="text-sm text-foreground/80 dark:text-foreground/70 line-clamp-2">
+                {description}
+              </p>
               
               <div className="space-y-2">
                 <div className="flex items-center text-sm text-muted-foreground dark:text-muted-foreground/70">
@@ -87,7 +118,35 @@ export const KanbanCard = ({
             </div>
           </Card>
 
-          {/* ... keep existing code (dialogs) */}
+          <Dialog open={isCollabDialogOpen} onOpenChange={setIsCollabDialogOpen}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Create New Collaboration</DialogTitle>
+                <DialogDescription>
+                  Add a new collaboration opportunity for this campaign
+                </DialogDescription>
+              </DialogHeader>
+              <CollaborationForm
+                campaignId={id}
+                onSuccess={() => setIsCollabDialogOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Edit Campaign</DialogTitle>
+                <DialogDescription>
+                  Update campaign details
+                </DialogDescription>
+              </DialogHeader>
+              <CampaignForm
+                campaignId={id}
+                onSuccess={() => setIsEditDialogOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
         </div>
       )}
     </Draggable>
