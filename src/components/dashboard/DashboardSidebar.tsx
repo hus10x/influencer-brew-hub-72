@@ -34,7 +34,7 @@ export const DashboardSidebar = ({ activeTab, onTabChange, sidebarItems }: Dashb
   };
 
   return (
-    <aside className="w-64 border-r border-border/90 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 min-h-screen fixed top-0 left-0 flex flex-col h-screen overflow-y-auto">
+    <aside className="w-64 border-r border-border/90 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 left-0 flex flex-col h-screen overflow-y-auto z-40">
       <div className="p-6 border-b border-border/90 flex items-center space-x-3">
         <BookOpen className="h-6 w-6 text-primary drop-shadow-sm" />
         <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent font-sans text-2xl font-bold tracking-tight lowercase drop-shadow-sm">
