@@ -1,96 +1,64 @@
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { LogIn, UserPlus, Moon, Sun, LogOut, BookOpen } from "lucide-react";
-import { useTheme } from "@/hooks/use-theme";
+import { MobileMenu } from "@/components/MobileMenu";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
-import { MobileMenu } from "./MobileMenu";
 
 export const Navbar = () => {
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsLoggedIn(!!session);
-    };
-
-    checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsLoggedIn(!!session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
+    if (isLoggingOut) return; // Prevent multiple logout attempts
+    
     try {
+      setIsLoggingOut(true);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      
       toast.success("Logged out successfully");
       navigate("/");
     } catch (error) {
       console.error("Error logging out:", error);
-      toast.error("Error logging out");
+      toast.error("Error logging out. Please try again.");
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border shadow-sm dark:shadow-none">
-      <div className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div 
-            className="cursor-pointer flex items-center space-x-3" 
-            onClick={() => navigate("/")}
-          >
-            <BookOpen className="h-6 w-6 text-primary" />
-            <span className="font-sans text-2xl font-bold tracking-tight text-foreground lowercase">
+    <header className="sticky top-0 z-50 w-full border-b border-border/90 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-16 items-center">
+        <div className="mr-4 hidden md:flex">
+          <Link to="/" className="mr-6 flex items-center space-x-2">
+            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent font-sans text-2xl font-bold tracking-tight lowercase">
               hikayat
             </span>
-          </div>
-          <div className="flex items-center gap-4">
-            {!isLoggedIn ? (
-              <>
-                <div className="hidden lg:flex items-center gap-4">
-                  <Button variant="outline" onClick={() => navigate("/login")}>
-                    <LogIn className="mr-2 h-4 w-4" />
-                    Login
-                  </Button>
-                  <Button onClick={() => navigate("/signup")}>
-                    <UserPlus className="mr-2 h-4 w-4" />
-                    Sign Up
-                  </Button>
-                </div>
-                <MobileMenu />
-              </>
-            ) : (
-              <Button 
-                variant="outline" 
-                onClick={handleLogout}
-                className="flex items-center gap-2"
-              >
-                <LogOut className="h-4 w-4" />
-                Logout
-              </Button>
-            )}
+          </Link>
+          <nav className="flex items-center space-x-6 text-sm font-medium">
+            <Link
+              to="/"
+              className="transition-colors hover:text-foreground/80 text-foreground"
+            >
+              Home
+            </Link>
+          </nav>
+        </div>
+        <MobileMenu />
+        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+          <nav className="flex items-center space-x-2">
             <Button
               variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className="text-base font-medium"
             >
-              {theme === "dark" ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
+              {isLoggingOut ? "Logging out..." : "Logout"}
             </Button>
-          </div>
+          </nav>
         </div>
       </div>
-    </nav>
+    </header>
   );
 };
