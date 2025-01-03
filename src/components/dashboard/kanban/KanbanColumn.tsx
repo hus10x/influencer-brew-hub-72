@@ -1,69 +1,163 @@
-import { Droppable } from "@hello-pangea/dnd";
-import { KanbanCard } from "./KanbanCard";
-import { Campaign } from "./types";
+import { Card } from "@/components/ui/card";
+import { CalendarDays } from "lucide-react";
+import { Draggable } from "@hello-pangea/dnd";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { CollaborationForm } from "../collaboration-form/CollaborationForm";
+import { CardHeader } from "./card/CardHeader";
+import { CardMetrics } from "./card/CardMetrics";
+import { CollaborationsList } from "./card/CollaborationsList";
+import { CampaignForm } from "../CampaignForm";
 
-interface KanbanColumnProps {
-  status: string;
-  campaigns: Campaign[];
-  selectedCampaigns: string[];
-  onSelect: (campaignId: string) => void;
+interface KanbanCardProps {
+  id: string;
+  title: string;
+  description: string;
+  startDate: Date;
+  endDate: Date;
+  isSelected: boolean;
+  onSelect: () => void;
+  index: number;
   selectionMode: boolean;
-  windowWidth: number;
+  collaborationsCount?: number;
 }
 
-export const KanbanColumn = ({
-  status,
-  campaigns,
-  selectedCampaigns,
+export const KanbanCard = ({
+  id,
+  title,
+  description,
+  startDate,
+  endDate,
+  isSelected,
   onSelect,
+  index,
   selectionMode,
-  windowWidth,
-}: KanbanColumnProps) => {
+}: KanbanCardProps) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isCollabDialogOpen, setIsCollabDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  const { data: collaborations = [] } = useQuery({
+    queryKey: ["collaborations", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("collaborations")
+        .select("*")
+        .eq("campaign_id", id);
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const totalSpots = collaborations.reduce((acc, collab) => acc + collab.max_spots, 0);
+  const filledSpots = collaborations.reduce((acc, collab) => acc + collab.filled_spots, 0);
+
+  const handleCollabDialogClose = () => {
+    setIsCollabDialogOpen(false);
+  };
+
+  const handleEditDialogClose = () => {
+    setIsEditDialogOpen(false);
+  };
+
   return (
-    <Droppable droppableId={status}>
+    <Draggable draggableId={id} index={index}>
       {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
-          {...provided.droppableProps}
-          className={`flex flex-col h-full rounded-lg ${
-            snapshot.isDraggingOver ? "bg-muted/50" : "bg-muted/30"
-          }`}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          className="mb-4 last:mb-0"
           style={{
-            minHeight: windowWidth < 768 ? '50vh' : '100%',
+            ...provided.draggableProps.style,
           }}
         >
-          <div className="flex items-center justify-between p-4 border-b border-border/50">
-            <h3 className="font-semibold capitalize text-lg">{status}</h3>
-            <span className="text-sm text-muted-foreground">
-              {campaigns.length} campaign{campaigns.length !== 1 ? "s" : ""}
-            </span>
-          </div>
-          <div className="flex-1 overflow-y-auto p-4">
-            {campaigns.length === 0 ? (
-              <div className="flex items-center justify-center h-32 border-2 border-dashed border-muted rounded-lg">
-                <p className="text-sm text-muted-foreground">Drop campaigns here</p>
-              </div>
-            ) : (
-              campaigns.map((campaign, index) => (
-                <KanbanCard
-                  key={campaign.id}
-                  id={campaign.id}
-                  title={campaign.title}
-                  description={campaign.description || ""}
-                  startDate={new Date(campaign.start_date)}
-                  endDate={new Date(campaign.end_date)}
-                  collaborationsCount={0}
-                  isSelected={selectedCampaigns.includes(campaign.id)}
-                  onSelect={() => onSelect(campaign.id)}
-                  index={index}
-                  selectionMode={selectionMode}
+          <Card 
+            className={`w-full bg-card dark:bg-card/95 hover:shadow-md transition-shadow relative ${
+              isSelected ? 'ring-2 ring-primary' : ''
+            } ${snapshot.isDragging ? 'shadow-lg' : ''}`}
+          >
+            <div className="p-4 space-y-4 cursor-grab active:cursor-grabbing">
+              <CardHeader
+                title={title}
+                selectionMode={selectionMode}
+                isSelected={isSelected}
+                onSelect={onSelect}
+                onEdit={() => setIsEditDialogOpen(true)}
+              />
+              
+              <p className="text-sm text-foreground/80 dark:text-foreground/70 line-clamp-2">{description}</p>
+              
+              <div className="space-y-2">
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <CalendarDays className="mr-2 h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">
+                    {startDate.toLocaleDateString()} - {endDate.toLocaleDateString()}
+                  </span>
+                </div>
+                
+                <CardMetrics
+                  totalSpots={totalSpots}
+                  filledSpots={filledSpots}
+                  onAddCollaboration={() => setIsCollabDialogOpen(true)}
                 />
-              ))
-            )}
-            {provided.placeholder}
-          </div>
+                
+                <CollaborationsList
+                  collaborations={collaborations}
+                  isExpanded={isExpanded}
+                  onToggle={() => setIsExpanded(!isExpanded)}
+                />
+              </div>
+            </div>
+          </Card>
+
+          <Dialog open={isCollabDialogOpen} onOpenChange={setIsCollabDialogOpen}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Create New Collaboration</DialogTitle>
+                <DialogDescription>
+                  Add a new collaboration to the campaign "{title}"
+                </DialogDescription>
+              </DialogHeader>
+              <CollaborationForm
+                campaignId={id}
+                onSuccess={handleCollabDialogClose}
+                isStandalone={false}
+              />
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Edit Campaign</DialogTitle>
+                <DialogDescription>
+                  Update the campaign details
+                </DialogDescription>
+              </DialogHeader>
+              <CampaignForm
+                campaign={{
+                  id,
+                  title,
+                  description,
+                  start_date: startDate.toISOString(),
+                  end_date: endDate.toISOString(),
+                }}
+                onSuccess={handleEditDialogClose}
+              />
+            </DialogContent>
+          </Dialog>
         </div>
       )}
-    </Droppable>
+    </Draggable>
   );
 };
