@@ -129,7 +129,7 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 dialog-form">
       <Form {...form}>
         <form onSubmit={form.handleSubmit((values) => onSubmit(values))} className="space-y-6">
           {!campaign && <BusinessSelect form={form} businesses={businesses} />}

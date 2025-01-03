@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { collaborationFormSchema, type CollaborationFormData } from "./types";
 import { CampaignSelector } from "./CampaignSelector";
@@ -12,6 +11,8 @@ import { BasicDetailsSection } from "./BasicDetailsSection";
 import { RequirementsSection } from "./RequirementsSection";
 import { ImageUploadSection } from "./ImageUploadSection";
 import { CompensationSection } from "./CompensationSection";
+import { FormActions } from "./sections/FormActions";
+import { useCollaborationMutation } from "./hooks/useCollaborationMutation";
 
 interface CollaborationFormProps {
   campaignId?: string;
@@ -47,7 +48,6 @@ export const CollaborationForm = ({
     },
   });
 
-  // Fetch campaigns for the selector
   const { data: campaigns } = useQuery({
     queryKey: ["campaigns"],
     queryFn: async () => {
@@ -75,7 +75,6 @@ export const CollaborationForm = ({
     enabled: isStandalone && !campaignId,
   });
 
-  // Get the business ID if not provided
   const { data: userBusiness } = useQuery({
     queryKey: ["userBusiness"],
     queryFn: async () => {
@@ -96,86 +95,15 @@ export const CollaborationForm = ({
     enabled: !businessId,
   });
 
-  const uploadImage = async (file: File): Promise<string> => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('business-logos')
-      .upload(filePath, file);
-
-    if (uploadError) throw uploadError;
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('business-logos')
-      .getPublicUrl(filePath);
-
-    return publicUrl;
-  };
-
-  const mutation = useMutation({
-    mutationFn: async (data: CollaborationFormData) => {
-      setIsLoading(true);
-      let imageUrl: string | undefined;
-
-      try {
-        if (data.image && data.image.length > 0) {
-          imageUrl = await uploadImage(data.image[0]);
-        }
-
-        const effectiveBusinessId = businessId || userBusiness?.id;
-        if (!effectiveBusinessId) {
-          throw new Error("No business ID available");
-        }
-
-        const collaborationData = {
-          title: data.title,
-          description: data.description,
-          requirements: data.requirements.filter(req => req.trim() !== ""),
-          compensation: data.compensation,
-          deadline: data.deadline,
-          max_spots: data.max_spots,
-          campaign_id: campaignId || data.campaign_id,
-          business_id: effectiveBusinessId,
-          ...(imageUrl && { image_url: imageUrl }),
-        };
-
-        if (initialData) {
-          // Update existing collaboration
-          const { error } = await supabase
-            .from("collaborations")
-            .update(collaborationData)
-            .eq("id", initialData.id);
-
-          if (error) throw error;
-        } else {
-          // Create new collaboration
-          const { error } = await supabase
-            .from("collaborations")
-            .insert(collaborationData);
-
-          if (error) throw error;
-        }
-
-        return data;
-      } catch (error) {
-        console.error("Error in collaboration mutation:", error);
-        throw error;
-      }
-    },
+  const mutation = useCollaborationMutation({
+    initialData,
+    businessId: businessId || userBusiness?.id,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["collaborations"] });
       toast.success(initialData ? "Collaboration updated successfully" : "Collaboration created successfully");
       onSuccess?.();
     },
-    onError: (error) => {
-      console.error("Error with collaboration:", error);
-      toast.error(initialData ? "Failed to update collaboration" : "Failed to create collaboration");
-    },
-    onSettled: () => {
-      setIsLoading(false);
-    },
+    setIsLoading,
   });
 
   const onSubmit = (data: CollaborationFormData) => {
@@ -184,7 +112,7 @@ export const CollaborationForm = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 dialog-form">
         {isStandalone && !campaignId && campaigns && campaigns.length > 0 && (
           <CampaignSelector form={form} campaigns={campaigns} />
         )}
@@ -196,13 +124,7 @@ export const CollaborationForm = ({
         />
         <CompensationSection form={form} />
         <ImageUploadSection form={form} />
-
-        <Button type="submit" disabled={isLoading} className="w-full">
-          {isLoading 
-            ? (initialData ? "Updating..." : "Creating...") 
-            : (initialData ? "Update Collaboration" : "Create Collaboration")
-          }
-        </Button>
+        <FormActions isLoading={isLoading} initialData={initialData} />
       </form>
     </Form>
   );
