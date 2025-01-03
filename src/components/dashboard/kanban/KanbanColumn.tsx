@@ -1,21 +1,13 @@
 import { Droppable } from "@hello-pangea/dnd";
 import { KanbanCard } from "./KanbanCard";
-import type { Campaign } from "./types";
-
-interface KanbanColumnProps {
-  status: string;
-  campaigns: Campaign[];
-  selectedCampaigns?: Set<string>;
-  onSelect?: (id: string) => void;
-  selectionMode?: boolean;
-  windowWidth?: number;
-}
+import type { KanbanColumnProps } from "./types";
 
 export const KanbanColumn = ({
   status,
   campaigns,
   selectedCampaigns = new Set(),
   onSelect,
+  onEdit,
   selectionMode = false,
   windowWidth = 0,
 }: KanbanColumnProps) => {
@@ -51,6 +43,7 @@ export const KanbanColumn = ({
                     campaign={campaign}
                     isSelected={selectedCampaigns?.has(campaign.id)}
                     onSelect={() => onSelect?.(campaign.id)}
+                    onEdit={() => onEdit?.(campaign.id)}
                     selectionMode={selectionMode}
                   />
                 )
