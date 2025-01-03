@@ -119,7 +119,7 @@ export const KanbanCard = ({
           </Card>
 
           <Dialog open={isCollabDialogOpen} onOpenChange={setIsCollabDialogOpen}>
-            <DialogContent className="max-w-lg bg-card">
+            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-card">
               <DialogHeader>
                 <DialogTitle>Create New Collaboration</DialogTitle>
                 <DialogDescription>
