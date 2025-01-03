@@ -19,7 +19,10 @@ export const CampaignSelector = ({ form, campaigns }: CampaignSelectorProps) => 
         <FormItem>
           <FormLabel>Campaign</FormLabel>
           <FormControl>
-            <select className="w-full p-2 border rounded-md" {...field}>
+            <select 
+              className="w-full p-2 border rounded-md dark:bg-card dark:border-input dark:text-foreground" 
+              {...field}
+            >
               <option value="">Select a campaign</option>
               {campaigns.map((campaign) => (
                 <option key={campaign.id} value={campaign.id}>

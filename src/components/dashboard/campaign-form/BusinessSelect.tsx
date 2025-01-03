@@ -1,24 +1,14 @@
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
-import { Business } from "./types";
+import { CampaignFormData } from "./types";
+import { Tables } from "@/integrations/supabase/types";
 
 interface BusinessSelectProps {
-  form: UseFormReturn<any>;
-  businesses: Business[];
+  form: UseFormReturn<CampaignFormData>;
+  businesses: Tables<"businesses">[];
 }
 
 export const BusinessSelect = ({ form, businesses }: BusinessSelectProps) => {
-  if (businesses.length === 1) {
-    return (
-      <input
-        type="hidden"
-        {...form.register("business_id")}
-        value={businesses[0].id}
-      />
-    );
-  }
-
   return (
     <FormField
       control={form.control}
@@ -26,20 +16,19 @@ export const BusinessSelect = ({ form, businesses }: BusinessSelectProps) => {
       render={({ field }) => (
         <FormItem>
           <FormLabel>Business</FormLabel>
-          <Select onValueChange={field.onChange} defaultValue={field.value}>
-            <FormControl>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a business" />
-              </SelectTrigger>
-            </FormControl>
-            <SelectContent>
+          <FormControl>
+            <select 
+              className="w-full p-2 border rounded-md dark:bg-card dark:border-input dark:text-foreground" 
+              {...field}
+            >
+              <option value="">Select a business</option>
               {businesses.map((business) => (
-                <SelectItem key={business.id} value={business.id}>
+                <option key={business.id} value={business.id}>
                   {business.business_name}
-                </SelectItem>
+                </option>
               ))}
-            </SelectContent>
-          </Select>
+            </select>
+          </FormControl>
           <FormMessage />
         </FormItem>
       )}
