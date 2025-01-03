@@ -62,12 +62,16 @@ const App = () => {
 
   // Show loading state while checking auth
   if (isLoggedIn === null) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="animate-pulse text-foreground">Loading...</div>
+      </div>
+    );
   }
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light" storageKey="app-theme">
+      <ThemeProvider defaultTheme="system" storageKey="hikayat-theme">
         <TooltipProvider>
           <BrowserRouter>
             <Toaster />
