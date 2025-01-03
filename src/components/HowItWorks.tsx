@@ -40,7 +40,7 @@ StepCard.displayName = "StepCard";
 
 const HowItWorks = () => {
   return (
-    <section className="py-24 bg-purple-50/80 dark:bg-background px-6">
+    <section className="py-24 bg-purple-100/80 dark:bg-background px-6">
       <div className="container mx-auto">
         <div className="text-center max-w-3xl mx-auto mb-16 animate-fade-up">
           <span className="px-3 py-1 text-sm font-medium bg-primary/10 text-primary rounded-full">
