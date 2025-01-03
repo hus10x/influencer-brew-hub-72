@@ -119,7 +119,7 @@ export const KanbanCard = ({
           </Card>
 
           <Dialog open={isCollabDialogOpen} onOpenChange={setIsCollabDialogOpen}>
-            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-card">
+            <DialogContent className="max-w-[600px] max-h-[90vh] overflow-y-auto bg-card">
               <DialogHeader>
                 <DialogTitle>Create New Collaboration</DialogTitle>
                 <DialogDescription>
@@ -135,7 +135,7 @@ export const KanbanCard = ({
           </Dialog>
 
           <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogContent className="max-w-lg bg-card">
+            <DialogContent className="max-w-[600px] max-h-[90vh] overflow-y-auto bg-card">
               <DialogHeader>
                 <DialogTitle>Edit Campaign</DialogTitle>
                 <DialogDescription>
