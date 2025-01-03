@@ -45,13 +45,15 @@ export const KanbanColumn = ({
               </div>
             ) : (
               campaigns.map((campaign, index) => (
-                <KanbanCard
-                  key={campaign.id}
-                  campaign={campaign}
-                  isSelected={selectedCampaigns?.has(campaign.id)}
-                  onSelect={() => onSelect?.(campaign.id)}
-                  selectionMode={selectionMode}
-                />
+                campaign && (
+                  <KanbanCard
+                    key={campaign.id}
+                    campaign={campaign}
+                    isSelected={selectedCampaigns?.has(campaign.id)}
+                    onSelect={() => onSelect?.(campaign.id)}
+                    selectionMode={selectionMode}
+                  />
+                )
               ))
             )}
             {provided.placeholder}

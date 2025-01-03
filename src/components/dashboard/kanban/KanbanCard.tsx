@@ -19,6 +19,11 @@ export const KanbanCard = memo(
   }: KanbanCardProps) => {
     if (!campaign) return null;
 
+    const handleEdit = () => {
+      // We'll implement this later when needed
+      console.log("Edit campaign:", campaign.id);
+    };
+
     return (
       <Card className="w-full bg-card hover:shadow-md transition-shadow group">
         <CardHeader className="space-y-1 p-4">
@@ -27,6 +32,7 @@ export const KanbanCard = memo(
             selectionMode={selectionMode}
             isSelected={isSelected}
             onSelect={onSelect}
+            onEdit={handleEdit}
           />
           <p className="text-sm text-muted-foreground">{campaign.description}</p>
         </CardHeader>
