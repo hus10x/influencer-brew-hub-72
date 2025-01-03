@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { BookOpen, LogOut, Sun, Moon } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 
 interface SidebarItem {
   id: string;
@@ -21,23 +20,16 @@ interface DashboardSidebarProps {
 export const DashboardSidebar = ({ activeTab, onTabChange, sidebarItems }: DashboardSidebarProps) => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
-    if (isLoggingOut) return; // Prevent multiple logout attempts
-    
     try {
-      setIsLoggingOut(true);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      
       toast.success("Logged out successfully");
       navigate("/");
     } catch (error) {
       console.error("Error logging out:", error);
-      toast.error("Error logging out. Please try again.");
-    } finally {
-      setIsLoggingOut(false);
+      toast.error("Error logging out");
     }
   };
 
@@ -82,10 +74,9 @@ export const DashboardSidebar = ({ activeTab, onTabChange, sidebarItems }: Dashb
           variant="ghost" 
           className="flex-1 flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary transition-all duration-200 ease-in-out transform hover:scale-[1.02]"
           onClick={handleLogout}
-          disabled={isLoggingOut}
         >
           <LogOut className="w-4 h-4" />
-          {isLoggingOut ? "Logging out..." : "Logout"}
+          Logout
         </Button>
       </div>
     </aside>
