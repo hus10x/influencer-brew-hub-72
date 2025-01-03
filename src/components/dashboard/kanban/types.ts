@@ -6,4 +6,6 @@ export interface Campaign {
   end_date: string;
   status: "draft" | "active" | "completed";
   business_id: string;
+  created_at: string | null;
+  updated_at: string | null;
 }

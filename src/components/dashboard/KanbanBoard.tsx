@@ -104,6 +104,9 @@ export const KanbanBoard = () => {
     completed: campaigns?.filter((c) => c.status === "completed") ?? [],
   };
 
+  // Convert selectedCampaigns array to a Set before passing to KanbanColumn
+  const selectedCampaignsSet = new Set(selectedCampaigns);
+
   return (
     <div className="flex flex-col h-full gap-4">
       <div className="flex justify-end gap-2">
@@ -163,7 +166,7 @@ export const KanbanBoard = () => {
               <KanbanColumn
                 status={status}
                 campaigns={items}
-                selectedCampaigns={selectedCampaigns}
+                selectedCampaigns={selectedCampaignsSet}
                 onSelect={toggleCampaignSelection}
                 selectionMode={selectionMode}
                 windowWidth={windowWidth}
