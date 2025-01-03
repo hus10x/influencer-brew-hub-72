@@ -52,7 +52,7 @@ const ClientDashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <DashboardMetricCard
                 title="ROI Budget"
-                value="$2,500"
+                value="BHD 2,500"
                 subtitle="Monthly budget"
               />
               <DashboardMetricCard
