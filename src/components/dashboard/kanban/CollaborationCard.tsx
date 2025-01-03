@@ -27,7 +27,7 @@ export const CollaborationCard = ({ collaboration }: CollaborationCardProps) => 
   return (
     <>
       <Card 
-        className="w-full bg-white hover:shadow-md transition-shadow cursor-pointer p-4 space-y-4"
+        className="w-full bg-card text-card-foreground hover:shadow-md transition-shadow cursor-pointer p-4 space-y-4"
         onClick={() => setIsModalOpen(true)}
       >
         <div className="space-y-2">

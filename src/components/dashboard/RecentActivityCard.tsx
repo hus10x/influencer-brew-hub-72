@@ -15,7 +15,7 @@ export const RecentActivityCard = () => {
   ];
 
   return (
-    <Card className="mt-8 bg-muted/5 backdrop-blur-xl border-border/90 shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(0,0,0,0.2)] hover:bg-muted/9 transition-all duration-200">
+    <Card className="mt-8 bg-card text-card-foreground backdrop-blur-xl border-border/90 shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(0,0,0,0.2)] hover:bg-muted/9 transition-all duration-200">
       <CardHeader>
         <CardTitle className="text-xl font-medium text-foreground">Recent Activity</CardTitle>
       </CardHeader>
@@ -24,7 +24,7 @@ export const RecentActivityCard = () => {
           {activities.map((activity) => (
             <div 
               key={activity.id} 
-              className="flex items-center justify-between p-4 rounded-lg border border-border/90 bg-muted/5 backdrop-blur-xl hover:shadow-lg transition-all duration-200 hover:bg-muted/9"
+              className="flex items-center justify-between p-4 rounded-lg border border-border/90 bg-card text-card-foreground backdrop-blur-xl hover:shadow-lg transition-all duration-200 hover:bg-muted/9"
             >
               <div>
                 <p className="font-medium text-foreground">{activity.name}</p>

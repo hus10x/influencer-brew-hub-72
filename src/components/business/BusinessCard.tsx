@@ -64,7 +64,7 @@ export const BusinessCard = ({ business, onEdit, onDelete, canDelete }: Business
   };
 
   return (
-    <Card className="p-4 hover:shadow-lg transition-shadow">
+    <Card className="p-4 hover:shadow-lg transition-shadow bg-card text-card-foreground">
       <div className="flex items-center gap-4">
         <Avatar className="h-16 w-16">
           <AvatarImage src={business.logo_url || ""} alt={business.business_name} />
@@ -101,7 +101,7 @@ export const BusinessCard = ({ business, onEdit, onDelete, canDelete }: Business
                 <Trash2 className="h-4 w-4 text-destructive" />
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent className="bg-card">
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>

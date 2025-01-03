@@ -78,7 +78,7 @@ export const KanbanCard = ({
           }}
         >
           <Card 
-            className={`w-full dark:bg-card bg-card hover:shadow-md transition-shadow relative ${
+            className={`w-full bg-card text-card-foreground hover:shadow-md transition-shadow relative ${
               isSelected ? 'ring-2 ring-primary' : ''
             } ${snapshot.isDragging ? 'shadow-lg' : ''}`}
           >
@@ -119,7 +119,7 @@ export const KanbanCard = ({
           </Card>
 
           <Dialog open={isCollabDialogOpen} onOpenChange={setIsCollabDialogOpen}>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-lg bg-card">
               <DialogHeader>
                 <DialogTitle>Create New Collaboration</DialogTitle>
                 <DialogDescription>
@@ -135,7 +135,7 @@ export const KanbanCard = ({
           </Dialog>
 
           <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-lg bg-card">
               <DialogHeader>
                 <DialogTitle>Edit Campaign</DialogTitle>
                 <DialogDescription>
