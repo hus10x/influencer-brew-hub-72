@@ -35,8 +35,8 @@ const ClientDashboard = () => {
         return (
           <div className="space-y-6">
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight">Manage Your Campaigns</h1>
-              <p className="text-muted-foreground">
+              <h1 className="text-3xl font-bold tracking-tight text-foreground dark:text-foreground">Manage Your Campaigns</h1>
+              <p className="text-muted-foreground dark:text-muted-foreground/90">
                 Drag and drop campaigns between columns to update their status
               </p>
             </div>
