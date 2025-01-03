@@ -28,7 +28,6 @@
     --radius: 0.5rem;
   }
 
-  /* Optimized dark mode with hardware acceleration */
   .dark {
     --background: 222 47% 4%;
     --foreground: 0 0% 98%;
@@ -49,39 +48,30 @@
     --border: 217.2 32.6% 12%;
     --input: 217.2 32.6% 12%;
     --ring: 252.2 95.4% 74.2%;
-    transform: translateZ(0);
-    will-change: background-color, color, border-color;
-    -webkit-font-smoothing: antialiased;
   }
 }
 
 @layer base {
   * {
-    @apply border-border will-change-scroll;
+    @apply border-border;
   }
   
   body {
     @apply bg-background text-foreground font-sans;
-    transition: background-color 0.3s ease, color 0.3s ease;
-    transform: translateZ(0);
-    -webkit-font-smoothing: antialiased;
   }
 
-  /* Optimized Scrollbar Styles with GPU acceleration */
+  /* Custom Scrollbar Styles */
   ::-webkit-scrollbar {
-    @apply w-2.5 h-2.5;
-    transform: translate3d(0, 0, 0);
+    width: 10px;
+    height: 10px;
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-background/50 backdrop-blur-sm;
-    transform: translate3d(0, 0, 0);
+    @apply bg-background/50;
   }
 
   ::-webkit-scrollbar-thumb {
     @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/30 transition-colors;
-    transform: translate3d(0, 0, 0);
-    will-change: background-color;
   }
 
   .dark ::-webkit-scrollbar-track {
@@ -92,16 +82,13 @@
     @apply bg-muted-foreground/20 hover:bg-muted-foreground/40;
   }
 
-  /* Dialog Form Scrollbar Styles with performance optimizations */
+  /* Dialog Form Scrollbar Styles */
   .dialog-form {
-    @apply max-h-[85vh] overflow-y-auto pr-6 overscroll-contain;
+    @apply max-h-[85vh] overflow-y-auto pr-6;
     scrollbar-gutter: stable;
-    transform: translate3d(0, 0, 0);
-    will-change: transform;
-    -webkit-overflow-scrolling: touch;
   }
 
-  /* Handle Webkit Autofill with performance optimizations */
+  /* Handle Webkit (Chrome, Safari, newer versions of Opera) */
   input:-webkit-autofill,
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus {
@@ -109,10 +96,9 @@
     -webkit-box-shadow: 0 0 0px 1000px hsl(var(--card)) inset;
     transition: background-color 5000s ease-in-out 0s;
     caret-color: hsl(var(--foreground));
-    will-change: background-color;
   }
 
-  /* Handle Firefox Autofill */
+  /* Handle Firefox */
   input:autofill {
     background: hsl(var(--card)) !important;
     color: hsl(var(--foreground)) !important;
@@ -131,13 +117,5 @@
     background: hsl(var(--card)) !important;
     color: hsl(var(--foreground)) !important;
     box-shadow: 0 0 0px 1000px hsl(var(--card)) inset;
-  }
-
-  /* Optimize scrollable containers */
-  .scrollable-container {
-    @apply overflow-auto overscroll-contain;
-    transform: translate3d(0, 0, 0);
-    will-change: transform;
-    -webkit-overflow-scrolling: touch;
   }
 }
