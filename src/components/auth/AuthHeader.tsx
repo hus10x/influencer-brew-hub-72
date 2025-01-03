@@ -19,7 +19,7 @@ export const AuthHeader = ({ title }: AuthHeaderProps) => {
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back to Home
       </Button>
-      <h2 className="text-center text-3xl font-extrabold text-gray-900">
+      <h2 className="text-center text-3xl font-extrabold text-foreground">
         {title}
       </h2>
     </div>

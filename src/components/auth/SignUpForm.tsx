@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { useTheme } from "@/hooks/use-theme";
 
 interface SignUpFormProps {
   userType: 'influencer' | 'business';
@@ -13,10 +14,35 @@ interface SignUpFormProps {
 
 export const SignUpForm = ({ userType, setUserType }: SignUpFormProps) => {
   const navigate = useNavigate();
+  const { theme } = useTheme();
+
+  const appearance = {
+    theme: ThemeSupa,
+    variables: {
+      default: {
+        colors: {
+          brand: 'hsl(var(--primary))',
+          brandAccent: 'hsl(var(--primary))',
+          inputBackground: 'hsl(var(--background))',
+          inputText: 'hsl(var(--foreground))',
+          inputPlaceholder: 'hsl(var(--muted-foreground))',
+          messageText: 'hsl(var(--foreground))',
+          anchorTextColor: 'hsl(var(--primary))',
+          dividerBackground: 'hsl(var(--border))',
+        },
+      },
+    },
+    className: {
+      container: 'w-full',
+      button: 'bg-primary hover:bg-primary/90 text-primary-foreground',
+      input: 'bg-background border-input',
+      label: 'text-foreground',
+    },
+  };
 
   return (
     <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-      <div className="bg-white py-8 px-6 shadow-md rounded-lg sm:px-10">
+      <div className="bg-card text-card-foreground py-8 px-6 shadow-md rounded-lg sm:px-10 border">
         <div className="mb-6">
           <RadioGroup
             defaultValue={userType}
@@ -34,7 +60,7 @@ export const SignUpForm = ({ userType, setUserType }: SignUpFormProps) => {
           </RadioGroup>
         </div>
 
-        <div className="mb-4 p-4 bg-gray-50 rounded-md text-sm text-gray-600">
+        <div className="mb-4 p-4 bg-muted rounded-md text-sm text-muted-foreground">
           <p className="font-medium mb-2">Password Requirements:</p>
           <ul className="list-disc list-inside space-y-1">
             <li>Minimum 6 characters long</li>
@@ -44,17 +70,8 @@ export const SignUpForm = ({ userType, setUserType }: SignUpFormProps) => {
 
         <Auth
           supabaseClient={supabase}
-          appearance={{
-            theme: ThemeSupa,
-            variables: {
-              default: {
-                colors: {
-                  brand: '#9b87f5',
-                  brandAccent: '#7E69AB',
-                },
-              },
-            },
-          }}
+          appearance={appearance}
+          theme={theme === 'dark' ? 'dark' : 'light'}
           localization={{
             variables: {
               sign_up: {
@@ -65,7 +82,6 @@ export const SignUpForm = ({ userType, setUserType }: SignUpFormProps) => {
               }
             }
           }}
-          theme="light"
           providers={[]}
           view="sign_up"
           redirectTo={`${window.location.origin}/signup`}

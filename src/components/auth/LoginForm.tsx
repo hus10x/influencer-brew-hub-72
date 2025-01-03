@@ -3,30 +3,43 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "@/hooks/use-theme";
 
 export const LoginForm = () => {
   const navigate = useNavigate();
+  const { theme } = useTheme();
+
+  const appearance = {
+    theme: ThemeSupa,
+    variables: {
+      default: {
+        colors: {
+          brand: 'hsl(var(--primary))',
+          brandAccent: 'hsl(var(--primary))',
+          inputBackground: 'hsl(var(--background))',
+          inputText: 'hsl(var(--foreground))',
+          inputPlaceholder: 'hsl(var(--muted-foreground))',
+          messageText: 'hsl(var(--foreground))',
+          anchorTextColor: 'hsl(var(--primary))',
+          dividerBackground: 'hsl(var(--border))',
+        },
+      },
+    },
+    className: {
+      container: 'w-full',
+      button: 'bg-primary hover:bg-primary/90 text-primary-foreground',
+      input: 'bg-background border-input',
+      label: 'text-foreground',
+    },
+  };
 
   return (
     <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-      <div className="bg-white py-8 px-6 shadow-md rounded-lg sm:px-10">
+      <div className="bg-card text-card-foreground py-8 px-6 shadow-md rounded-lg sm:px-10 border">
         <Auth
           supabaseClient={supabase}
-          appearance={{
-            theme: ThemeSupa,
-            variables: {
-              default: {
-                colors: {
-                  brand: '#9b87f5',
-                  brandAccent: '#7E69AB',
-                },
-              },
-            },
-            className: {
-              input: 'custom-input-class',
-              label: 'custom-label-class',
-            }
-          }}
+          appearance={appearance}
+          theme={theme === 'dark' ? 'dark' : 'light'}
           localization={{
             variables: {
               sign_in: {
