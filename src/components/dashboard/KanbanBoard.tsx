@@ -51,9 +51,22 @@ export const KanbanBoard = () => {
 
       const businessIds = userBusinesses.map((b) => b.id);
 
-      const { data, error } = await supabase
+      const { data: campaignsData, error } = await supabase
         .from("campaigns")
-        .select("*")
+        .select(`
+          *,
+          collaborations (
+            id,
+            title,
+            description,
+            requirements,
+            compensation,
+            deadline,
+            max_spots,
+            filled_spots,
+            status
+          )
+        `)
         .in("business_id", businessIds);
 
       if (error) {
@@ -61,7 +74,7 @@ export const KanbanBoard = () => {
         throw error;
       }
       
-      return data as Campaign[];
+      return campaignsData as Campaign[];
     },
   });
 
@@ -104,8 +117,10 @@ export const KanbanBoard = () => {
     completed: campaigns?.filter((c) => c.status === "completed") ?? [],
   };
 
-  // Convert selectedCampaigns array to a Set before passing to KanbanColumn
-  const selectedCampaignsSet = new Set(selectedCampaigns);
+  const handleEditCampaign = (campaignId: string) => {
+    // Handle edit campaign
+    console.info("Edit campaign:", campaignId);
+  };
 
   return (
     <div className="flex flex-col h-full gap-4">
@@ -166,8 +181,9 @@ export const KanbanBoard = () => {
               <KanbanColumn
                 status={status}
                 campaigns={items}
-                selectedCampaigns={selectedCampaignsSet}
+                selectedCampaigns={new Set(selectedCampaigns)}
                 onSelect={toggleCampaignSelection}
+                onEdit={handleEditCampaign}
                 selectionMode={selectionMode}
                 windowWidth={windowWidth}
               />
