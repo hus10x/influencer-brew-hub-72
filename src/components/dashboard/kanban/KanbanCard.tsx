@@ -3,19 +3,12 @@ import { CalendarDays, Building2 } from "lucide-react";
 import { Draggable } from "@hello-pangea/dnd";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { CollaborationForm } from "../collaboration-form/CollaborationForm";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CardHeader } from "./card/CardHeader";
 import { CardMetrics } from "./card/CardMetrics";
 import { CollaborationsList } from "./card/CollaborationsList";
-import { CampaignForm } from "../CampaignForm";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { CampaignEditDialog } from "./dialogs/CampaignEditDialog";
+import { CollaborationDialog } from "./dialogs/CollaborationDialog";
 
 interface KanbanCardProps {
   id: string;
@@ -93,9 +86,6 @@ export const KanbanCard = ({
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className="mb-4 last:mb-0"
-          style={{
-            ...provided.draggableProps.style,
-          }}
         >
           <div 
             className={`w-full bg-card text-card-foreground hover:shadow-md transition-shadow relative border border-primary/10 ${
@@ -151,43 +141,25 @@ export const KanbanCard = ({
             </div>
           </div>
 
-          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogContent className="max-w-[600px] max-h-[90vh] overflow-y-auto bg-card">
-              <DialogHeader>
-                <DialogTitle>Edit Campaign</DialogTitle>
-                <DialogDescription>
-                  Update campaign details
-                </DialogDescription>
-              </DialogHeader>
-              <CampaignForm
-                onSuccess={() => setIsEditDialogOpen(false)}
-                campaign={{
-                  id,
-                  title,
-                  description,
-                  start_date: startDate.toISOString(),
-                  end_date: endDate.toISOString(),
-                  business_id: businessId,
-                }}
-              />
-            </DialogContent>
-          </Dialog>
+          <CampaignEditDialog
+            isOpen={isEditDialogOpen}
+            onOpenChange={setIsEditDialogOpen}
+            campaign={{
+              id,
+              title,
+              description,
+              start_date: startDate.toISOString(),
+              end_date: endDate.toISOString(),
+              business_id: businessId,
+            }}
+          />
 
-          <Dialog open={isCollabDialogOpen} onOpenChange={setIsCollabDialogOpen}>
-            <DialogContent className="max-w-[600px] max-h-[90vh] overflow-y-auto bg-card">
-              <DialogHeader>
-                <DialogTitle>Create New Collaboration</DialogTitle>
-                <DialogDescription>
-                  Add a new collaboration opportunity for this campaign
-                </DialogDescription>
-              </DialogHeader>
-              <CollaborationForm
-                campaignId={id}
-                onSuccess={() => setIsCollabDialogOpen(false)}
-                isStandalone={false}
-              />
-            </DialogContent>
-          </Dialog>
+          <CollaborationDialog
+            isOpen={isCollabDialogOpen}
+            onOpenChange={setIsCollabDialogOpen}
+            campaignId={id}
+            businessId={businessId}
+          />
         </div>
       )}
     </Draggable>
