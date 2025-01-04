@@ -142,8 +142,7 @@ export type Database = {
       }
       collaborations: {
         Row: {
-          business_id: string | null
-          campaign_id: string | null
+          campaign_id: string
           compensation: number
           created_at: string | null
           deadline: string
@@ -158,8 +157,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          business_id?: string | null
-          campaign_id?: string | null
+          campaign_id: string
           compensation: number
           created_at?: string | null
           deadline: string
@@ -174,8 +172,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          business_id?: string | null
-          campaign_id?: string | null
+          campaign_id?: string
           compensation?: number
           created_at?: string | null
           deadline?: string
@@ -190,13 +187,6 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "collaborations_business_id_fkey"
-            columns: ["business_id"]
-            isOneToOne: false
-            referencedRelation: "businesses"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "collaborations_campaign_id_fkey"
             columns: ["campaign_id"]

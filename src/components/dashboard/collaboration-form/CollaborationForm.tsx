@@ -12,12 +12,10 @@ import { BasicDetailsSection } from "./BasicDetailsSection";
 import { RequirementsSection } from "./RequirementsSection";
 import { ImageUploadSection } from "./ImageUploadSection";
 import { CompensationSection } from "./CompensationSection";
-import { BusinessSelector } from "./BusinessSelector";
 
 interface CollaborationFormProps {
   campaignId?: string;
   onSuccess?: () => void;
-  businessId?: string;
   isStandalone?: boolean;
   initialData?: CollaborationFormData & { id: string };
 }
@@ -25,7 +23,6 @@ interface CollaborationFormProps {
 export const CollaborationForm = ({
   campaignId,
   onSuccess,
-  businessId,
   isStandalone = true,
   initialData,
 }: CollaborationFormProps) => {
@@ -45,7 +42,6 @@ export const CollaborationForm = ({
       deadline: "",
       max_spots: 1,
       campaign_id: campaignId || "",
-      business_id: businessId || "",
     },
   });
 
@@ -76,27 +72,6 @@ export const CollaborationForm = ({
     enabled: isStandalone && !campaignId,
   });
 
-  // Get the business ID if not provided
-  const { data: userBusiness } = useQuery({
-    queryKey: ["userBusiness"],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
-      const { data, error } = await supabase
-        .from("businesses")
-        .select("id")
-        .eq("user_id", user.id)
-        .limit(1)
-        .maybeSingle();
-
-      if (error) throw error;
-      if (!data) throw new Error("No business found");
-      return data;
-    },
-    enabled: !businessId,
-  });
-
   const uploadImage = async (file: File): Promise<string> => {
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random()}.${fileExt}`;
@@ -125,11 +100,6 @@ export const CollaborationForm = ({
           imageUrl = await uploadImage(data.image[0]);
         }
 
-        const effectiveBusinessId = businessId || data.business_id || userBusiness?.id;
-        if (!effectiveBusinessId) {
-          throw new Error("No business ID available");
-        }
-
         const collaborationData = {
           title: data.title,
           description: data.description,
@@ -138,7 +108,6 @@ export const CollaborationForm = ({
           deadline: data.deadline,
           max_spots: data.max_spots,
           campaign_id: campaignId || data.campaign_id,
-          business_id: effectiveBusinessId,
           ...(imageUrl && { image_url: imageUrl }),
         };
 
@@ -186,9 +155,6 @@ export const CollaborationForm = ({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {isStandalone && !campaignId && campaigns && campaigns.length > 0 && (
           <CampaignSelector form={form} campaigns={campaigns} />
-        )}
-        {isStandalone && !businessId && (
-          <BusinessSelector form={form} isStandalone={isStandalone} />
         )}
         <BasicDetailsSection form={form} />
         <RequirementsSection
