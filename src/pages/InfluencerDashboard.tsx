@@ -45,7 +45,6 @@ const InfluencerDashboard = () => {
       <main className="container mx-auto py-6 px-4 space-y-6 pt-24">
         <div className="space-y-2 text-center py-8">
           <h1 className="text-4xl font-bold">Collab Now ✨</h1>
-          <h2 className="text-lg text-muted-foreground">Available Collaborations</h2>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
