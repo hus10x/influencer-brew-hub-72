@@ -76,8 +76,12 @@ export const QuickActions = () => {
         throw error;
       }
       
+      console.log("Active campaigns:", campaigns);
       return campaigns || [];
     },
+    // Add staleTime and refetchInterval for real-time updates
+    staleTime: 1000 * 60, // Consider data stale after 1 minute
+    refetchInterval: 1000 * 30, // Refetch every 30 seconds
   });
 
   const handleNewCollaborationClick = () => {
@@ -91,7 +95,7 @@ export const QuickActions = () => {
 
   const handleCampaignSuccess = () => {
     setIsCampaignDialogOpen(false);
-    // Invalidate and refetch active campaigns
+    // Invalidate and refetch active campaigns immediately
     queryClient.invalidateQueries({ queryKey: ["active-campaigns"] });
   };
 
@@ -141,6 +145,7 @@ export const QuickActions = () => {
               <CollaborationForm 
                 onSuccess={() => setIsCollaborationDialogOpen(false)} 
                 isStandalone={true}
+                campaigns={activeCampaigns}
               />
             )}
           </DialogContent>
