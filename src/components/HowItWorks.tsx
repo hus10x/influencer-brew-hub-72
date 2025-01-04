@@ -26,7 +26,7 @@ const StepCard = memo(({ step, index, isInView }: { step: typeof steps[number]; 
     style={{ animationDelay: `${index * 150}ms` }}
   >
     <div className="flex items-center mb-4">
-      <span className="text-4xl font-bold text-primary dark:text-primary">
+      <span className="text-4xl font-bold text-[#8871E2]/40 dark:text-[#8871E2]/30">
         {step.number}
       </span>
       <div 
@@ -46,7 +46,7 @@ const HowItWorks = () => {
   const { ref, isInView } = useScrollAnimation();
 
   return (
-    <section className="py-24 bg-purple-100/80 dark:bg-background px-6">
+    <section className="py-24 bg-[#eedeff] dark:bg-background px-6">
       <div className="container mx-auto" ref={ref}>
         <div className={`text-center max-w-3xl mx-auto mb-16 ${isInView ? 'animate-fade-up' : 'opacity-0'}`}>
           <span className="px-3 py-1 text-sm font-medium bg-primary/10 text-primary rounded-full">
