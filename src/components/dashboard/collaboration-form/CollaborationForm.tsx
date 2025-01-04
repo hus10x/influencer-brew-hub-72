@@ -17,6 +17,7 @@ interface CollaborationFormProps {
   campaignId?: string;
   onSuccess?: () => void;
   isStandalone?: boolean;
+  onCollaborationData?: (data: any) => void;
   initialData?: CollaborationFormData & { id: string };
 }
 
@@ -24,6 +25,7 @@ export const CollaborationForm = forwardRef(({
   campaignId,
   onSuccess,
   isStandalone = true,
+  onCollaborationData,
   initialData,
 }: CollaborationFormProps, ref) => {
   const [requirements, setRequirements] = useState<string[]>(
