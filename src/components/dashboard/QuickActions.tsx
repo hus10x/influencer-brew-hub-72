@@ -115,16 +115,14 @@ export const QuickActions = () => {
         </Dialog>
 
         <Dialog open={isCollaborationDialogOpen} onOpenChange={setIsCollaborationDialogOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              variant="secondary" 
-              size="lg"
-              onClick={handleNewCollaborationClick}
-            >
-              <Users className="w-4 h-4" />
-              New Collaboration
-            </Button>
-          </DialogTrigger>
+          <Button 
+            variant="secondary" 
+            size="lg"
+            onClick={handleNewCollaborationClick}
+          >
+            <Users className="w-4 h-4" />
+            New Collaboration
+          </Button>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Collaboration</DialogTitle>
@@ -152,7 +150,9 @@ export const QuickActions = () => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel onClick={() => setShowNoCampaignsAlert(false)}>
+                Cancel
+              </AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => {
                   setShowNoCampaignsAlert(false);
