@@ -121,7 +121,7 @@ export const KanbanCard = ({
                   </p>
                 </div>
                 {selectionMode && (
-                  <div className="absolute left-4 top-4">
+                  <div className="absolute right-4 top-4">
                     <Check 
                       className={`h-5 w-5 ${
                         isSelected ? 'text-primary' : 'text-muted-foreground/30'
