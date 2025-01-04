@@ -13,6 +13,27 @@ import {
 } from "@/components/ui/dialog";
 import { CampaignForm } from "./CampaignForm";
 import { CollaborationForm } from "./collaboration-form/CollaborationForm";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const FormSkeleton = () => (
+  <div className="space-y-6">
+    <div className="space-y-4">
+      <Skeleton className="h-8 w-3/4" />
+      <Skeleton className="h-20 w-full" />
+    </div>
+    <div className="space-y-4">
+      <Skeleton className="h-8 w-1/2" />
+      <Skeleton className="h-12 w-full" />
+    </div>
+    <div className="space-y-4">
+      <Skeleton className="h-8 w-2/3" />
+      <div className="grid grid-cols-2 gap-4">
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+      </div>
+    </div>
+  </div>
+);
 
 export const QuickActions = () => {
   const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
@@ -70,7 +91,11 @@ export const QuickActions = () => {
                 Create a new campaign to manage your collaborations
               </DialogDescription>
             </DialogHeader>
-            <CampaignForm onSuccess={() => setIsCampaignDialogOpen(false)} />
+            {isLoading ? (
+              <FormSkeleton />
+            ) : (
+              <CampaignForm onSuccess={() => setIsCampaignDialogOpen(false)} />
+            )}
           </DialogContent>
         </Dialog>
 
@@ -92,10 +117,14 @@ export const QuickActions = () => {
                 Create a new collaboration opportunity for influencers
               </DialogDescription>
             </DialogHeader>
-            <CollaborationForm 
-              onSuccess={() => setIsCollaborationDialogOpen(false)} 
-              isStandalone={true}
-            />
+            {isLoading ? (
+              <FormSkeleton />
+            ) : (
+              <CollaborationForm 
+                onSuccess={() => setIsCollaborationDialogOpen(false)} 
+                isStandalone={true}
+              />
+            )}
           </DialogContent>
         </Dialog>
       </div>
