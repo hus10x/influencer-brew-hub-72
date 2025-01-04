@@ -9,6 +9,7 @@ import { CardMetrics } from "./card/CardMetrics";
 import { CollaborationsList } from "./card/CollaborationsList";
 import { CampaignEditDialog } from "./dialogs/CampaignEditDialog";
 import { CollaborationDialog } from "./dialogs/CollaborationDialog";
+import { CampaignStatus } from "./types";
 
 interface KanbanCardProps {
   id: string;
@@ -21,7 +22,7 @@ interface KanbanCardProps {
   index: number;
   selectionMode: boolean;
   businessId: string;
-  status: string;
+  status: CampaignStatus;
 }
 
 export const KanbanCard = ({

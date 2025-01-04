@@ -57,6 +57,7 @@ export const KanbanColumn = ({
                   index={index}
                   selectionMode={selectionMode}
                   businessId={campaign.business_id}
+                  status={campaign.status}
                 />
               ))
             )}
