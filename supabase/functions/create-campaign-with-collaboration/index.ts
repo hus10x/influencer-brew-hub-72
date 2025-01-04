@@ -33,8 +33,12 @@ serve(async (req) => {
     const { data: campaign, error: campaignError } = await supabaseClient
       .from('campaigns')
       .insert({
-        ...campaignData,
-        status: campaignData.status || 'active', // Ensure status is set
+        title: campaignData.title,
+        description: campaignData.description,
+        business_id: campaignData.business_id,
+        start_date: campaignData.start_date,
+        end_date: campaignData.end_date,
+        status: campaignData.status || 'active',
       })
       .select()
       .single()
@@ -53,9 +57,14 @@ serve(async (req) => {
       const { data: newCollaboration, error: collaborationError } = await supabaseClient
         .from('collaborations')
         .insert({
-          ...collaborationData,
+          title: collaborationData.title,
+          description: collaborationData.description,
+          requirements: collaborationData.requirements,
+          compensation: collaborationData.compensation,
+          deadline: collaborationData.deadline,
+          max_spots: collaborationData.max_spots,
           campaign_id: campaign.id,
-          status: 'open', // Set initial status
+          status: 'open',
         })
         .select()
         .single()
