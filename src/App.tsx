@@ -31,6 +31,11 @@ const App = () => {
     // Initialize auth state
     const initializeAuth = async () => {
       try {
+        // Clear any potentially stale session data
+        if (localStorage.getItem('supabase.auth.token')) {
+          localStorage.removeItem('supabase.auth.token');
+        }
+
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -54,10 +59,16 @@ const App = () => {
 
     // Subscribe to auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'TOKEN_REFRESHED') {
-        setIsLoggedIn(true);
-      } else if (event === 'SIGNED_OUT') {
+      console.log('Auth state changed:', event, !!session);
+      
+      if (event === 'SIGNED_OUT') {
+        // Clear any stored auth data
+        localStorage.removeItem('supabase.auth.token');
         setIsLoggedIn(false);
+      } else if (event === 'SIGNED_IN') {
+        setIsLoggedIn(true);
+      } else if (event === 'TOKEN_REFRESHED') {
+        setIsLoggedIn(true);
       } else {
         setIsLoggedIn(!!session);
       }

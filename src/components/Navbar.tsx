@@ -33,15 +33,26 @@ export const Navbar = () => {
     
     setIsLoggingOut(true);
     try {
+      // First check if there's an active session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.log('No active session found');
+        setIsLoggedIn(false);
+        navigate('/');
+        return;
+      }
+
       // Clear local state first
       setIsLoggedIn(false);
+      
+      // Clear any stored auth data
+      localStorage.removeItem('supabase.auth.token');
       
       // Attempt to sign out
       const { error } = await supabase.auth.signOut();
       
       if (error) {
         console.error("Logout error:", error);
-        // Even if there's an error, we want to clear the local session
         toast.error("There was an issue with the logout, but you've been logged out locally");
       } else {
         toast.success("Logged out successfully");

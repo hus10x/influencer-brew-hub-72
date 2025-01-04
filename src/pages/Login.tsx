@@ -10,6 +10,9 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Clear any existing session data when mounting login page
+    localStorage.removeItem('supabase.auth.token');
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
         try {
