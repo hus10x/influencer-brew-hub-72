@@ -2,12 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 import { DollarSign } from "lucide-react";
+import { Navbar } from "@/components/Navbar";
 
 const InfluencerDashboard = () => {
-  const navigate = useNavigate();
-  
   const { data: collaborations = [], isLoading } = useQuery({
     queryKey: ['open-collaborations'],
     queryFn: async () => {
@@ -43,12 +41,11 @@ const InfluencerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="container mx-auto py-6 px-4 space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Available Collaborations</h1>
-          <Button variant="outline" onClick={() => navigate('/influencer/profile')}>
-            View Profile
-          </Button>
+      <Navbar />
+      <main className="container mx-auto py-6 px-4 space-y-6 pt-24">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-bold">Collab Now ✨</h1>
+          <h2 className="text-2xl text-muted-foreground">Available Collaborations</h2>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
