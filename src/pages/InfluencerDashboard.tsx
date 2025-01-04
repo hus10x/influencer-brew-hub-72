@@ -2,8 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ImageIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const InfluencerDashboard = () => {
+  const navigate = useNavigate();
+  
   const { data: collaborations = [], isLoading } = useQuery({
     queryKey: ['open-collaborations'],
     queryFn: async () => {
@@ -13,6 +17,7 @@ const InfluencerDashboard = () => {
           *,
           campaign:campaigns(
             id,
+            title,
             business:businesses(
               id,
               business_name,
@@ -33,13 +38,18 @@ const InfluencerDashboard = () => {
   });
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
   return (
     <div className="min-h-screen bg-background">
       <main className="container mx-auto py-6 px-4 space-y-6">
-        <h1 className="text-2xl font-bold">Open Collaborations</h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Available Collaborations</h1>
+          <Button variant="outline" onClick={() => navigate('/influencer/profile')}>
+            View Profile
+          </Button>
+        </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {collaborations.map((collab) => (
@@ -60,14 +70,24 @@ const InfluencerDashboard = () => {
               <div className="flex-1 p-6">
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <CardHeader>
+                    <CardHeader className="p-0">
                       <CardTitle className="text-xl">{collab.title}</CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        {collab.campaign?.business?.business_name}
+                        {collab.campaign?.business?.business_name || 'Unknown Business'}
                       </p>
                     </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground">{collab.description}</p>
+                    <CardContent className="p-0">
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {collab.description}
+                      </p>
+                      <div className="mt-4 flex justify-between items-center">
+                        <span className="text-sm font-medium">
+                          ${collab.compensation}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          {collab.filled_spots}/{collab.max_spots} spots filled
+                        </span>
+                      </div>
                     </CardContent>
                   </div>
                 </div>
