@@ -32,13 +32,19 @@ export const Navbar = () => {
       // First clear the local state
       setIsLoggedIn(false);
 
-      // Attempt server-side logout without checking session
-      await supabase.auth.signOut();
+      // Get current session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        // If we have a valid session, attempt to sign out
+        const { error } = await supabase.auth.signOut({ scope: 'local' });
+        if (error) throw error;
+      }
       
       // Consider it a success since local state is cleared
       toast.success("Logged out successfully");
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error during logout process:", error);
       // Even if server logout fails, we've cleared local state
       toast.error("There was an issue with the server logout, but you've been logged out locally");
