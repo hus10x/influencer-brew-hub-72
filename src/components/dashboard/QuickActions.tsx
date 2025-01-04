@@ -11,12 +11,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { CampaignForm } from "./CampaignForm";
 import { CollaborationForm } from "./collaboration-form/CollaborationForm";
 
 export const QuickActions = () => {
   const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
   const [isCollaborationDialogOpen, setIsCollaborationDialogOpen] = useState(false);
+  const [showNoCampaignsAlert, setShowNoCampaignsAlert] = useState(false);
 
   const { data: activeCampaigns, isLoading } = useQuery({
     queryKey: ["active-campaigns"],
@@ -48,6 +59,14 @@ export const QuickActions = () => {
     },
   });
 
+  const handleNewCollaborationClick = () => {
+    if (!isLoading && (!activeCampaigns?.length)) {
+      setShowNoCampaignsAlert(true);
+    } else {
+      setIsCollaborationDialogOpen(true);
+    }
+  };
+
   return (
     <div className="space-y-4 animate-fade-up">
       <h2 className="text-2xl font-semibold tracking-tight">Quick Actions</h2>
@@ -72,7 +91,11 @@ export const QuickActions = () => {
 
         <Dialog open={isCollaborationDialogOpen} onOpenChange={setIsCollaborationDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="secondary" size="lg">
+            <Button 
+              variant="secondary" 
+              size="lg"
+              onClick={handleNewCollaborationClick}
+            >
               <Users className="w-4 h-4" />
               New Collaboration
             </Button>
@@ -90,6 +113,28 @@ export const QuickActions = () => {
             />
           </DialogContent>
         </Dialog>
+
+        <AlertDialog open={showNoCampaignsAlert} onOpenChange={setShowNoCampaignsAlert}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>No Active Campaigns</AlertDialogTitle>
+              <AlertDialogDescription>
+                You need to create a campaign before you can create a collaboration. Would you like to create a campaign now?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  setShowNoCampaignsAlert(false);
+                  setIsCampaignDialogOpen(true);
+                }}
+              >
+                Create Campaign
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
