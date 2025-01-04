@@ -25,7 +25,7 @@ export const BusinessFilter = ({ onFilterChange }: BusinessFilterProps) => {
   const [open, setOpen] = useState(false);
   const [selectedBusinesses, setSelectedBusinesses] = useState<string[]>([]);
 
-  const { data: businesses = [], isLoading } = useQuery({
+  const { data: businesses, isLoading } = useQuery({
     queryKey: ["businesses"],
     queryFn: async () => {
       const { data: userData } = await supabase.auth.getUser();
@@ -36,8 +36,12 @@ export const BusinessFilter = ({ onFilterChange }: BusinessFilterProps) => {
         .select("*")
         .eq("user_id", userData.user.id);
 
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error("Error fetching businesses:", error);
+        return [];
+      }
+
+      return data || [];
     },
   });
 
@@ -55,7 +59,8 @@ export const BusinessFilter = ({ onFilterChange }: BusinessFilterProps) => {
     onFilterChange([]);
   };
 
-  if (businesses.length === 0) return null;
+  // If there are no businesses and we're not loading, don't render anything
+  if (!isLoading && (!businesses || businesses.length === 0)) return null;
 
   return (
     <div className="flex items-center gap-2">
@@ -64,8 +69,11 @@ export const BusinessFilter = ({ onFilterChange }: BusinessFilterProps) => {
           <Button
             variant="outline"
             className="border-dashed"
+            disabled={isLoading}
           >
-            {selectedBusinesses.length > 0 ? (
+            {isLoading ? (
+              "Loading..."
+            ) : selectedBusinesses.length > 0 ? (
               <>
                 {selectedBusinesses.length} business{selectedBusinesses.length > 1 ? 'es' : ''} selected
               </>
@@ -79,7 +87,7 @@ export const BusinessFilter = ({ onFilterChange }: BusinessFilterProps) => {
             <CommandInput placeholder="Search businesses..." />
             <CommandEmpty>No businesses found.</CommandEmpty>
             <CommandGroup>
-              {businesses.map((business) => (
+              {(businesses || []).map((business) => (
                 <CommandItem
                   key={business.id}
                   onSelect={() => handleSelect(business.id)}
