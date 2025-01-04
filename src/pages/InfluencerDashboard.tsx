@@ -15,10 +15,10 @@ const InfluencerDashboard = () => {
         .from('collaborations')
         .select(`
           *,
-          campaign:campaigns!inner(
+          campaign:campaigns(
             id,
             title,
-            business:businesses!inner(
+            business:businesses(
               id,
               business_name,
               logo_url
@@ -73,7 +73,7 @@ const InfluencerDashboard = () => {
                     <CardHeader className="p-0">
                       <CardTitle className="text-xl">{collab.title}</CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        {collab.campaign?.business?.business_name}
+                        {collab.campaign?.business?.business_name || 'Unknown Business'}
                       </p>
                     </CardHeader>
                     <CardContent className="p-0">
