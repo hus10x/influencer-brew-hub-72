@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useState } from "react";
+import { forwardRef, useImperativeHandle, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -173,11 +173,15 @@ export const CollaborationForm = forwardRef(({
   });
 
   // Show dialog if there are no campaigns and form is standalone
-  React.useEffect(() => {
+  useEffect(() => {
     if (isStandalone && !isLoadingCampaigns && !campaigns?.length) {
       setShowNoCampaignsDialog(true);
     }
   }, [isStandalone, isLoadingCampaigns, campaigns?.length]);
+
+  const onSubmit = async (data: CollaborationFormData) => {
+    await mutation.mutateAsync(data);
+  };
 
   if (isLoadingCampaigns) {
     return <LoadingState />;
