@@ -14,7 +14,7 @@ export const CampaignSelector = ({ form, campaigns }: CampaignSelectorProps) => 
   return (
     <FormField
       control={form.control}
-      name="campaign_id"
+      name="campaignId"
       render={({ field }) => (
         <FormItem>
           <FormLabel>Campaign</FormLabel>

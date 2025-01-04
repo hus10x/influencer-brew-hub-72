@@ -38,7 +38,12 @@ export const CompensationSection = ({ form }: CompensationSectionProps) => {
           <FormItem>
             <FormLabel>Deadline</FormLabel>
             <FormControl>
-              <Input type="datetime-local" {...field} />
+              <Input 
+                type="datetime-local" 
+                {...field} 
+                value={field.value instanceof Date ? field.value.toISOString().slice(0, 16) : ''} 
+                onChange={(e) => field.onChange(new Date(e.target.value))}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -47,7 +52,7 @@ export const CompensationSection = ({ form }: CompensationSectionProps) => {
 
       <FormField
         control={form.control}
-        name="max_spots"
+        name="maxSpots"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Number of Spots</FormLabel>

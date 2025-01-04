@@ -23,9 +23,9 @@ export const useCollaborationForm = ({ campaignId, onSuccess, initialData }: Use
       description: "",
       requirements: [""],
       compensation: 0,
-      deadline: "",
-      max_spots: 1,
-      campaign_id: campaignId || "",
+      deadline: new Date(),
+      maxSpots: 1,
+      campaignId: campaignId || "",
     },
   });
 
@@ -59,9 +59,9 @@ export const useCollaborationForm = ({ campaignId, onSuccess, initialData }: Use
           description: data.description,
           requirements: data.requirements.filter(req => req.trim() !== ""),
           compensation: data.compensation,
-          deadline: data.deadline,
-          max_spots: data.max_spots,
-          campaign_id: campaignId || data.campaign_id,
+          deadline: data.deadline.toISOString(),
+          max_spots: data.maxSpots,
+          campaign_id: campaignId || data.campaignId,
           ...(imageUrl && { image_url: imageUrl }),
         };
 
