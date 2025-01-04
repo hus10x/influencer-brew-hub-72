@@ -26,14 +26,14 @@ const StepCard = memo(({ step, index, isInView }: { step: typeof steps[number]; 
     style={{ animationDelay: `${index * 150}ms` }}
   >
     <div className="flex items-center mb-4">
-      <span className="text-4xl font-bold text-purple-500/20 dark:text-purple-500/10">
+      <span className="text-4xl font-bold text-primary/20 dark:text-primary/10">
         {step.number}
       </span>
       <div 
-        className={`ml-auto bg-purple-500/10 p-2 rounded-full ${isInView ? 'animate-fade-in' : 'opacity-0'}`}
+        className={`ml-auto bg-primary/10 p-2 rounded-full ${isInView ? 'animate-fade-in' : 'opacity-0'}`}
         style={{ animationDelay: `${(index * 150) + 300}ms` }}
       >
-        <Check className="w-5 h-5 text-purple-500" />
+        <Check className="w-5 h-5 text-primary" />
       </div>
     </div>
     <h3 className="text-xl font-semibold text-foreground mb-2">{step.title}</h3>
@@ -49,7 +49,7 @@ const HowItWorks = () => {
     <section className="py-24 bg-purple-100/80 dark:bg-background px-6">
       <div className="container mx-auto" ref={ref}>
         <div className={`text-center max-w-3xl mx-auto mb-16 ${isInView ? 'animate-fade-up' : 'opacity-0'}`}>
-          <span className="px-3 py-1 text-sm font-medium bg-purple-500/10 text-purple-500 rounded-full">
+          <span className="px-3 py-1 text-sm font-medium bg-primary/10 text-primary rounded-full">
             Simple Process
           </span>
           <h2 className="mt-6 text-4xl font-bold text-foreground">How It Works</h2>
