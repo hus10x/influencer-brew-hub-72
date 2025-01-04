@@ -19,7 +19,7 @@ export const QuickActions = () => {
   return (
     <div className="space-y-4 animate-fade-up">
       <h2 className="text-2xl font-semibold tracking-tight">Quick Actions</h2>
-      <div className="flex flex-wrap gap-4">
+      <div className="flex items-center flex-wrap gap-4">
         <Dialog open={isCampaignDialogOpen} onOpenChange={setIsCampaignDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-primary hover:bg-primary/90 gap-2">
