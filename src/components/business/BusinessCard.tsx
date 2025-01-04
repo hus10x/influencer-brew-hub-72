@@ -63,6 +63,9 @@ export const BusinessCard = ({ business, onEdit, onDelete, canDelete }: Business
     }
   };
 
+  // Add console log to debug business data
+  console.log("Business data in BusinessCard:", business);
+
   return (
     <Card className="p-4 hover:shadow-lg transition-shadow bg-card text-card-foreground">
       <div className="flex items-center gap-4">
