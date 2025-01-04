@@ -89,8 +89,17 @@ export const QuickActions = () => {
           </DialogContent>
         </Dialog>
 
-        <Dialog open={showNoCampaignsDialog} onOpenChange={setShowNoCampaignsDialog}>
-          <DialogContent className="z-[100]">
+        <Dialog 
+          open={showNoCampaignsDialog} 
+          onOpenChange={(open) => {
+            setShowNoCampaignsDialog(open);
+            if (!open) {
+              // Reset collaboration dialog when closing warning
+              setIsCollaborationDialogOpen(false);
+            }
+          }}
+        >
+          <DialogContent className="z-[100] fixed">
             <DialogHeader>
               <DialogTitle>No Active Campaigns</DialogTitle>
               <DialogDescription>
@@ -108,7 +117,10 @@ export const QuickActions = () => {
           </DialogContent>
         </Dialog>
 
-        <Dialog open={isCollaborationDialogOpen} onOpenChange={setIsCollaborationDialogOpen}>
+        <Dialog 
+          open={isCollaborationDialogOpen && !showNoCampaignsDialog} 
+          onOpenChange={setIsCollaborationDialogOpen}
+        >
           <DialogTrigger asChild>
             <Button
               variant="secondary"
