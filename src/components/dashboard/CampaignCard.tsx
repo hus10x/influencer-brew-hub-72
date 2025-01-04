@@ -1,4 +1,4 @@
-import { CalendarDays, Users, Plus } from "lucide-react";
+import { CalendarDays, Users, Plus, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -9,7 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Building2 } from "lucide-react";
 
 interface CampaignCardProps {
   title: string;
@@ -44,17 +43,15 @@ export const CampaignCard = ({
                 </RadioGroup>
               </div>
             )}
-            <div className="flex items-center gap-4">
-              <Avatar className="h-12 w-12 border border-border">
-                <AvatarImage src={undefined} alt="Business Logo" />
-                <AvatarFallback>
-                  <Building2 className="h-6 w-6 text-muted-foreground" />
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <CardTitle className="text-xl">{title}</CardTitle>
-                <CardDescription className="mt-2">{description}</CardDescription>
-              </div>
+            <Avatar className="h-12 w-12 border border-border">
+              <AvatarImage src={undefined} alt="Business Logo" />
+              <AvatarFallback>
+                <Building2 className="h-6 w-6 text-muted-foreground" />
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <CardTitle className="text-xl">{title}</CardTitle>
+              <CardDescription className="mt-2">{description}</CardDescription>
             </div>
           </div>
           <Button
