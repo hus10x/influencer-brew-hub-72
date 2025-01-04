@@ -3,14 +3,15 @@ import { useEffect, useRef, useState } from "react";
 export const useScrollAnimation = () => {
   const ref = useRef<HTMLDivElement>(null);
   const [isInView, setIsInView] = useState(false);
+  const [hasAnimated, setHasAnimated] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        // Only set isInView to true if the element hasn't animated yet
+        if (entry.isIntersecting && !hasAnimated) {
           setIsInView(true);
-        } else {
-          setIsInView(false);
+          setHasAnimated(true);
         }
       },
       {
@@ -27,7 +28,7 @@ export const useScrollAnimation = () => {
         observer.unobserve(ref.current);
       }
     };
-  }, []);
+  }, [hasAnimated]);
 
   return { ref, isInView };
 };
