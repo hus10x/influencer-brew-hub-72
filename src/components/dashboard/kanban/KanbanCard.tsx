@@ -101,9 +101,12 @@ export const KanbanCard = ({
                 <RadioGroup 
                   value={isSelected ? "selected" : "unselected"} 
                   onValueChange={() => onSelect()}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity"
                 >
-                  <RadioGroupItem value="selected" id="selected" />
+                  <RadioGroupItem 
+                    value="selected" 
+                    id="selected" 
+                    className={`${!isSelected && 'opacity-0 group-hover:opacity-100'} transition-opacity`}
+                  />
                 </RadioGroup>
               </div>
             )}
