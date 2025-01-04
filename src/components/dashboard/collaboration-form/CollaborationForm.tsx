@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle } from "react";
+import { forwardRef, useImperativeHandle, useState } from "react";
 import { Form } from "@/components/ui/form";
 import { type CollaborationFormData } from "./types";
 import { CampaignSelector } from "./CampaignSelector";
@@ -30,6 +30,10 @@ export const CollaborationForm = forwardRef(({
     initialData,
   });
 
+  const [requirements, setRequirements] = useState<string[]>(
+    initialData?.requirements || [""]
+  );
+
   useImperativeHandle(ref, () => ({
     submitForm: async () => {
       return new Promise<void>((resolve, reject) => {
@@ -52,7 +56,11 @@ export const CollaborationForm = forwardRef(({
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {isStandalone && <CampaignSelector form={form} />}
           <BasicDetailsSection form={form} />
-          <RequirementsSection form={form} />
+          <RequirementsSection 
+            form={form} 
+            requirements={requirements}
+            setRequirements={setRequirements}
+          />
           <CompensationSection form={form} />
           <ImageUploadSection form={form} />
           <FormActions 
