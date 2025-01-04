@@ -21,6 +21,11 @@ export const NoActiveCampaignsDialog = ({
   onCreateCampaign,
   onCancel,
 }: NoActiveCampaignsDialogProps) => {
+  const handleCancel = () => {
+    onCancel();
+    onOpenChange(false);
+  };
+
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -34,7 +39,7 @@ export const NoActiveCampaignsDialog = ({
         <div className="flex justify-end space-x-2">
           <Button
             variant="outline"
-            onClick={onCancel}
+            onClick={handleCancel}
           >
             Cancel
           </Button>
