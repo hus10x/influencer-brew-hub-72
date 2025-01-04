@@ -21,6 +21,7 @@ interface KanbanCardProps {
   index: number;
   selectionMode: boolean;
   businessId: string;
+  status: string;
 }
 
 export const KanbanCard = ({
@@ -34,6 +35,7 @@ export const KanbanCard = ({
   index,
   selectionMode,
   businessId,
+  status,
 }: KanbanCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCollabDialogOpen, setIsCollabDialogOpen] = useState(false);
@@ -151,6 +153,7 @@ export const KanbanCard = ({
               start_date: startDate.toISOString(),
               end_date: endDate.toISOString(),
               business_id: businessId,
+              status,
             }}
           />
 
