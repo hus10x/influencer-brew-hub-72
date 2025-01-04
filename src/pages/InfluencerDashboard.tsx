@@ -86,7 +86,6 @@ const InfluencerDashboard = () => {
         throw error;
       }
 
-      // Check Instagram connection status
       if (profile?.email) {
         const instagramStatus = await checkInstagramConnection(profile.email);
         console.log('Instagram connection status:', instagramStatus);
@@ -123,7 +122,6 @@ const InfluencerDashboard = () => {
     );
   }
 
-  // Check if this is our test user (using email)
   const isTestUser = profile?.email === 'test.influencer@example.com';
   const isInstagramConnected = isTestUser || profile?.instagram_connected || false;
 
@@ -136,7 +134,7 @@ const InfluencerDashboard = () => {
             <div className="relative isolate overflow-hidden bg-muted/50 dark:bg-background/95 py-16 sm:py-24 rounded-3xl w-full">
               <div className="mx-auto max-w-7xl px-6 lg:px-8">
                 <div className="mx-auto max-w-2xl text-center">
-                  <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl mt-8">
+                  <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl mt-8 mb-8">
                     Collab Now ✨
                   </h1>
                   <p className="mt-6 text-lg leading-8 text-muted-foreground">
@@ -155,7 +153,7 @@ const InfluencerDashboard = () => {
         ) : (
           <>
             <div className="text-center mb-12">
-              <h1 className="text-4xl font-bold text-foreground mt-8">Collab Now ✨</h1>
+              <h1 className="text-4xl font-bold text-foreground mt-8 mb-8">Collab Now ✨</h1>
               <p className="mt-6 text-lg leading-8 text-muted-foreground">
                 Effortless collabs. Real connections.
               </p>
