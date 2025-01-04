@@ -127,9 +127,7 @@ export const QuickActions = () => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>
-                Cancel
-              </AlertDialogCancel>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={() => {
                 setShowNoCampaignsAlert(false);
                 setIsCampaignDialogOpen(true);
