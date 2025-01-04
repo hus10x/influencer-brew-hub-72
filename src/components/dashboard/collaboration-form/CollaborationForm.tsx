@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { forwardRef, useImperativeHandle, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -20,12 +20,12 @@ interface CollaborationFormProps {
   initialData?: CollaborationFormData & { id: string };
 }
 
-export const CollaborationForm = ({
+export const CollaborationForm = forwardRef(({
   campaignId,
   onSuccess,
   isStandalone = true,
   initialData,
-}: CollaborationFormProps) => {
+}: CollaborationFormProps, ref) => {
   const [requirements, setRequirements] = useState<string[]>(
     initialData?.requirements || [""]
   );
@@ -89,6 +89,21 @@ export const CollaborationForm = ({
 
     return publicUrl;
   };
+
+  useImperativeHandle(ref, () => ({
+    submitForm: () => {
+      return new Promise<void>((resolve, reject) => {
+        form.handleSubmit(async (data) => {
+          try {
+            await mutation.mutateAsync(data);
+            resolve();
+          } catch (error) {
+            reject(error);
+          }
+        })();
+      });
+    }
+  }));
 
   const mutation = useMutation({
     mutationFn: async (data: CollaborationFormData) => {
@@ -165,13 +180,17 @@ export const CollaborationForm = ({
         <CompensationSection form={form} />
         <ImageUploadSection form={form} />
 
-        <Button type="submit" disabled={isLoading} className="w-full">
-          {isLoading 
-            ? (initialData ? "Updating..." : "Creating...") 
-            : (initialData ? "Update Collaboration" : "Create Collaboration")
-          }
-        </Button>
+        {isStandalone && (
+          <Button type="submit" disabled={isLoading} className="w-full">
+            {isLoading 
+              ? (initialData ? "Updating..." : "Creating...") 
+              : (initialData ? "Update Collaboration" : "Create Collaboration")
+            }
+          </Button>
+        )}
       </form>
     </Form>
   );
-};
+});
+
+CollaborationForm.displayName = "CollaborationForm";

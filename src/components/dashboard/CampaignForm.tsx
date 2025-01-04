@@ -3,15 +3,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { toast } from "sonner";
 import { BusinessSelect } from "./campaign-form/BusinessSelect";
 import { CampaignDetails } from "./campaign-form/CampaignDetails";
 import { DateFields } from "./campaign-form/DateFields";
 import { CollaborationForm } from "./collaboration-form/CollaborationForm";
+import { FormActions } from "./campaign-form/FormActions";
 import type { CampaignFormData } from "./campaign-form/types";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -39,7 +39,10 @@ interface CampaignFormProps {
 
 export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
   const [isCreatingCollaboration, setIsCreatingCollaboration] = useState(false);
+  const [createdCampaignId, setCreatedCampaignId] = useState<string | null>(null);
+  const collaborationFormRef = useRef<{ submitForm: () => Promise<void> }>(null);
   const queryClient = useQueryClient();
+
   const form = useForm<CampaignFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -73,7 +76,6 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
   const mutation = useMutation({
     mutationFn: async ({ values, status }: { values: z.infer<typeof formSchema>, status: 'draft' | 'active' }) => {
       if (campaign) {
-        // Update existing campaign
         const { data, error } = await supabase
           .from("campaigns")
           .update({
@@ -89,7 +91,6 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
         if (error) throw error;
         return data[0];
       } else {
-        // Create new campaign
         const { data, error } = await supabase
           .from("campaigns")
           .insert({
@@ -112,6 +113,9 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
         toast.success(campaign ? "Campaign updated successfully" : "Campaign created successfully");
         form.reset();
         onSuccess();
+      } else {
+        setCreatedCampaignId(campaign.id);
+        collaborationFormRef.current?.submitForm();
       }
     },
     onError: (error) => {
@@ -123,13 +127,13 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
 
   const handleCollaborationSuccess = () => {
     setIsCreatingCollaboration(false);
+    setCreatedCampaignId(null);
     toast.success("Campaign and collaboration created successfully");
     form.reset();
     onSuccess();
   };
 
   const onSubmit = (values: CampaignFormData, status: 'draft' | 'active' = 'active') => {
-    // Validate dates
     const startDate = new Date(values.start_date);
     const endDate = new Date(values.end_date);
     
@@ -175,33 +179,21 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
             <div className="pt-6 border-t">
               <h3 className="text-lg font-medium mb-4">Add Collaboration Details</h3>
               <CollaborationForm 
-                campaignId={mutation.data?.id} 
+                ref={collaborationFormRef}
+                campaignId={createdCampaignId} 
                 isStandalone={false}
                 onSuccess={handleCollaborationSuccess}
               />
             </div>
           )}
 
-          <div className="flex gap-4">
-            <Button
-              type="submit"
-              className="flex-1"
-              disabled={mutation.isPending || isCreatingCollaboration}
-            >
-              {mutation.isPending || isCreatingCollaboration ? "Creating..." : (campaign ? "Update Campaign" : "Create Campaign & Collaboration")}
-            </Button>
-            {!campaign && (
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                disabled={mutation.isPending || isCreatingCollaboration}
-                onClick={() => form.handleSubmit((values) => onSubmit(values, 'draft'))()}
-              >
-                Save as Draft
-              </Button>
-            )}
-          </div>
+          <FormActions 
+            form={form}
+            mutation={mutation}
+            isCreatingCollaboration={isCreatingCollaboration}
+            campaign={campaign}
+            onSubmit={onSubmit}
+          />
         </form>
       </Form>
     </div>
