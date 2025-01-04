@@ -60,6 +60,7 @@ const InfluencerDashboard = () => {
       console.log('Fetched collaborations:', data);
       return data;
     },
+    refetchOnWindowFocus: true, // Ensure we always have fresh data
   });
 
   if (profileError || collaborationsError) {
@@ -143,7 +144,9 @@ const InfluencerDashboard = () => {
                     </div>
                     <CardHeader>
                       <CardTitle className="text-xl">{collab.title}</CardTitle>
-                      <p className="text-sm text-muted-foreground">{collab.business?.business_name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {collab.business?.business_name || 'Unknown Business'}
+                      </p>
                     </CardHeader>
                     <CardContent>
                       <p className="text-muted-foreground mb-4">{collab.description}</p>
