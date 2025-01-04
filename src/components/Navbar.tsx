@@ -47,8 +47,7 @@ export const Navbar = () => {
             className="cursor-pointer flex items-center space-x-3" 
             onClick={() => navigate("/")}
           >
-            <BookOpen className="h-6 w-6 text-primary" />
-            <span className="font-sans text-2xl font-bold tracking-tight text-foreground lowercase">
+            <span className="font-sans text-2xl font-bold tracking-tight text-foreground">
               hikayat
             </span>
           </div>
