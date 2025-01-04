@@ -1,4 +1,4 @@
-import { CalendarDays, Users, Plus, Check } from "lucide-react";
+import { CalendarDays, Users, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -8,6 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Building2 } from "lucide-react";
 
 interface CampaignCardProps {
   title: string;
@@ -38,11 +40,20 @@ export const CampaignCard = ({
             {onSelect && (
               <RadioGroup value={isSelected ? "selected" : "unselected"} onValueChange={() => onSelect()}>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="selected" id="selected" className={`${!isSelected && 'opacity-0 group-hover:opacity-100'}`} />
+                  <RadioGroupItem value="selected" id="selected" className={`${!isSelected && 'opacity-0 group-hover:opacity-100'} transition-opacity`} />
                 </div>
               </RadioGroup>
             )}
-            <CardTitle className="text-xl">{title}</CardTitle>
+            <Avatar className="h-12 w-12 border border-border">
+              <AvatarImage src={undefined} alt="Business Logo" />
+              <AvatarFallback>
+                <Building2 className="h-6 w-6 text-muted-foreground" />
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <CardTitle className="text-xl">{title}</CardTitle>
+              <CardDescription className="mt-2">{description}</CardDescription>
+            </div>
           </div>
           <Button
             variant="ghost"
@@ -54,7 +65,6 @@ export const CampaignCard = ({
             <span className="sr-only">Add collaboration</span>
           </Button>
         </div>
-        <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
