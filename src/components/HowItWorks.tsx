@@ -26,7 +26,7 @@ const StepCard = memo(({ step, index, isInView }: { step: typeof steps[number]; 
     style={{ animationDelay: `${index * 150}ms` }}
   >
     <div className="flex items-center mb-4">
-      <span className="text-4xl font-bold text-primary/20 dark:text-primary/10">
+      <span className="text-4xl font-bold text-[#8871E2]/20 dark:text-[#8871E2]/10">
         {step.number}
       </span>
       <div 
