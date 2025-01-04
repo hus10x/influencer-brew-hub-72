@@ -42,17 +42,37 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
   const [collaborationData, setCollaborationData] = useState(null);
   const queryClient = useQueryClient();
 
-  // Add businesses query
-  const { data: businesses = [] } = useQuery({
-    queryKey: ['businesses'],
+  // First get the current user
+  const { data: userData } = useQuery({
+    queryKey: ["user"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('businesses')
-        .select('*');
-      
-      if (error) throw error;
+      const { data } = await supabase.auth.getUser();
       return data;
-    }
+    },
+  });
+
+  const userId = userData?.user?.id;
+
+  // Then fetch only the businesses owned by this user
+  const { data: businesses = [], isLoading: isLoadingBusinesses } = useQuery({
+    queryKey: ["businesses", userId],
+    queryFn: async () => {
+      if (!userId) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from("businesses")
+        .select("*")
+        .eq('user_id', userId);
+      
+      if (error) {
+        console.error("Error fetching businesses:", error);
+        toast.error("Failed to load businesses");
+        throw error;
+      }
+      
+      return data;
+    },
+    enabled: !!userId, // Only run query when we have a userId
   });
 
   const form = useForm<CampaignFormData>({
@@ -124,6 +144,10 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
 
     mutation.mutate(values);
   };
+
+  if (isLoadingBusinesses) {
+    return <div>Loading businesses...</div>;
+  }
 
   return (
     <div className="space-y-8">
