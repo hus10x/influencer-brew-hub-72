@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ImageIcon } from "lucide-react";
 
-export const InfluencerDashboard = () => {
+const InfluencerDashboard = () => {
   const { data: collaborations = [], isLoading } = useQuery({
     queryKey: ['open-collaborations'],
     queryFn: async () => {
@@ -79,3 +79,5 @@ export const InfluencerDashboard = () => {
     </div>
   );
 };
+
+export default InfluencerDashboard;
