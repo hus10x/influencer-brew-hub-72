@@ -67,6 +67,13 @@ export const QuickActions = () => {
     }
   };
 
+  const handleAlertClose = (shouldOpenCampaign = false) => {
+    setShowNoCampaignsAlert(false);
+    if (shouldOpenCampaign) {
+      setIsCampaignDialogOpen(true);
+    }
+  };
+
   return (
     <div className="space-y-4 animate-fade-up">
       <h2 className="text-2xl font-semibold tracking-tight">Quick Actions</h2>
@@ -120,16 +127,13 @@ export const QuickActions = () => {
               <AlertDialogTitle>No Active Campaigns</AlertDialogTitle>
               <AlertDialogDescription>
                 You need to create a campaign before you can create a collaboration. Would you like to create a campaign now?
-              </AlertDialogDescription>
+              </DialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => {
-                  setShowNoCampaignsAlert(false);
-                  setIsCampaignDialogOpen(true);
-                }}
-              >
+              <AlertDialogCancel onClick={() => handleAlertClose(false)}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction onClick={() => handleAlertClose(true)}>
                 Create Campaign
               </AlertDialogAction>
             </AlertDialogFooter>
