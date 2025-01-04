@@ -10,14 +10,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { CampaignForm } from "./CampaignForm";
 import { CollaborationForm } from "./collaboration-form/CollaborationForm";
-import { toast } from "sonner";
 
 export const QuickActions = () => {
   const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
   const [isCollaborationDialogOpen, setIsCollaborationDialogOpen] = useState(false);
+  const [showNoCampaignsDialog, setShowNoCampaignsDialog] = useState(false);
 
   const { data: activeCampaigns, isLoading } = useQuery({
     queryKey: ["active-campaigns"],
@@ -25,7 +26,6 @@ export const QuickActions = () => {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("Not authenticated");
 
-      // First get the user's businesses
       const { data: businesses } = await supabase
         .from("businesses")
         .select("id")
@@ -35,7 +35,6 @@ export const QuickActions = () => {
 
       const businessIds = businesses.map(b => b.id);
 
-      // Then get active campaigns for those businesses only
       const { data: campaigns, error } = await supabase
         .from("campaigns")
         .select("*")
@@ -44,7 +43,6 @@ export const QuickActions = () => {
 
       if (error) {
         console.error("Error fetching campaigns:", error);
-        toast.error("Failed to fetch campaigns");
         throw error;
       }
 
@@ -55,12 +53,18 @@ export const QuickActions = () => {
   const handleNewCollaborationClick = () => {
     if (!isLoading) {
       if (!activeCampaigns?.length) {
-        toast.error("You need to create an active campaign before creating a collaboration");
-        setIsCampaignDialogOpen(true);
+        setShowNoCampaignsDialog(true);
       } else {
         setIsCollaborationDialogOpen(true);
       }
     }
+  };
+
+  const handleCreateCampaign = () => {
+    setShowNoCampaignsDialog(false);
+    setTimeout(() => {
+      setIsCampaignDialogOpen(true);
+    }, 100);
   };
 
   return (
@@ -82,6 +86,25 @@ export const QuickActions = () => {
               </DialogDescription>
             </DialogHeader>
             <CampaignForm onSuccess={() => setIsCampaignDialogOpen(false)} />
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showNoCampaignsDialog} onOpenChange={setShowNoCampaignsDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>No Active Campaigns</DialogTitle>
+              <DialogDescription>
+                You need an active campaign before creating a collaboration. Would you like to create one now?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex gap-2 mt-4">
+              <Button variant="outline" onClick={() => setShowNoCampaignsDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleCreateCampaign}>
+                Create Campaign
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
 
