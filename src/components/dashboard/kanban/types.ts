@@ -7,3 +7,5 @@ export interface Campaign {
   status: "draft" | "active" | "completed";
   business_id: string;
 }
+
+export type CampaignStatus = Campaign['status'];

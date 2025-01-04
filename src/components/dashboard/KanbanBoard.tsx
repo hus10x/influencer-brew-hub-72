@@ -2,8 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { KanbanColumn } from "./kanban/KanbanColumn";
 import { useState } from "react";
+import { Campaign, CampaignStatus } from "./kanban/types";
 
-const CAMPAIGN_STATUSES = {
+const CAMPAIGN_STATUSES: Record<CampaignStatus, string> = {
   draft: "Draft",
   active: "Active",
   completed: "Completed",
@@ -39,7 +40,11 @@ export const KanbanBoard = () => {
         throw error;
       }
 
-      return data || [];
+      // Ensure the status is one of the valid types
+      return (data || []).map(campaign => ({
+        ...campaign,
+        status: campaign.status as CampaignStatus
+      })) as Campaign[];
     },
   });
 
@@ -56,7 +61,7 @@ export const KanbanBoard = () => {
       {Object.entries(CAMPAIGN_STATUSES).map(([status, label]) => (
         <KanbanColumn
           key={status}
-          status={status}
+          status={status as CampaignStatus}
           campaigns={campaigns.filter((campaign) => campaign.status === status)}
           selectedCampaigns={selectedCampaigns}
           onSelect={handleCampaignSelect}
