@@ -10,10 +10,21 @@ import { Button } from "@/components/ui/button";
 import { DollarSign, Users, Pencil } from "lucide-react";
 import { useState } from "react";
 import { CollaborationForm } from "../collaboration-form/CollaborationForm";
-import { Tables } from "@/integrations/supabase/types";
 
 interface CollaborationModalProps {
-  collaboration: Tables<"collaborations"> | null;
+  collaboration: {
+    id: string;
+    title: string;
+    description: string;
+    compensation: number;
+    max_spots: number;
+    filled_spots: number;
+    requirements: string[];
+    deadline: string;
+    image_url: string | null;
+    business_id: string | null;
+    campaign_id: string | null;
+  } | null;
   isOpen: boolean;
   onClose: () => void;
 }

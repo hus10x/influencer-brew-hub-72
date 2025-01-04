@@ -3,10 +3,21 @@ import { Progress } from "@/components/ui/progress";
 import { Users, DollarSign } from "lucide-react";
 import { useState } from "react";
 import { CollaborationModal } from "./CollaborationModal";
-import { Tables } from "@/integrations/supabase/types";
 
 interface CollaborationCardProps {
-  collaboration: Tables<"collaborations">;
+  collaboration: {
+    id: string;
+    title: string;
+    description: string;
+    compensation: number;
+    max_spots: number;
+    filled_spots: number;
+    requirements: string[];
+    deadline: string;
+    image_url: string | null;
+    business_id: string | null;
+    campaign_id: string | null;
+  };
 }
 
 export const CollaborationCard = ({ collaboration }: CollaborationCardProps) => {

@@ -33,7 +33,7 @@ const InfluencerDashboard = () => {
         throw error;
       }
 
-      return data || [];
+      return data;
     },
   });
 
