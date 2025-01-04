@@ -11,6 +11,7 @@ import { CampaignDetails } from "./campaign-form/CampaignDetails";
 import { DateFields } from "./campaign-form/DateFields";
 import { CollaborationForm } from "./collaboration-form/CollaborationForm";
 import type { CampaignFormData } from "./campaign-form/types";
+import { useState } from "react";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -37,6 +38,7 @@ interface CampaignFormProps {
 }
 
 export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
+  const [isCreatingCollaboration, setIsCreatingCollaboration] = useState(false);
   const queryClient = useQueryClient();
   const form = useForm<CampaignFormData>({
     resolver: zodResolver(formSchema),
@@ -106,15 +108,25 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
     },
     onSuccess: (campaign) => {
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
-      toast.success(campaign ? "Campaign updated successfully" : "Campaign created successfully");
-      form.reset();
-      onSuccess();
+      if (!isCreatingCollaboration) {
+        toast.success(campaign ? "Campaign updated successfully" : "Campaign created successfully");
+        form.reset();
+        onSuccess();
+      }
     },
     onError: (error) => {
       console.error("Error with campaign:", error);
       toast.error(campaign ? "Failed to update campaign" : "Failed to create campaign");
+      setIsCreatingCollaboration(false);
     },
   });
+
+  const handleCollaborationSuccess = () => {
+    setIsCreatingCollaboration(false);
+    toast.success("Campaign and collaboration created successfully");
+    form.reset();
+    onSuccess();
+  };
 
   const onSubmit = (values: CampaignFormData, status: 'draft' | 'active' = 'active') => {
     // Validate dates
@@ -131,6 +143,9 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
       return;
     }
 
+    if (!campaign) {
+      setIsCreatingCollaboration(true);
+    }
     mutation.mutate({ values, status });
   };
 
@@ -162,6 +177,7 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
               <CollaborationForm 
                 campaignId={mutation.data?.id} 
                 isStandalone={false}
+                onSuccess={handleCollaborationSuccess}
               />
             </div>
           )}
@@ -170,16 +186,16 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
             <Button
               type="submit"
               className="flex-1"
-              disabled={mutation.isPending}
+              disabled={mutation.isPending || isCreatingCollaboration}
             >
-              {campaign ? "Update Campaign" : "Create Campaign & Collaboration"}
+              {mutation.isPending || isCreatingCollaboration ? "Creating..." : (campaign ? "Update Campaign" : "Create Campaign & Collaboration")}
             </Button>
             {!campaign && (
               <Button
                 type="button"
                 variant="outline"
                 className="flex-1"
-                disabled={mutation.isPending}
+                disabled={mutation.isPending || isCreatingCollaboration}
                 onClick={() => form.handleSubmit((values) => onSubmit(values, 'draft'))()}
               >
                 Save as Draft
