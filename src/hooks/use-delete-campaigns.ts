@@ -46,17 +46,17 @@ export const useDeleteCampaigns = (onSuccess?: () => void) => {
             console.error("Error deleting verifications:", verificationError);
             throw verificationError;
           }
-        }
 
-        // Delete collaboration submissions
-        const { error: submissionsError } = await supabase
-          .from("collaboration_submissions")
-          .delete()
-          .in("collaboration_id", collaborationIds);
+          // Delete collaboration submissions
+          const { error: submissionsError } = await supabase
+            .from("collaboration_submissions")
+            .delete()
+            .in("collaboration_id", collaborationIds);
 
-        if (submissionsError) {
-          console.error("Error deleting submissions:", submissionsError);
-          throw submissionsError;
+          if (submissionsError) {
+            console.error("Error deleting submissions:", submissionsError);
+            throw submissionsError;
+          }
         }
 
         // Delete collaborations
