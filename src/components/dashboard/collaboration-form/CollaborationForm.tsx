@@ -12,8 +12,8 @@ import { BasicDetailsSection } from "./BasicDetailsSection";
 import { RequirementsSection } from "./RequirementsSection";
 import { ImageUploadSection } from "./ImageUploadSection";
 import { CompensationSection } from "./CompensationSection";
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogAction } from "@/components/ui/alert-dialog";
-import { Plus } from "lucide-react";
+import { NoActiveCampaignsDialog } from "./components/NoActiveCampaignsDialog";
+import { LoadingState } from "./components/LoadingState";
 
 interface CollaborationFormProps {
   campaignId?: string;
@@ -172,38 +172,22 @@ export const CollaborationForm = forwardRef(({
     },
   });
 
-  // Check if there are any active campaigns
-  const hasActiveCampaigns = campaigns && campaigns.length > 0;
-
   // Show dialog if there are no campaigns and form is standalone
   React.useEffect(() => {
-    if (isStandalone && !isLoadingCampaigns && !hasActiveCampaigns) {
+    if (isStandalone && !isLoadingCampaigns && !campaigns?.length) {
       setShowNoCampaignsDialog(true);
     }
-  }, [isStandalone, isLoadingCampaigns, hasActiveCampaigns]);
-
-  const onSubmit = (data: CollaborationFormData) => {
-    if (isStandalone && !data.campaign_id) {
-      toast.error("Please select a campaign");
-      return;
-    }
-    mutation.mutate(data);
-  };
+  }, [isStandalone, isLoadingCampaigns, campaigns?.length]);
 
   if (isLoadingCampaigns) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2 text-muted-foreground">Loading...</span>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   return (
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {isStandalone && hasActiveCampaigns && (
+          {isStandalone && campaigns?.length > 0 && (
             <CampaignSelector form={form} campaigns={campaigns} />
           )}
           <BasicDetailsSection form={form} />
@@ -226,38 +210,18 @@ export const CollaborationForm = forwardRef(({
         </form>
       </Form>
 
-      <AlertDialog open={showNoCampaignsDialog} onOpenChange={setShowNoCampaignsDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>No Active Campaigns</AlertDialogTitle>
-            <AlertDialogDescription>
-              You need to create an active campaign before you can create a collaboration.
-              Would you like to create a campaign now?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="flex justify-end space-x-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowNoCampaignsDialog(false);
-                onSuccess?.();
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                setShowNoCampaignsDialog(false);
-                // Navigate to campaign creation
-                window.location.href = "/client/campaigns";
-              }}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create Campaign
-            </Button>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
+      <NoActiveCampaignsDialog
+        isOpen={showNoCampaignsDialog}
+        onOpenChange={setShowNoCampaignsDialog}
+        onCreateCampaign={() => {
+          setShowNoCampaignsDialog(false);
+          window.location.href = "/client/campaigns";
+        }}
+        onCancel={() => {
+          setShowNoCampaignsDialog(false);
+          onSuccess?.();
+        }}
+      />
     </>
   );
 });
