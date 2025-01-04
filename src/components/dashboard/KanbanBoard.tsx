@@ -7,7 +7,6 @@ import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import { toast } from "sonner";
 import { useUpdateCampaignStatus } from "@/hooks/use-update-campaign-status";
 import { useDeleteCampaigns } from "@/hooks/use-delete-campaigns";
-import { BusinessFilter } from "./BusinessFilter";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,7 +30,6 @@ export const KanbanBoard = () => {
   const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [selectedBusinessIds, setSelectedBusinessIds] = useState<string[]>([]);
   const windowWidth = window.innerWidth;
   const updateCampaignStatus = useUpdateCampaignStatus();
   const deleteCampaigns = useDeleteCampaigns(() => {
@@ -40,7 +38,7 @@ export const KanbanBoard = () => {
   });
 
   const { data: campaigns = [], isLoading } = useQuery({
-    queryKey: ["campaigns", selectedBusinessIds],
+    queryKey: ["campaigns"],
     queryFn: async () => {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("Not authenticated");
@@ -52,9 +50,7 @@ export const KanbanBoard = () => {
 
       if (!businesses?.length) return [];
 
-      const businessIds = selectedBusinessIds.length > 0 
-        ? selectedBusinessIds 
-        : businesses.map(b => b.id);
+      const businessIds = businesses.map(b => b.id);
 
       const { data, error } = await supabase
         .from("campaigns")
@@ -125,7 +121,7 @@ export const KanbanBoard = () => {
   return (
     <>
       <div className="mb-4 flex items-center justify-between">
-        <BusinessFilter onFilterChange={setSelectedBusinessIds} />
+        <div className="flex-1" />
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
