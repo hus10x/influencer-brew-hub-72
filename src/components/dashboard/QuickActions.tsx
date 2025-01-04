@@ -90,7 +90,7 @@ export const QuickActions = () => {
         </Dialog>
 
         <Dialog open={showNoCampaignsDialog} onOpenChange={setShowNoCampaignsDialog}>
-          <DialogContent>
+          <DialogContent className="z-[100]">
             <DialogHeader>
               <DialogTitle>No Active Campaigns</DialogTitle>
               <DialogDescription>
