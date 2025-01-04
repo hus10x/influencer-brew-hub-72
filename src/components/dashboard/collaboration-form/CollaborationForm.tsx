@@ -9,6 +9,7 @@ import { CompensationSection } from "./CompensationSection";
 import { FormHeader } from "./sections/FormHeader";
 import { FormActions } from "./sections/FormActions";
 import { useCollaborationForm } from "./hooks/useCollaborationForm";
+import { Tables } from "@/integrations/supabase/types";
 
 interface CollaborationFormProps {
   campaignId?: string;
@@ -16,6 +17,7 @@ interface CollaborationFormProps {
   isStandalone?: boolean;
   onCollaborationData?: (data: any) => void;
   initialData?: CollaborationFormData & { id: string };
+  campaigns?: Tables<"campaigns">[];
 }
 
 export const CollaborationForm = forwardRef(({
@@ -23,6 +25,7 @@ export const CollaborationForm = forwardRef(({
   onSuccess,
   isStandalone = true,
   initialData,
+  campaigns,
 }: CollaborationFormProps, ref) => {
   const { form, isLoading, onSubmit } = useCollaborationForm({
     campaignId,
@@ -54,7 +57,7 @@ export const CollaborationForm = forwardRef(({
       {initialData && <FormHeader isEditing />}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {isStandalone && <CampaignSelector form={form} />}
+          {isStandalone && <CampaignSelector form={form} campaigns={campaigns} />}
           <BasicDetailsSection form={form} />
           <RequirementsSection 
             form={form} 
