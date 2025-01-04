@@ -22,13 +22,16 @@ const steps = [
 const StepCard = memo(({ step, index }: { step: typeof steps[number]; index: number }) => (
   <div
     className="relative p-8 bg-background border border-border rounded-2xl shadow-sm hover:shadow-md transition-shadow animate-fade-up dark:shadow-none"
-    style={{ animationDelay: `${index * 100}ms` }}
+    style={{ animationDelay: `${index * 150}ms` }}
   >
     <div className="flex items-center mb-4">
       <span className="text-4xl font-bold text-primary/20 dark:text-primary/10">
         {step.number}
       </span>
-      <div className="ml-auto bg-primary/10 p-2 rounded-full">
+      <div 
+        className="ml-auto bg-primary/10 p-2 rounded-full animate-fade-in"
+        style={{ animationDelay: `${(index * 150) + 300}ms` }}
+      >
         <Check className="w-5 h-5 text-primary" />
       </div>
     </div>
