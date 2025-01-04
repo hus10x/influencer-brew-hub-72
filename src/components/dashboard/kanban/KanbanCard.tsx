@@ -174,7 +174,6 @@ export const KanbanCard = ({
             isOpen={isCollabDialogOpen}
             onOpenChange={setIsCollabDialogOpen}
             campaignId={id}
-            businessId={businessId}
           />
         </div>
       )}
