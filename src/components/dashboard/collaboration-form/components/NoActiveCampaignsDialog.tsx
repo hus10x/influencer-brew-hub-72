@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -6,6 +5,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
 interface NoActiveCampaignsDialogProps {

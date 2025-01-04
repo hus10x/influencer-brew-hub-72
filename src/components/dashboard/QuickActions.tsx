@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Plus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -11,10 +13,61 @@ import {
 } from "@/components/ui/dialog";
 import { CampaignForm } from "./CampaignForm";
 import { CollaborationForm } from "./collaboration-form/CollaborationForm";
+import { NoActiveCampaignsDialog } from "./collaboration-form/components/NoActiveCampaignsDialog";
+import { toast } from "sonner";
 
 export const QuickActions = () => {
   const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
   const [isCollaborationDialogOpen, setIsCollaborationDialogOpen] = useState(false);
+  const [showNoActiveCampaignsDialog, setShowNoActiveCampaignsDialog] = useState(false);
+
+  const { data: activeCampaigns, isLoading } = useQuery({
+    queryKey: ["active-campaigns"],
+    queryFn: async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error("Not authenticated");
+
+      // First get the user's businesses
+      const { data: businesses } = await supabase
+        .from("businesses")
+        .select("id")
+        .eq("user_id", userData.user.id);
+
+      if (!businesses?.length) return [];
+
+      const businessIds = businesses.map(b => b.id);
+
+      // Then get active campaigns for those businesses only
+      const { data: campaigns, error } = await supabase
+        .from("campaigns")
+        .select("*")
+        .in("business_id", businessIds)
+        .eq("status", "active");
+
+      if (error) {
+        console.error("Error fetching campaigns:", error);
+        toast.error("Failed to fetch campaigns");
+        throw error;
+      }
+
+      return campaigns || [];
+    },
+  });
+
+  const handleNewCollaborationClick = () => {
+    if (!isLoading) {
+      if (!activeCampaigns?.length) {
+        setShowNoActiveCampaignsDialog(true);
+      } else {
+        setIsCollaborationDialogOpen(true);
+      }
+    }
+  };
+
+  const handleCreateCampaign = () => {
+    setShowNoActiveCampaignsDialog(false);
+    setIsCampaignDialogOpen(true);
+  };
 
   return (
     <div className="space-y-4 animate-fade-up">
@@ -43,6 +96,7 @@ export const QuickActions = () => {
             <Button
               variant="secondary"
               size="lg"
+              onClick={handleNewCollaborationClick}
             >
               <Users className="w-4 h-4" />
               New Collaboration
@@ -61,6 +115,13 @@ export const QuickActions = () => {
             />
           </DialogContent>
         </Dialog>
+
+        <NoActiveCampaignsDialog 
+          isOpen={showNoActiveCampaignsDialog}
+          onOpenChange={setShowNoActiveCampaignsDialog}
+          onCreateCampaign={handleCreateCampaign}
+          onCancel={() => setShowNoActiveCampaignsDialog(false)}
+        />
       </div>
     </div>
   );
