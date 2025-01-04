@@ -68,13 +68,6 @@ export const QuickActions = () => {
     }
   };
 
-  const handleAlertClose = (shouldOpenCampaign = false) => {
-    setShowNoCampaignsAlert(false);
-    if (shouldOpenCampaign) {
-      setIsCampaignDialogOpen(true);
-    }
-  };
-
   return (
     <div className="space-y-4 animate-fade-up">
       <h2 className="text-2xl font-semibold tracking-tight">Quick Actions</h2>
@@ -134,10 +127,13 @@ export const QuickActions = () => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => handleAlertClose(false)}>
+              <AlertDialogCancel>
                 Cancel
               </AlertDialogCancel>
-              <AlertDialogAction onClick={() => handleAlertClose(true)}>
+              <AlertDialogAction onClick={() => {
+                setShowNoCampaignsAlert(false);
+                setIsCampaignDialogOpen(true);
+              }}>
                 Create Campaign
               </AlertDialogAction>
             </AlertDialogFooter>
