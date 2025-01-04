@@ -11,6 +11,7 @@ export const Navbar = () => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -28,28 +29,29 @@ export const Navbar = () => {
   }, []);
 
   const handleLogout = async () => {
+    if (isLoggingOut) return;
+    
+    setIsLoggingOut(true);
     try {
-      // First clear the local state
+      // Clear local state first
       setIsLoggedIn(false);
-
-      // Get current session
-      const { data: { session } } = await supabase.auth.getSession();
       
-      if (session) {
-        // If we have a valid session, attempt to sign out
-        const { error } = await supabase.auth.signOut({ scope: 'local' });
-        if (error) throw error;
+      // Attempt to sign out
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error("Logout error:", error);
+        // Even if there's an error, we want to clear the local session
+        toast.error("There was an issue with the logout, but you've been logged out locally");
+      } else {
+        toast.success("Logged out successfully");
       }
-      
-      // Consider it a success since local state is cleared
-      toast.success("Logged out successfully");
-      
-    } catch (error: any) {
-      console.error("Error during logout process:", error);
-      // Even if server logout fails, we've cleared local state
-      toast.error("There was an issue with the server logout, but you've been logged out locally");
+    } catch (error) {
+      console.error("Error during logout:", error);
+      toast.error("There was an issue with the logout, but you've been logged out locally");
     } finally {
-      // Always navigate home, regardless of what happened
+      setIsLoggingOut(false);
+      // Always navigate home
       navigate("/");
     }
   };
@@ -86,10 +88,11 @@ export const Navbar = () => {
               <Button 
                 variant="outline" 
                 onClick={handleLogout}
+                disabled={isLoggingOut}
                 className="flex items-center gap-2"
               >
                 <LogOut className="h-4 w-4" />
-                Logout
+                {isLoggingOut ? "Logging out..." : "Logout"}
               </Button>
             )}
             <Button
