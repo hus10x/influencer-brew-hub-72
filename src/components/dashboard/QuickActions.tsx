@@ -127,7 +127,7 @@ export const QuickActions = () => {
               <AlertDialogTitle>No Active Campaigns</AlertDialogTitle>
               <AlertDialogDescription>
                 You need to create a campaign before you can create a collaboration. Would you like to create a campaign now?
-              </DialogDescription>
+              </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel onClick={() => handleAlertClose(false)}>
