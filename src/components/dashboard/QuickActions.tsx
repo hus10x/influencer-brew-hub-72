@@ -10,7 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { CampaignForm } from "./CampaignForm";
 import { CollaborationForm } from "./collaboration-form/CollaborationForm";
@@ -49,14 +48,6 @@ export const QuickActions = () => {
     },
   });
 
-  const handleNewCollaboration = () => {
-    if (!isLoading && (!activeCampaigns?.length)) {
-      setIsCampaignDialogOpen(true);
-    } else {
-      setIsCollaborationDialogOpen(true);
-    }
-  };
-
   return (
     <div className="space-y-4 animate-fade-up">
       <h2 className="text-2xl font-semibold tracking-tight">Quick Actions</h2>
@@ -75,25 +66,13 @@ export const QuickActions = () => {
                 Create a new campaign to manage your collaborations
               </DialogDescription>
             </DialogHeader>
-            <CampaignForm 
-              onSuccess={() => {
-                setIsCampaignDialogOpen(false);
-                // If this was opened from collaboration flow, open collaboration dialog
-                if (!activeCampaigns?.length) {
-                  setTimeout(() => setIsCollaborationDialogOpen(true), 100);
-                }
-              }} 
-            />
+            <CampaignForm onSuccess={() => setIsCampaignDialogOpen(false)} />
           </DialogContent>
         </Dialog>
 
         <Dialog open={isCollaborationDialogOpen} onOpenChange={setIsCollaborationDialogOpen}>
           <DialogTrigger asChild>
-            <Button
-              variant="secondary"
-              size="lg"
-              onClick={handleNewCollaboration}
-            >
+            <Button variant="secondary" size="lg">
               <Users className="w-4 h-4" />
               New Collaboration
             </Button>
