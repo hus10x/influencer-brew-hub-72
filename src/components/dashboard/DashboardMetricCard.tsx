@@ -10,11 +10,21 @@ interface DashboardMetricCardProps {
 
 export const DashboardMetricCard = ({ title, value, subtitle, icon }: DashboardMetricCardProps) => {
   // Extract numeric value and currency/suffix if present
-  const numericValue = parseInt(value.replace(/[^0-9]/g, ""));
+  const numericString = value.replace(/[^0-9.]/g, "");
+  const numericValue = parseFloat(numericString);
   const prefix = value.match(/^[^\d]*/)?.[0] || "";
   const suffix = value.match(/[^\d]*$/)?.[0] || "";
+  const hasDecimal = value.includes(".");
+  const decimalPlaces = hasDecimal ? numericString.split(".")[1]?.length || 0 : 0;
   
-  const animatedValue = useCountAnimation(numericValue);
+  const animatedValue = useCountAnimation(numericValue * (decimalPlaces ? Math.pow(10, decimalPlaces) : 1));
+  
+  const formattedValue = hasDecimal
+    ? (animatedValue / Math.pow(10, decimalPlaces)).toLocaleString(undefined, {
+        minimumFractionDigits: decimalPlaces,
+        maximumFractionDigits: decimalPlaces,
+      })
+    : animatedValue.toLocaleString();
   
   return (
     <Card className="bg-card text-card-foreground backdrop-blur-xl border-border/90 hover:shadow-lg transition-all duration-200 shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(0,0,0,0.2)] hover:bg-muted/9">
@@ -26,7 +36,7 @@ export const DashboardMetricCard = ({ title, value, subtitle, icon }: DashboardM
       </CardHeader>
       <CardContent>
         <p className="text-3xl font-bold text-primary animate-fade-in">
-          {prefix}{animatedValue}{suffix}
+          {prefix}{formattedValue}{suffix}
         </p>
         <p className="text-sm text-foreground/70 mt-1">{subtitle}</p>
       </CardContent>
