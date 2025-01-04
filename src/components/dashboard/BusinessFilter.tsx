@@ -17,6 +17,11 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
+interface Business {
+  id: string;
+  business_name: string;
+}
+
 interface BusinessFilterProps {
   onFilterChange: (selectedBusinessIds: string[]) => void;
 }
@@ -25,23 +30,28 @@ export const BusinessFilter = ({ onFilterChange }: BusinessFilterProps) => {
   const [open, setOpen] = useState(false);
   const [selectedBusinesses, setSelectedBusinesses] = useState<string[]>([]);
 
-  const { data: businesses, isLoading } = useQuery({
+  const { data: businesses = [], isLoading, error } = useQuery({
     queryKey: ["businesses"],
     queryFn: async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error("Not authenticated");
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData.user) return [];
 
-      const { data, error } = await supabase
-        .from("businesses")
-        .select("*")
-        .eq("user_id", userData.user.id);
+        const { data, error } = await supabase
+          .from("businesses")
+          .select("id, business_name")
+          .eq("user_id", userData.user.id);
 
-      if (error) {
-        console.error("Error fetching businesses:", error);
+        if (error) {
+          console.error("Error fetching businesses:", error);
+          return [];
+        }
+
+        return (data || []) as Business[];
+      } catch (err) {
+        console.error("Error in business query:", err);
         return [];
       }
-
-      return data || [];
     },
   });
 
@@ -60,7 +70,7 @@ export const BusinessFilter = ({ onFilterChange }: BusinessFilterProps) => {
   };
 
   // If there are no businesses and we're not loading, don't render anything
-  if (!isLoading && (!businesses || businesses.length === 0)) return null;
+  if (!isLoading && businesses.length === 0) return null;
 
   return (
     <div className="flex items-center gap-2">
@@ -87,7 +97,7 @@ export const BusinessFilter = ({ onFilterChange }: BusinessFilterProps) => {
             <CommandInput placeholder="Search businesses..." />
             <CommandEmpty>No businesses found.</CommandEmpty>
             <CommandGroup>
-              {(businesses || []).map((business) => (
+              {businesses.map((business) => (
                 <CommandItem
                   key={business.id}
                   onSelect={() => handleSelect(business.id)}
