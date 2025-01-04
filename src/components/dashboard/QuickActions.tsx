@@ -1,25 +1,17 @@
 import { useState } from "react";
-import { Plus, Users } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Plus, AlertCircle } from "lucide-react";
 import { CampaignForm } from "./CampaignForm";
 import { CollaborationForm } from "./collaboration-form/CollaborationForm";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,27 +19,16 @@ import { toast } from "sonner";
 
 const FormSkeleton = () => (
   <div className="space-y-6">
-    <div className="space-y-4">
-      <Skeleton className="h-8 w-3/4" />
-      <Skeleton className="h-20 w-full" />
-    </div>
-    <div className="space-y-4">
-      <Skeleton className="h-8 w-1/2" />
-      <Skeleton className="h-12 w-full" />
-    </div>
-    <div className="space-y-4">
-      <Skeleton className="h-8 w-2/3" />
-      <div className="grid grid-cols-2 gap-4">
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-12 w-full" />
-      </div>
-    </div>
+    <Skeleton className="h-4 w-3/4" />
+    <Skeleton className="h-10 w-full" />
+    <Skeleton className="h-20 w-full" />
+    <Skeleton className="h-10 w-1/2" />
   </div>
 );
 
 export const QuickActions = () => {
-  const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
   const [isCollaborationDialogOpen, setIsCollaborationDialogOpen] = useState(false);
+  const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
   const [showNoCampaignsAlert, setShowNoCampaignsAlert] = useState(false);
   const queryClient = useQueryClient();
 
@@ -56,7 +37,10 @@ export const QuickActions = () => {
     queryFn: async () => {
       try {
         const { data: userData } = await supabase.auth.getUser();
-        if (!userData.user) throw new Error("Not authenticated");
+        if (!userData.user) {
+          console.log("No authenticated user found");
+          throw new Error("Not authenticated");
+        }
 
         const { data: businesses, error: businessError } = await supabase
           .from("businesses")
@@ -69,7 +53,7 @@ export const QuickActions = () => {
         }
 
         if (!businesses?.length) {
-          console.log("No businesses found");
+          console.log("No businesses found for user:", userData.user.id);
           return [];
         }
 
@@ -91,8 +75,8 @@ export const QuickActions = () => {
         return campaigns || [];
       } catch (error) {
         console.error("Error in query:", error);
-        toast.error("Failed to fetch campaigns. Please try again.");
-        return [];
+        toast.error("Failed to fetch campaigns");
+        throw error;
       }
     },
     staleTime: 1000 * 60,
@@ -100,12 +84,16 @@ export const QuickActions = () => {
   });
 
   const handleNewCollaborationClick = () => {
-    console.log("Active campaigns:", activeCampaigns);
-    if (!activeCampaigns || activeCampaigns.length === 0) {
+    if (!activeCampaigns?.length) {
       setShowNoCampaignsAlert(true);
-    } else {
-      setIsCollaborationDialogOpen(true);
+      return;
     }
+    setIsCollaborationDialogOpen(true);
+  };
+
+  const handleCollaborationSuccess = () => {
+    setIsCollaborationDialogOpen(false);
+    queryClient.invalidateQueries({ queryKey: ["collaborations"] });
   };
 
   const handleCampaignSuccess = () => {
@@ -114,23 +102,34 @@ export const QuickActions = () => {
   };
 
   if (error) {
+    console.error("Query error:", error);
     toast.error("Failed to load campaigns. Please try again.");
   }
 
   return (
     <div className="space-y-4 animate-fade-up">
-      <h2 className="text-2xl font-semibold tracking-tight">Quick Actions</h2>
-      <div className="flex items-center flex-wrap gap-4">
+      {showNoCampaignsAlert && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            You need to create an active campaign before you can create a collaboration.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <div className="flex flex-col sm:flex-row gap-4">
         <Dialog open={isCampaignDialogOpen} onOpenChange={setIsCampaignDialogOpen}>
-          <Button size="lg" onClick={() => setIsCampaignDialogOpen(true)}>
-            <Plus className="w-4 h-4" />
-            New Campaign
-          </Button>
+          <DialogTrigger asChild>
+            <Button className="w-full sm:w-auto">
+              <Plus className="mr-2 h-4 w-4" />
+              New Campaign
+            </Button>
+          </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Campaign</DialogTitle>
               <DialogDescription>
-                Create a new campaign to manage your collaborations
+                Create a new campaign to start collaborating with influencers.
               </DialogDescription>
             </DialogHeader>
             {isLoading ? (
@@ -142,56 +141,34 @@ export const QuickActions = () => {
         </Dialog>
 
         <Dialog open={isCollaborationDialogOpen} onOpenChange={setIsCollaborationDialogOpen}>
-          <Button 
-            variant="secondary" 
-            size="lg"
-            onClick={handleNewCollaborationClick}
-          >
-            <Users className="w-4 h-4" />
-            New Collaboration
-          </Button>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-full sm:w-auto"
+              onClick={handleNewCollaborationClick}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              New Collaboration
+            </Button>
+          </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Collaboration</DialogTitle>
               <DialogDescription>
-                Create a new collaboration opportunity for influencers
+                Create a new collaboration opportunity for your campaign.
               </DialogDescription>
             </DialogHeader>
             {isLoading ? (
               <FormSkeleton />
             ) : (
-              <CollaborationForm 
-                onSuccess={() => setIsCollaborationDialogOpen(false)} 
+              <CollaborationForm
+                onSuccess={handleCollaborationSuccess}
                 isStandalone={true}
-                campaigns={activeCampaigns}
+                campaigns={activeCampaigns || []}
               />
             )}
           </DialogContent>
         </Dialog>
-
-        <AlertDialog open={showNoCampaignsAlert} onOpenChange={setShowNoCampaignsAlert}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>No Active Campaigns</AlertDialogTitle>
-              <AlertDialogDescription>
-                You need to create a campaign before you can create a collaboration. Would you like to create a campaign now?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setShowNoCampaignsAlert(false)}>
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => {
-                  setShowNoCampaignsAlert(false);
-                  setIsCampaignDialogOpen(true);
-                }}
-              >
-                Create Campaign
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
     </div>
   );
