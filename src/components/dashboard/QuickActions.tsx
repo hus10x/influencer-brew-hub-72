@@ -49,11 +49,7 @@ export const QuickActions = () => {
   });
 
   const handleNewCollaborationClick = () => {
-    if (!isLoading && (!activeCampaigns?.length)) {
-      setIsCampaignDialogOpen(true);
-    } else {
-      setIsCollaborationDialogOpen(true);
-    }
+    setIsCollaborationDialogOpen(true);
   };
 
   return (
