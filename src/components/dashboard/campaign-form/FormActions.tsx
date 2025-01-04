@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { UseFormReturn } from "react-hook-form";
 import type { CampaignFormData } from "./types";
+import { Loader2 } from "lucide-react";
 
 interface FormActionsProps {
   form: UseFormReturn<CampaignFormData>;
@@ -21,24 +22,40 @@ export const FormActions = ({
   campaign,
   onSubmit,
 }: FormActionsProps) => {
+  const isLoading = mutation.isPending || isCreatingCollaboration;
+
   return (
     <div className="flex gap-4">
       <Button
         type="submit"
         className="flex-1"
-        disabled={mutation.isPending || isCreatingCollaboration}
+        disabled={isLoading}
       >
-        {mutation.isPending || isCreatingCollaboration ? "Creating..." : (campaign ? "Update Campaign" : "Create Campaign & Collaboration")}
+        {isLoading ? (
+          <span className="flex items-center">
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            {isCreatingCollaboration ? "Creating Campaign & Collaboration..." : "Creating Campaign..."}
+          </span>
+        ) : (
+          campaign ? "Update Campaign" : "Create Campaign & Collaboration"
+        )}
       </Button>
       {!campaign && (
         <Button
           type="button"
           variant="outline"
           className="flex-1"
-          disabled={mutation.isPending || isCreatingCollaboration}
+          disabled={isLoading}
           onClick={() => form.handleSubmit((values) => onSubmit(values, 'draft'))()}
         >
-          Save as Draft
+          {isLoading ? (
+            <span className="flex items-center">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </span>
+          ) : (
+            "Save as Draft"
+          )}
         </Button>
       )}
     </div>

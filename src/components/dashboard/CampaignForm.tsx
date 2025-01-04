@@ -13,6 +13,7 @@ import type { CampaignFormData } from "./campaign-form/types";
 import { createCampaignWithCollaboration } from "@/services/campaign";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -43,7 +44,7 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
   const queryClient = useQueryClient();
 
   // First get the current user
-  const { data: userData } = useQuery({
+  const { data: userData, isLoading: isLoadingUser } = useQuery({
     queryKey: ["user"],
     queryFn: async () => {
       const { data } = await supabase.auth.getUser();
@@ -72,7 +73,7 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
       
       return data;
     },
-    enabled: !!userId, // Only run query when we have a userId
+    enabled: !!userId,
   });
 
   const form = useForm<CampaignFormData>({
@@ -118,7 +119,7 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
     },
     onError: (error) => {
       console.error("Error:", error);
-      toast.error("Failed to create campaign");
+      toast.error("Failed to create campaign. Please try again.");
       setCollaborationData(null);
     },
   });
@@ -145,12 +146,17 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
     mutation.mutate(values);
   };
 
-  if (isLoadingBusinesses) {
-    return <div>Loading businesses...</div>;
+  if (isLoadingUser || isLoadingBusinesses) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-muted-foreground">Loading...</span>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-up">
       <Form {...form}>
         <form onSubmit={form.handleSubmit((values) => onSubmit(values))} className="space-y-6">
           <BusinessSelect form={form} businesses={businesses} />
