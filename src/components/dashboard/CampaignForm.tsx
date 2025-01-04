@@ -161,7 +161,6 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
               <h3 className="text-lg font-medium mb-4">Add Collaboration Details</h3>
               <CollaborationForm 
                 campaignId={mutation.data?.id} 
-                businessId={form.getValues().business_id}
                 isStandalone={false}
               />
             </div>

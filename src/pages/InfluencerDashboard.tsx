@@ -43,10 +43,13 @@ const InfluencerDashboard = () => {
         .from('collaborations')
         .select(`
           *,
-          business:businesses(
+          campaign:campaigns(
             id,
-            business_name,
-            logo_url
+            business:businesses(
+              id,
+              business_name,
+              logo_url
+            )
           )
         `)
         .eq('status', 'open')
@@ -145,7 +148,7 @@ const InfluencerDashboard = () => {
                     <CardHeader>
                       <CardTitle className="text-xl">{collab.title}</CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        {collab.business?.business_name}
+                        {collab.campaign?.business?.business_name}
                       </p>
                     </CardHeader>
                     <CardContent>

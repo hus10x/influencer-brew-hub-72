@@ -11,14 +11,12 @@ interface CollaborationDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   campaignId: string;
-  businessId: string;
 }
 
 export const CollaborationDialog = ({
   isOpen,
   onOpenChange,
   campaignId,
-  businessId,
 }: CollaborationDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -31,7 +29,6 @@ export const CollaborationDialog = ({
         </DialogHeader>
         <CollaborationForm
           campaignId={campaignId}
-          businessId={businessId}
           onSuccess={() => onOpenChange(false)}
           isStandalone={false}
         />
