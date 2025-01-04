@@ -9,7 +9,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -81,7 +80,8 @@ export const QuickActions = () => {
   });
 
   const handleNewCollaborationClick = () => {
-    if (!activeCampaigns?.length) {
+    console.log("Active campaigns:", activeCampaigns);
+    if (!activeCampaigns || activeCampaigns.length === 0) {
       setShowNoCampaignsAlert(true);
     } else {
       setIsCollaborationDialogOpen(true);
@@ -93,12 +93,10 @@ export const QuickActions = () => {
       <h2 className="text-2xl font-semibold tracking-tight">Quick Actions</h2>
       <div className="flex items-center flex-wrap gap-4">
         <Dialog open={isCampaignDialogOpen} onOpenChange={setIsCampaignDialogOpen}>
-          <DialogTrigger asChild>
-            <Button size="lg">
-              <Plus className="w-4 h-4" />
-              New Campaign
-            </Button>
-          </DialogTrigger>
+          <Button size="lg" onClick={() => setIsCampaignDialogOpen(true)}>
+            <Plus className="w-4 h-4" />
+            New Campaign
+          </Button>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Campaign</DialogTitle>
