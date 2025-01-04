@@ -4,19 +4,32 @@ import { CollaborationFormData } from "@/components/dashboard/collaboration-form
 
 export const createCampaignWithCollaboration = async (
   campaignData: CampaignFormData,
-  collaborationData: CollaborationFormData,
+  collaborationData?: CollaborationFormData,
   status: 'draft' | 'active' = 'active'
 ) => {
-  const { data, error } = await supabase.functions.invoke('create-campaign-with-collaboration', {
-    body: {
-      campaignData: {
-        ...campaignData,
-        status
-      },
-      collaborationData
-    }
-  });
+  console.log('Creating campaign with status:', status);
+  console.log('Collaboration data:', collaborationData);
 
-  if (error) throw error;
-  return data;
+  try {
+    const { data, error } = await supabase.functions.invoke('create-campaign-with-collaboration', {
+      body: {
+        campaignData: {
+          ...campaignData,
+          status
+        },
+        collaborationData: collaborationData || null
+      }
+    });
+
+    if (error) {
+      console.error('Error in createCampaignWithCollaboration:', error);
+      throw error;
+    }
+
+    console.log('Campaign creation successful:', data);
+    return data;
+  } catch (error) {
+    console.error('Error in createCampaignWithCollaboration:', error);
+    throw error;
+  }
 };
