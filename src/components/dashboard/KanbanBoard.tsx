@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Campaign, CampaignStatus } from "./kanban/types";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import { toast } from "sonner";
+import { useUpdateCampaignStatus } from "@/hooks/use-update-campaign-status";
 
 const CAMPAIGN_STATUSES: Record<CampaignStatus, string> = {
   draft: "Draft",
@@ -16,6 +17,7 @@ export const KanbanBoard = () => {
   const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState(false);
   const windowWidth = window.innerWidth;
+  const updateCampaignStatus = useUpdateCampaignStatus();
 
   const { data: campaigns = [], isLoading } = useQuery({
     queryKey: ["campaigns"],
@@ -69,18 +71,15 @@ export const KanbanBoard = () => {
       return;
     }
 
+    const newStatus = destination.droppableId as CampaignStatus;
+    
     try {
-      const { error } = await supabase
-        .from('campaigns')
-        .update({ status: destination.droppableId })
-        .eq('id', draggableId);
-
-      if (error) throw error;
-
-      toast.success('Campaign status updated successfully');
+      await updateCampaignStatus.mutateAsync({
+        campaignId: draggableId,
+        status: newStatus
+      });
     } catch (error) {
       console.error('Error updating campaign status:', error);
-      toast.error('Failed to update campaign status');
     }
   };
 

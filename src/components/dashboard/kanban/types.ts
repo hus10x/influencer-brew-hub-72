@@ -4,8 +4,8 @@ export interface Campaign {
   description: string | null;
   start_date: string;
   end_date: string;
-  status: "draft" | "active" | "completed";
+  status: CampaignStatus;
   business_id: string;
 }
 
-export type CampaignStatus = Campaign['status'];
+export type CampaignStatus = "draft" | "active" | "completed";
