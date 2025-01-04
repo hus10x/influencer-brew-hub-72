@@ -46,7 +46,7 @@ const HowItWorks = () => {
   const { ref, isInView } = useScrollAnimation();
 
   return (
-    <section className="py-24 bg-[#eedeff] dark:bg-background px-6">
+    <section className="py-24 bg-purple-100/80 dark:bg-background px-6">
       <div className="container mx-auto" ref={ref}>
         <div className={`text-center max-w-3xl mx-auto mb-16 ${isInView ? 'animate-fade-up' : 'opacity-0'}`}>
           <span className="px-3 py-1 text-sm font-medium bg-primary/10 text-primary rounded-full">
