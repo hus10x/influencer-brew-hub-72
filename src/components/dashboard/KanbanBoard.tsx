@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { KanbanColumn } from "./kanban/KanbanColumn";
 import { useState } from "react";
 import { Campaign, CampaignStatus } from "./kanban/types";
+import { DragDropContext, DropResult } from "@hello-pangea/dnd";
+import { toast } from "sonner";
 
 const CAMPAIGN_STATUSES: Record<CampaignStatus, string> = {
   draft: "Draft",
@@ -40,7 +42,6 @@ export const KanbanBoard = () => {
         throw error;
       }
 
-      // Ensure the status is one of the valid types
       return (data || []).map(campaign => ({
         ...campaign,
         status: campaign.status as CampaignStatus
@@ -56,19 +57,48 @@ export const KanbanBoard = () => {
     );
   };
 
+  const onDragEnd = async (result: DropResult) => {
+    const { destination, source, draggableId } = result;
+
+    if (!destination) return;
+
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('campaigns')
+        .update({ status: destination.droppableId })
+        .eq('id', draggableId);
+
+      if (error) throw error;
+
+      toast.success('Campaign status updated successfully');
+    } catch (error) {
+      console.error('Error updating campaign status:', error);
+      toast.error('Failed to update campaign status');
+    }
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-13rem)]">
-      {Object.entries(CAMPAIGN_STATUSES).map(([status, label]) => (
-        <KanbanColumn
-          key={status}
-          status={status as CampaignStatus}
-          campaigns={campaigns.filter((campaign) => campaign.status === status)}
-          selectedCampaigns={selectedCampaigns}
-          onSelect={handleCampaignSelect}
-          selectionMode={selectionMode}
-          windowWidth={windowWidth}
-        />
-      ))}
-    </div>
+    <DragDropContext onDragEnd={onDragEnd}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-13rem)]">
+        {Object.entries(CAMPAIGN_STATUSES).map(([status, label]) => (
+          <KanbanColumn
+            key={status}
+            status={status as CampaignStatus}
+            campaigns={campaigns.filter((campaign) => campaign.status === status)}
+            selectedCampaigns={selectedCampaigns}
+            onSelect={handleCampaignSelect}
+            selectionMode={selectionMode}
+            windowWidth={windowWidth}
+          />
+        ))}
+      </div>
+    </DragDropContext>
   );
 };
