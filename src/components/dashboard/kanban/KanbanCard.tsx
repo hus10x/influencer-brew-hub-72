@@ -151,22 +151,6 @@ export const KanbanCard = ({
             </div>
           </div>
 
-          <Dialog open={isCollabDialogOpen} onOpenChange={setIsCollabDialogOpen}>
-            <DialogContent className="max-w-[600px] max-h-[90vh] overflow-y-auto bg-card">
-              <DialogHeader>
-                <DialogTitle>Create New Collaboration</DialogTitle>
-                <DialogDescription>
-                  Add a new collaboration opportunity for this campaign
-                </DialogDescription>
-              </DialogHeader>
-              <CollaborationForm
-                campaignId={id}
-                onSuccess={() => setIsCollabDialogOpen(false)}
-                isStandalone={false}
-              />
-            </DialogContent>
-          </Dialog>
-
           <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
             <DialogContent className="max-w-[600px] max-h-[90vh] overflow-y-auto bg-card">
               <DialogHeader>
@@ -183,7 +167,24 @@ export const KanbanCard = ({
                   description,
                   start_date: startDate.toISOString(),
                   end_date: endDate.toISOString(),
+                  business_id: businessId,
                 }}
+              />
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={isCollabDialogOpen} onOpenChange={setIsCollabDialogOpen}>
+            <DialogContent className="max-w-[600px] max-h-[90vh] overflow-y-auto bg-card">
+              <DialogHeader>
+                <DialogTitle>Create New Collaboration</DialogTitle>
+                <DialogDescription>
+                  Add a new collaboration opportunity for this campaign
+                </DialogDescription>
+              </DialogHeader>
+              <CollaborationForm
+                campaignId={id}
+                onSuccess={() => setIsCollabDialogOpen(false)}
+                isStandalone={false}
               />
             </DialogContent>
           </Dialog>
