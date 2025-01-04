@@ -13,10 +13,10 @@ const InfluencerDashboard = () => {
         .from('collaborations')
         .select(`
           *,
-          campaign:campaigns(
+          campaign:campaigns!inner(
             id,
             title,
-            business:businesses(
+            business:businesses!inner(
               id,
               business_name,
               logo_url
