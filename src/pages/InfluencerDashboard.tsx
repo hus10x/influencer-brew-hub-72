@@ -36,7 +36,7 @@ const InfluencerDashboard = () => {
     },
   });
 
-  const { data: collaborations, isLoading: isCollaborationsLoading, error: collaborationsError } = useQuery({
+  const { data: collaborations = [], isLoading: isCollaborationsLoading, error: collaborationsError } = useQuery({
     queryKey: ['open_collaborations'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -60,7 +60,7 @@ const InfluencerDashboard = () => {
       console.log('Fetched collaborations:', data);
       return data;
     },
-    refetchOnWindowFocus: true, // Ensure we always have fresh data
+    refetchOnWindowFocus: true,
   });
 
   if (profileError || collaborationsError) {
@@ -145,7 +145,7 @@ const InfluencerDashboard = () => {
                     <CardHeader>
                       <CardTitle className="text-xl">{collab.title}</CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        {collab.business?.business_name || 'Unknown Business'}
+                        {collab.business?.business_name}
                       </p>
                     </CardHeader>
                     <CardContent>
