@@ -99,7 +99,7 @@ const InfluencerDashboard = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
-        <main className="flex-1 container mx-auto px-4 pt-20">
+        <main className="flex-1 container mx-auto px-4 pt-20 pb-20">
           <div className="flex items-center justify-center min-h-[calc(100vh-12rem)]">
             <p>Loading...</p>
           </div>
@@ -113,7 +113,7 @@ const InfluencerDashboard = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
-        <main className="flex-1 container mx-auto px-4 pt-20">
+        <main className="flex-1 container mx-auto px-4 pt-20 pb-20">
           <div className="flex items-center justify-center min-h-[calc(100vh-12rem)]">
             <p>Something went wrong. Please try again later.</p>
           </div>
@@ -128,7 +128,7 @@ const InfluencerDashboard = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      <main className="flex-1 container mx-auto px-4 pt-20">
+      <main className="flex-1 container mx-auto px-4 pt-20 pb-20">
         {!isInstagramConnected ? (
           <div className="flex items-center justify-center min-h-[calc(100vh-12rem)]">
             <div className="relative isolate overflow-hidden bg-muted/50 dark:bg-background/95 py-16 sm:py-24 rounded-3xl w-full">
