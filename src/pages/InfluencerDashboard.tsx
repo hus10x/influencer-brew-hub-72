@@ -31,7 +31,13 @@ const InfluencerDashboard = () => {
         throw error;
       }
 
-      return data || [];
+      // Filter out collaborations where campaign or business is null
+      const validCollaborations = data?.filter(
+        collab => collab.campaign && collab.campaign.business
+      ) || [];
+
+      console.log('Filtered collaborations:', validCollaborations);
+      return validCollaborations;
     },
   });
 
