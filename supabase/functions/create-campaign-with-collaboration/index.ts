@@ -27,7 +27,12 @@ serve(async (req) => {
       throw new Error('Not authenticated')
     }
 
-    console.log('Starting transaction for campaign creation with status:', campaignData.status)
+    console.log('Starting transaction for campaign creation')
+    console.log('Campaign data:', campaignData)
+    console.log('Collaboration data:', collaborationData)
+
+    // Set campaign status based on whether there's collaboration data
+    const status = collaborationData ? 'active' : (campaignData.status || 'draft')
 
     // Start a transaction
     const { data: campaign, error: campaignError } = await supabaseClient
@@ -38,7 +43,7 @@ serve(async (req) => {
         business_id: campaignData.business_id,
         start_date: campaignData.start_date,
         end_date: campaignData.end_date,
-        status: campaignData.status || 'active',
+        status: status,
       })
       .select()
       .single()
@@ -71,7 +76,11 @@ serve(async (req) => {
 
       if (collaborationError) {
         console.error('Collaboration creation error:', collaborationError)
-        // If collaboration fails, we should ideally rollback but we'll handle this in a future update
+        // If collaboration fails, we should roll back the campaign
+        await supabaseClient
+          .from('campaigns')
+          .delete()
+          .eq('id', campaign.id)
         throw collaborationError
       }
 

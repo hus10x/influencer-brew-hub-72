@@ -12,6 +12,8 @@ import { BasicDetailsSection } from "./BasicDetailsSection";
 import { RequirementsSection } from "./RequirementsSection";
 import { ImageUploadSection } from "./ImageUploadSection";
 import { CompensationSection } from "./CompensationSection";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogAction } from "@/components/ui/alert-dialog";
+import { Plus } from "lucide-react";
 
 interface CollaborationFormProps {
   campaignId?: string;
@@ -32,6 +34,7 @@ export const CollaborationForm = forwardRef(({
     initialData?.requirements || [""]
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [showNoCampaignsDialog, setShowNoCampaignsDialog] = useState(false);
   const queryClient = useQueryClient();
 
   const form = useForm<CollaborationFormData>({
@@ -47,20 +50,29 @@ export const CollaborationForm = forwardRef(({
     },
   });
 
-  const { data: campaigns } = useQuery({
-    queryKey: ["campaigns"],
+  const { data: userData } = useQuery({
+    queryKey: ["user"],
     queryFn: async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error("Not authenticated");
+      const { data } = await supabase.auth.getUser();
+      return data;
+    },
+  });
 
-      const { data: userBusinesses } = await supabase
+  const userId = userData?.user?.id;
+
+  const { data: campaigns, isLoading: isLoadingCampaigns } = useQuery({
+    queryKey: ["campaigns", userId],
+    queryFn: async () => {
+      if (!userId) throw new Error("Not authenticated");
+
+      const { data: businesses } = await supabase
         .from("businesses")
         .select("id")
-        .eq("user_id", userData.user.id);
+        .eq("user_id", userId);
 
-      if (!userBusinesses || userBusinesses.length === 0) return [];
+      if (!businesses?.length) return [];
 
-      const businessIds = userBusinesses.map((b) => b.id);
+      const businessIds = businesses.map(b => b.id);
 
       const { data, error } = await supabase
         .from("campaigns")
@@ -71,26 +83,8 @@ export const CollaborationForm = forwardRef(({
       if (error) throw error;
       return data;
     },
-    enabled: isStandalone && !campaignId,
+    enabled: isStandalone && !!userId,
   });
-
-  const uploadImage = async (file: File): Promise<string> => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('business-logos')
-      .upload(filePath, file);
-
-    if (uploadError) throw uploadError;
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('business-logos')
-      .getPublicUrl(filePath);
-
-    return publicUrl;
-  };
 
   useImperativeHandle(ref, () => ({
     submitForm: async () => {
@@ -114,7 +108,22 @@ export const CollaborationForm = forwardRef(({
 
       try {
         if (data.image && data.image.length > 0) {
-          imageUrl = await uploadImage(data.image[0]);
+          const file = data.image[0];
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Math.random()}.${fileExt}`;
+          const filePath = `${fileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('business-logos')
+            .upload(filePath, file);
+
+          if (uploadError) throw uploadError;
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('business-logos')
+            .getPublicUrl(filePath);
+
+          imageUrl = publicUrl;
         }
 
         const collaborationData = {
@@ -155,43 +164,101 @@ export const CollaborationForm = forwardRef(({
       onSuccess?.();
     },
     onError: (error) => {
-      console.error("Error with collaboration:", error);
-      toast.error(initialData ? "Failed to update collaboration" : "Failed to create collaboration");
+      console.error("Error:", error);
+      toast.error("Failed to save collaboration. Please try again.");
     },
     onSettled: () => {
       setIsLoading(false);
     },
   });
 
+  // Check if there are any active campaigns
+  const hasActiveCampaigns = campaigns && campaigns.length > 0;
+
+  // Show dialog if there are no campaigns and form is standalone
+  React.useEffect(() => {
+    if (isStandalone && !isLoadingCampaigns && !hasActiveCampaigns) {
+      setShowNoCampaignsDialog(true);
+    }
+  }, [isStandalone, isLoadingCampaigns, hasActiveCampaigns]);
+
   const onSubmit = (data: CollaborationFormData) => {
+    if (isStandalone && !data.campaign_id) {
+      toast.error("Please select a campaign");
+      return;
+    }
     mutation.mutate(data);
   };
 
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {isStandalone && !campaignId && campaigns && campaigns.length > 0 && (
-          <CampaignSelector form={form} campaigns={campaigns} />
-        )}
-        <BasicDetailsSection form={form} />
-        <RequirementsSection
-          form={form}
-          requirements={requirements}
-          setRequirements={setRequirements}
-        />
-        <CompensationSection form={form} />
-        <ImageUploadSection form={form} />
+  if (isLoadingCampaigns) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-muted-foreground">Loading...</span>
+      </div>
+    );
+  }
 
-        {isStandalone && (
-          <Button type="submit" disabled={isLoading} className="w-full">
-            {isLoading 
-              ? (initialData ? "Updating..." : "Creating...") 
-              : (initialData ? "Update Collaboration" : "Create Collaboration")
-            }
-          </Button>
-        )}
-      </form>
-    </Form>
+  return (
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {isStandalone && hasActiveCampaigns && (
+            <CampaignSelector form={form} campaigns={campaigns} />
+          )}
+          <BasicDetailsSection form={form} />
+          <RequirementsSection
+            form={form}
+            requirements={requirements}
+            setRequirements={setRequirements}
+          />
+          <CompensationSection form={form} />
+          <ImageUploadSection form={form} />
+
+          {isStandalone && (
+            <Button type="submit" disabled={isLoading} className="w-full">
+              {isLoading 
+                ? (initialData ? "Updating..." : "Creating...") 
+                : (initialData ? "Update Collaboration" : "Create Collaboration")
+              }
+            </Button>
+          )}
+        </form>
+      </Form>
+
+      <AlertDialog open={showNoCampaignsDialog} onOpenChange={setShowNoCampaignsDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>No Active Campaigns</AlertDialogTitle>
+            <AlertDialogDescription>
+              You need to create an active campaign before you can create a collaboration.
+              Would you like to create a campaign now?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowNoCampaignsDialog(false);
+                onSuccess?.();
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                setShowNoCampaignsDialog(false);
+                // Navigate to campaign creation
+                window.location.href = "/client/campaigns";
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create Campaign
+            </Button>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 });
 
