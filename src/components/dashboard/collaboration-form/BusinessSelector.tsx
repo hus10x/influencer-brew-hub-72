@@ -19,9 +19,15 @@ export const BusinessSelector = ({ form, isStandalone }: BusinessSelectorProps) 
 
       const { data, error } = await supabase
         .from("businesses")
-        .select("*");
+        .select("*")
+        .eq("user_id", userData.user.id); // Only fetch businesses owned by the user
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching businesses:", error);
+        throw error;
+      }
+      
+      console.log("Fetched businesses:", data);
       return data;
     },
     enabled: isStandalone,
@@ -37,7 +43,11 @@ export const BusinessSelector = ({ form, isStandalone }: BusinessSelectorProps) 
         <FormItem>
           <FormLabel>Business</FormLabel>
           <FormControl>
-            <Select onValueChange={field.onChange} value={field.value}>
+            <Select 
+              onValueChange={field.onChange} 
+              value={field.value || ""}
+              required
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select business" />
               </SelectTrigger>

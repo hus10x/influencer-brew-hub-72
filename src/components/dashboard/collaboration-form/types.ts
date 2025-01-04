@@ -8,7 +8,7 @@ export const collaborationFormSchema = z.object({
   deadline: z.string().min(1, "Deadline is required"),
   max_spots: z.number().min(1, "Number of spots must be at least 1"),
   campaign_id: z.string().optional(),
-  business_id: z.string().optional(),
+  business_id: z.string().min(1, "Business is required"),
   image: z.instanceof(FileList).optional(),
 });
 
