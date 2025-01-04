@@ -1,42 +1,42 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Campaign } from "@/components/dashboard/kanban/types";
 
-export const useDeleteCampaigns = (
-  onSuccess?: () => void
-) => {
+export const useDeleteCampaigns = (onSuccess?: () => void) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (campaignIds: string[]) => {
-      const { error } = await supabase
+      // First, delete all collaborations associated with these campaigns
+      const { error: collaborationsError } = await supabase
+        .from("collaborations")
+        .delete()
+        .in("campaign_id", campaignIds);
+
+      if (collaborationsError) {
+        console.error("Error deleting collaborations:", collaborationsError);
+        throw collaborationsError;
+      }
+
+      // Then delete the campaigns
+      const { error: campaignsError } = await supabase
         .from("campaigns")
         .delete()
         .in("id", campaignIds);
-      if (error) throw error;
-      return campaignIds;
-    },
-    onMutate: async (campaignIds) => {
-      await queryClient.cancelQueries({ queryKey: ["campaigns"] });
-      const previousCampaigns = queryClient.getQueryData<Campaign[]>(["campaigns"]);
-      
-      queryClient.setQueryData<Campaign[]>(["campaigns"], (old) => 
-        old?.filter(campaign => !campaignIds.includes(campaign.id)) ?? []
-      );
-      
-      return { previousCampaigns };
+
+      if (campaignsError) {
+        console.error("Error deleting campaigns:", campaignsError);
+        throw campaignsError;
+      }
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
       toast.success("Campaigns deleted successfully");
       onSuccess?.();
     },
-    onError: (error, _, context) => {
-      if (context?.previousCampaigns) {
-        queryClient.setQueryData(["campaigns"], context.previousCampaigns);
-      }
+    onError: (error) => {
       console.error("Error deleting campaigns:", error);
-      toast.error("Failed to delete campaigns");
-    }
+      toast.error("Failed to delete campaigns. Please try again.");
+    },
   });
 };
