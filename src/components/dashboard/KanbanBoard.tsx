@@ -19,12 +19,46 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Trash2, GripVertical } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const CAMPAIGN_STATUSES: Record<CampaignStatus, string> = {
   draft: "Draft",
   active: "Active",
   completed: "Completed",
 };
+
+const KanbanSkeleton = () => (
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-13rem)]">
+    {Object.entries(CAMPAIGN_STATUSES).map(([status]) => (
+      <div 
+        key={status}
+        className="flex flex-col h-full rounded-lg border border-primary/20 bg-primary/[0.03] dark:bg-primary/5"
+      >
+        <div className="flex items-center justify-between p-4 border-b border-primary/20">
+          <Skeleton className="h-6 w-24" />
+          <Skeleton className="h-4 w-12" />
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="p-4 bg-card border border-primary/10 rounded-lg space-y-4">
+              <div className="flex items-start gap-4">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 export const KanbanBoard = () => {
   const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
@@ -115,7 +149,17 @@ export const KanbanBoard = () => {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <>
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex-1" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-9 w-32" />
+          </div>
+        </div>
+        <KanbanSkeleton />
+      </>
+    );
   }
 
   return (
