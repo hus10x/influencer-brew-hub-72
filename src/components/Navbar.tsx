@@ -29,37 +29,37 @@ export const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      // First get the current session
+      // First clear the local session state
+      setIsLoggedIn(false);
+      
+      // Attempt to get current session
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        // If no session exists, just redirect to home
-        setIsLoggedIn(false);
+        // If no session exists, just clean up and redirect
         navigate("/");
         return;
       }
 
-      // Attempt to sign out
-      const { error } = await supabase.auth.signOut();
+      // Attempt server-side logout
+      const { error } = await supabase.auth.signOut({
+        scope: 'local' // Only clear the current tab's session
+      });
       
       if (error) {
         console.error("Error during logout:", error);
-        // If we get a session_not_found error, we can still proceed with local cleanup
-        if (error.message.includes("session_not_found")) {
-          setIsLoggedIn(false);
-          navigate("/");
-          return;
-        }
-        throw error;
+        // Even if there's an error, we've already cleared local state
+        toast.error("There was an issue with the server logout, but you've been logged out locally");
+      } else {
+        toast.success("Logged out successfully");
       }
 
-      toast.success("Logged out successfully");
+      // Always redirect regardless of server response
       navigate("/");
     } catch (error) {
-      console.error("Error logging out:", error);
-      // Even if there's an error, we should clean up the local state
-      setIsLoggedIn(false);
-      toast.error("There was an issue logging out, but you've been logged out locally");
+      console.error("Error during logout process:", error);
+      // We've already cleared local state, so just inform the user
+      toast.error("There was an issue with the logout process, but you've been logged out locally");
       navigate("/");
     }
   };
