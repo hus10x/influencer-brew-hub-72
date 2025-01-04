@@ -23,6 +23,7 @@ import {
 import { CampaignForm } from "./CampaignForm";
 import { CollaborationForm } from "./collaboration-form/CollaborationForm";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 const FormSkeleton = () => (
   <div className="space-y-6">
@@ -50,38 +51,52 @@ export const QuickActions = () => {
   const [showNoCampaignsAlert, setShowNoCampaignsAlert] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: activeCampaigns, isLoading } = useQuery({
+  const { data: activeCampaigns, isLoading, error } = useQuery({
     queryKey: ["active-campaigns"],
     queryFn: async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error("Not authenticated");
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData.user) throw new Error("Not authenticated");
 
-      const { data: businesses } = await supabase
-        .from("businesses")
-        .select("id")
-        .eq("user_id", userData.user.id);
+        const { data: businesses, error: businessError } = await supabase
+          .from("businesses")
+          .select("id")
+          .eq("user_id", userData.user.id);
 
-      if (!businesses?.length) return [];
+        if (businessError) {
+          console.error("Error fetching businesses:", businessError);
+          throw businessError;
+        }
 
-      const businessIds = businesses.map(b => b.id);
+        if (!businesses?.length) {
+          console.log("No businesses found");
+          return [];
+        }
 
-      const { data: campaigns, error } = await supabase
-        .from("campaigns")
-        .select("*")
-        .in("business_id", businessIds)
-        .eq("status", "active");
+        const businessIds = businesses.map(b => b.id);
+        console.log("Business IDs:", businessIds);
 
-      if (error) {
-        console.error("Error fetching campaigns:", error);
-        throw error;
+        const { data: campaigns, error: campaignError } = await supabase
+          .from("campaigns")
+          .select("*")
+          .in("business_id", businessIds)
+          .eq("status", "active");
+
+        if (campaignError) {
+          console.error("Error fetching campaigns:", campaignError);
+          throw campaignError;
+        }
+        
+        console.log("Active campaigns:", campaigns);
+        return campaigns || [];
+      } catch (error) {
+        console.error("Error in query:", error);
+        toast.error("Failed to fetch campaigns. Please try again.");
+        return [];
       }
-      
-      console.log("Active campaigns:", campaigns);
-      return campaigns || [];
     },
-    // Add staleTime and refetchInterval for real-time updates
-    staleTime: 1000 * 60, // Consider data stale after 1 minute
-    refetchInterval: 1000 * 30, // Refetch every 30 seconds
+    staleTime: 1000 * 60,
+    refetchInterval: 1000 * 30,
   });
 
   const handleNewCollaborationClick = () => {
@@ -95,9 +110,12 @@ export const QuickActions = () => {
 
   const handleCampaignSuccess = () => {
     setIsCampaignDialogOpen(false);
-    // Invalidate and refetch active campaigns immediately
     queryClient.invalidateQueries({ queryKey: ["active-campaigns"] });
   };
+
+  if (error) {
+    toast.error("Failed to load campaigns. Please try again.");
+  }
 
   return (
     <div className="space-y-4 animate-fade-up">
