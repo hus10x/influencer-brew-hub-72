@@ -37,17 +37,20 @@ const InfluencerDashboard = () => {
   });
 
   const { data: collaborations, isLoading: isCollaborationsLoading, error: collaborationsError } = useQuery({
-    queryKey: ['collaborations'],
+    queryKey: ['open_collaborations'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('collaborations')
         .select(`
           *,
-          business:businesses(business_name)
+          business:businesses(
+            id,
+            business_name,
+            logo_url
+          )
         `)
         .eq('status', 'open')
-        .order('created_at', { ascending: false })
-        .limit(10);
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching collaborations:', error);
@@ -56,7 +59,6 @@ const InfluencerDashboard = () => {
 
       return data;
     },
-    enabled: !!profile,
   });
 
   if (profileError || collaborationsError) {
@@ -123,13 +125,13 @@ const InfluencerDashboard = () => {
                 Effortless collabs. Real connections.
               </p>
             </div>
-            {collaborations?.length === 0 ? (
+            {!collaborations || collaborations.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-muted-foreground">No collaborations available at the moment.</p>
               </div>
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {collaborations?.map((collab) => (
+                {collaborations.map((collab) => (
                   <Card key={collab.id} className="hover:shadow-lg transition-shadow">
                     <div className="relative h-48 overflow-hidden rounded-t-lg">
                       <img
@@ -140,7 +142,7 @@ const InfluencerDashboard = () => {
                     </div>
                     <CardHeader>
                       <CardTitle className="text-xl">{collab.title}</CardTitle>
-                      <p className="text-sm text-muted-foreground">{collab.business.business_name}</p>
+                      <p className="text-sm text-muted-foreground">{collab.business?.business_name}</p>
                     </CardHeader>
                     <CardContent>
                       <p className="text-muted-foreground mb-4">{collab.description}</p>
