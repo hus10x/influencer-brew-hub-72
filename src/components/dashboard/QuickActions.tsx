@@ -10,11 +10,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Plus, AlertCircle } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Plus } from "lucide-react";
 import { CampaignForm } from "./CampaignForm";
 import { CollaborationForm } from "./collaboration-form/CollaborationForm";
-import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
 const FormSkeleton = () => (
@@ -29,7 +28,6 @@ const FormSkeleton = () => (
 export const QuickActions = () => {
   const [isCollaborationDialogOpen, setIsCollaborationDialogOpen] = useState(false);
   const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
-  const [showNoCampaignsAlert, setShowNoCampaignsAlert] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: activeCampaigns, isLoading, error } = useQuery({
@@ -85,7 +83,7 @@ export const QuickActions = () => {
 
   const handleNewCollaborationClick = () => {
     if (!activeCampaigns?.length) {
-      setShowNoCampaignsAlert(true);
+      toast.error("You need to create an active campaign before you can create a collaboration.");
       return;
     }
     setIsCollaborationDialogOpen(true);
@@ -108,15 +106,6 @@ export const QuickActions = () => {
 
   return (
     <div className="space-y-4 animate-fade-up">
-      {showNoCampaignsAlert && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            You need to create an active campaign before you can create a collaboration.
-          </AlertDescription>
-        </Alert>
-      )}
-
       <div className="flex flex-col sm:flex-row gap-4">
         <Dialog open={isCampaignDialogOpen} onOpenChange={setIsCampaignDialogOpen}>
           <DialogTrigger asChild>
