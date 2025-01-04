@@ -17,7 +17,11 @@ const formSchema = z.object({
   description: z.string().optional(),
   business_id: z.string().min(1, "Business is required"),
   start_date: z.string().min(1, "Start date is required"),
-  end_date: z.string().min(1, "End date is required"),
+  end_date: z.string()
+    .min(1, "End date is required")
+    .refine((date) => new Date(date) > new Date(), {
+      message: "End date must be in the future",
+    }),
 });
 
 interface CampaignFormProps {
@@ -28,6 +32,7 @@ interface CampaignFormProps {
     description?: string;
     start_date: string;
     end_date: string;
+    business_id: string;
   };
 }
 
@@ -38,7 +43,7 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
     defaultValues: {
       title: campaign?.title || "",
       description: campaign?.description || "",
-      business_id: "",
+      business_id: campaign?.business_id || "",
       start_date: campaign?.start_date.split('T')[0] || "",
       end_date: campaign?.end_date.split('T')[0] || "",
     },
@@ -74,6 +79,7 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
             description: values.description,
             start_date: values.start_date,
             end_date: values.end_date,
+            business_id: values.business_id,
           })
           .eq('id', campaign.id)
           .select();
@@ -111,6 +117,20 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
   });
 
   const onSubmit = (values: CampaignFormData, status: 'draft' | 'active' = 'active') => {
+    // Validate dates
+    const startDate = new Date(values.start_date);
+    const endDate = new Date(values.end_date);
+    
+    if (startDate > endDate) {
+      toast.error("Start date cannot be after end date");
+      return;
+    }
+
+    if (endDate < new Date()) {
+      toast.error("End date must be in the future");
+      return;
+    }
+
     mutation.mutate({ values, status });
   };
 
@@ -132,7 +152,7 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
     <div className="space-y-8">
       <Form {...form}>
         <form onSubmit={form.handleSubmit((values) => onSubmit(values))} className="space-y-6">
-          {!campaign && <BusinessSelect form={form} businesses={businesses} />}
+          <BusinessSelect form={form} businesses={businesses} />
           <CampaignDetails form={form} />
           <DateFields form={form} />
           
