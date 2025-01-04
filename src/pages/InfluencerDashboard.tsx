@@ -57,6 +57,8 @@ const InfluencerDashboard = () => {
         throw error;
       }
 
+      // Add debug logging
+      console.log('Fetched collaborations:', data);
       return data;
     },
   });
