@@ -14,13 +14,8 @@ const InfluencerDashboard = () => {
         .select(`
           *,
           campaign:campaigns(
-            id,
-            title,
-            business:businesses(
-              id,
-              business_name,
-              logo_url
-            )
+            *,
+            business:businesses(*)
           )
         `)
         .eq('status', 'open')
