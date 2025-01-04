@@ -18,7 +18,6 @@ import { CollaborationForm } from "./collaboration-form/CollaborationForm";
 export const QuickActions = () => {
   const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
   const [isCollaborationDialogOpen, setIsCollaborationDialogOpen] = useState(false);
-  const [showNoCampaignsDialog, setShowNoCampaignsDialog] = useState(false);
 
   const { data: activeCampaigns, isLoading } = useQuery({
     queryKey: ["active-campaigns"],
@@ -50,21 +49,12 @@ export const QuickActions = () => {
     },
   });
 
-  const handleNewCollaborationClick = () => {
-    if (!isLoading) {
-      if (!activeCampaigns?.length) {
-        setShowNoCampaignsDialog(true);
-      } else {
-        setIsCollaborationDialogOpen(true);
-      }
-    }
-  };
-
-  const handleCreateCampaign = () => {
-    setShowNoCampaignsDialog(false);
-    setTimeout(() => {
+  const handleNewCollaboration = () => {
+    if (!isLoading && (!activeCampaigns?.length)) {
       setIsCampaignDialogOpen(true);
-    }, 100);
+    } else {
+      setIsCollaborationDialogOpen(true);
+    }
   };
 
   return (
@@ -85,47 +75,24 @@ export const QuickActions = () => {
                 Create a new campaign to manage your collaborations
               </DialogDescription>
             </DialogHeader>
-            <CampaignForm onSuccess={() => setIsCampaignDialogOpen(false)} />
+            <CampaignForm 
+              onSuccess={() => {
+                setIsCampaignDialogOpen(false);
+                // If this was opened from collaboration flow, open collaboration dialog
+                if (!activeCampaigns?.length) {
+                  setTimeout(() => setIsCollaborationDialogOpen(true), 100);
+                }
+              }} 
+            />
           </DialogContent>
         </Dialog>
 
-        <Dialog 
-          open={showNoCampaignsDialog} 
-          onOpenChange={(open) => {
-            setShowNoCampaignsDialog(open);
-            if (!open) {
-              // Reset collaboration dialog when closing warning
-              setIsCollaborationDialogOpen(false);
-            }
-          }}
-        >
-          <DialogContent className="z-[100] fixed">
-            <DialogHeader>
-              <DialogTitle>No Active Campaigns</DialogTitle>
-              <DialogDescription>
-                You need an active campaign before creating a collaboration. Would you like to create one now?
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => setShowNoCampaignsDialog(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleCreateCampaign}>
-                Create Campaign
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog 
-          open={isCollaborationDialogOpen && !showNoCampaignsDialog} 
-          onOpenChange={setIsCollaborationDialogOpen}
-        >
+        <Dialog open={isCollaborationDialogOpen} onOpenChange={setIsCollaborationDialogOpen}>
           <DialogTrigger asChild>
             <Button
               variant="secondary"
               size="lg"
-              onClick={handleNewCollaborationClick}
+              onClick={handleNewCollaboration}
             >
               <Users className="w-4 h-4" />
               New Collaboration
