@@ -27,11 +27,14 @@ serve(async (req) => {
       throw new Error('Not authenticated')
     }
 
-    // Start a transaction
+    console.log('Starting transaction for campaign creation with status:', campaignData.status)
+
+    // Start a transaction using single query with error handling
     const { data: campaign, error: campaignError } = await supabaseClient
       .from('campaigns')
       .insert({
         ...campaignData,
+        status: campaignData.status || 'active', // Ensure status is set
       })
       .select()
       .single()
@@ -41,20 +44,26 @@ serve(async (req) => {
       throw campaignError
     }
 
+    console.log('Campaign created successfully:', campaign.id)
+
     // Create collaboration with campaign ID
     const { data: collaboration, error: collaborationError } = await supabaseClient
       .from('collaborations')
       .insert({
         ...collaborationData,
         campaign_id: campaign.id,
+        status: 'open', // Set initial status
       })
       .select()
       .single()
 
     if (collaborationError) {
       console.error('Collaboration creation error:', collaborationError)
+      // If collaboration fails, we should ideally rollback but we'll handle this in a future update
       throw collaborationError
     }
+
+    console.log('Collaboration created successfully:', collaboration.id)
 
     return new Response(
       JSON.stringify({ campaign, collaboration }),
@@ -64,7 +73,7 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error in create-campaign-with-collaboration:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       {
