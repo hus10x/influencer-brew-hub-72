@@ -18,7 +18,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, GripVertical } from "lucide-react";
 
 const CAMPAIGN_STATUSES: Record<CampaignStatus, string> = {
   draft: "Draft",
@@ -120,12 +120,22 @@ export const KanbanBoard = () => {
 
   return (
     <>
-      {selectionMode && (
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
-              {selectedCampaigns.length} selected
-            </span>
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setSelectionMode(!selectionMode);
+              if (!selectionMode) {
+                setSelectedCampaigns([]);
+              }
+            }}
+          >
+            <GripVertical className="mr-2 h-4 w-4" />
+            {selectionMode ? "Cancel Selection" : "Select Campaigns"}
+          </Button>
+          {selectionMode && (
             <Button
               variant="destructive"
               size="sm"
@@ -133,21 +143,12 @@ export const KanbanBoard = () => {
               disabled={selectedCampaigns.length === 0}
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              Delete Selected
+              Delete Selected ({selectedCampaigns.length})
             </Button>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setSelectionMode(false);
-              setSelectedCampaigns([]);
-            }}
-          >
-            Cancel
-          </Button>
+          )}
         </div>
-      )}
+      </div>
+
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-13rem)]">
           {Object.entries(CAMPAIGN_STATUSES).map(([status, label]) => (
