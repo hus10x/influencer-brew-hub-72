@@ -61,7 +61,6 @@ export const KanbanCard = ({
     },
   });
 
-  // Calculate total spots and filled spots from all collaborations
   const totalSpots = collaborations.reduce((sum, collab) => sum + (collab.max_spots || 0), 0);
   const filledSpots = collaborations.reduce((sum, collab) => sum + (collab.filled_spots || 0), 0);
 
@@ -78,7 +77,7 @@ export const KanbanCard = ({
           }}
         >
           <Card 
-            className={`w-full bg-card text-card-foreground hover:shadow-md transition-shadow relative ${
+            className={`w-full bg-card text-card-foreground hover:shadow-md transition-shadow relative border border-primary/10 ${
               isSelected ? 'ring-2 ring-primary' : ''
             } ${snapshot.isDragging ? 'shadow-lg' : ''}`}
           >

@@ -41,6 +41,7 @@ export const CardHeader = ({
           e.stopPropagation();
           onEdit();
         }}
+        className="text-primary hover:text-primary/90"
       >
         Edit
       </Button>

@@ -25,14 +25,14 @@ export const KanbanColumn = ({
         <div
           ref={provided.innerRef}
           {...provided.droppableProps}
-          className={`flex flex-col h-full rounded-lg ${
-            snapshot.isDraggingOver ? "bg-card/50 dark:bg-card/50" : "bg-card/30 dark:bg-card/30"
+          className={`flex flex-col h-full rounded-lg border border-primary/20 ${
+            snapshot.isDraggingOver ? "bg-primary/5 dark:bg-primary/10" : "bg-primary/[0.03] dark:bg-primary/5"
           }`}
           style={{
             minHeight: windowWidth < 768 ? '50vh' : '100%',
           }}
         >
-          <div className="flex items-center justify-between p-4 border-b border-border/50">
+          <div className="flex items-center justify-between p-4 border-b border-primary/20">
             <h3 className="font-semibold capitalize text-lg text-foreground">{status}</h3>
             <span className="text-sm text-muted-foreground">
               {campaigns.length} campaign{campaigns.length !== 1 ? "s" : ""}
@@ -40,7 +40,7 @@ export const KanbanColumn = ({
           </div>
           <div className="flex-1 overflow-y-auto p-4">
             {campaigns.length === 0 ? (
-              <div className="flex items-center justify-center h-32 border-2 border-dashed border-muted rounded-lg">
+              <div className="flex items-center justify-center h-32 border-2 border-dashed border-primary/20 rounded-lg">
                 <p className="text-sm text-muted-foreground">Drop campaigns here</p>
               </div>
             ) : (
