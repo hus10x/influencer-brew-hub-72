@@ -125,7 +125,7 @@ export const QuickActions = () => {
           open={showNoCampaignsAlert} 
           onOpenChange={setShowNoCampaignsAlert}
         >
-          <AlertDialogContent onPointerDownOutside={(e) => e.preventDefault()}>
+          <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>No Active Campaigns</AlertDialogTitle>
               <AlertDialogDescription>
