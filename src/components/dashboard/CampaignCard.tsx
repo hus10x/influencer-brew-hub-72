@@ -36,23 +36,25 @@ export const CampaignCard = ({
     <Card className={`w-full bg-card hover:shadow-md transition-shadow group ${isSelected ? 'ring-2 ring-primary' : ''}`}>
       <CardHeader className="space-y-1">
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             {onSelect && (
-              <RadioGroup value={isSelected ? "selected" : "unselected"} onValueChange={() => onSelect()}>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="selected" id="selected" className={`${!isSelected && 'opacity-0 group-hover:opacity-100'} transition-opacity`} />
-                </div>
-              </RadioGroup>
+              <div className={`${!isSelected && 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
+                <RadioGroup value={isSelected ? "selected" : "unselected"} onValueChange={() => onSelect()}>
+                  <RadioGroupItem value="selected" id="selected" />
+                </RadioGroup>
+              </div>
             )}
-            <Avatar className="h-12 w-12 border border-border">
-              <AvatarImage src={undefined} alt="Business Logo" />
-              <AvatarFallback>
-                <Building2 className="h-6 w-6 text-muted-foreground" />
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <CardTitle className="text-xl">{title}</CardTitle>
-              <CardDescription className="mt-2">{description}</CardDescription>
+            <div className="flex items-center gap-4">
+              <Avatar className="h-12 w-12 border border-border">
+                <AvatarImage src={undefined} alt="Business Logo" />
+                <AvatarFallback>
+                  <Building2 className="h-6 w-6 text-muted-foreground" />
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <CardTitle className="text-xl">{title}</CardTitle>
+                <CardDescription className="mt-2">{description}</CardDescription>
+              </div>
             </div>
           </div>
           <Button
