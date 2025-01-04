@@ -21,10 +21,15 @@ export const RecentActivityCard = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {activities.map((activity) => (
+          {activities.map((activity, index) => (
             <div 
               key={activity.id} 
-              className="flex items-center justify-between p-4 rounded-lg border border-border/90 bg-card text-card-foreground backdrop-blur-xl hover:shadow-lg transition-all duration-200 hover:bg-muted/9"
+              className="flex items-center justify-between p-4 rounded-lg border border-border/90 bg-card text-card-foreground backdrop-blur-xl hover:shadow-lg transition-all duration-200 hover:bg-muted/9 animate-fade-up"
+              style={{
+                animationDelay: `${index * 150}ms`,
+                opacity: 0,
+                animation: `fade-up 0.5s ease-out ${index * 150}ms forwards`
+              }}
             >
               <div>
                 <p className="font-medium text-foreground">{activity.name}</p>
