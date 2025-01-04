@@ -51,7 +51,7 @@ const ClientDashboard = () => {
             <div className="space-y-2">
               <h1 className="text-3xl font-bold tracking-tight text-foreground dark:text-foreground">Overview</h1>
               <p className="text-muted-foreground dark:text-muted-foreground/90">
-                Insights into your businesses
+                View how campaigns and collaborations impact your business
               </p>
             </div>
             <QuickActions />
