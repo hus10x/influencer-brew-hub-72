@@ -121,6 +121,7 @@ export const KanbanBoard = () => {
   return (
     <>
       <div className="mb-4 flex items-center justify-between">
+        <div className="flex-1" />
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
