@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { LogIn, UserPlus, Moon, Sun, LogOut } from "lucide-react";
+import { LogIn, UserPlus, Moon, Sun, LogOut, BookOpen } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -47,6 +47,7 @@ export const Navbar = () => {
             className="cursor-pointer flex items-center space-x-3" 
             onClick={() => navigate("/")}
           >
+            <BookOpen className="h-6 w-6" />
             <span className="font-sans text-2xl font-bold tracking-tight text-primary">
               hikayat
             </span>
