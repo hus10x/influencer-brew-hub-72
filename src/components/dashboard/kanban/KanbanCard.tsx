@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CalendarDays, Building2 } from "lucide-react";
+import { CalendarDays, Building2, Check } from "lucide-react";
 import { Draggable } from "@hello-pangea/dnd";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,7 +10,6 @@ import { CollaborationsList } from "./card/CollaborationsList";
 import { CampaignEditDialog } from "./dialogs/CampaignEditDialog";
 import { CollaborationDialog } from "./dialogs/CollaborationDialog";
 import { CampaignStatus } from "./types";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface KanbanCardProps {
   id: string;
@@ -92,26 +91,12 @@ export const KanbanCard = ({
           className="mb-4 last:mb-0"
         >
           <div 
-            className={`w-full bg-card text-card-foreground hover:shadow-md transition-shadow relative border border-primary/10 ${
+            className={`group w-full bg-card text-card-foreground hover:shadow-md transition-shadow relative border border-primary/10 ${
               isSelected ? 'ring-2 ring-primary' : ''
             } ${snapshot.isDragging ? 'shadow-lg' : ''}`}
+            onClick={() => selectionMode && onSelect()}
           >
-            {selectionMode && (
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
-                <RadioGroup 
-                  value={isSelected ? "selected" : "unselected"} 
-                  onValueChange={() => onSelect()}
-                >
-                  <RadioGroupItem 
-                    value="selected" 
-                    id="selected" 
-                    className={`${!isSelected && 'opacity-0 group-hover:opacity-100'} transition-opacity`}
-                  />
-                </RadioGroup>
-              </div>
-            )}
-            
-            <div className={`p-4 space-y-4 cursor-grab active:cursor-grabbing ${selectionMode ? 'pl-12' : ''}`}>
+            <div className="p-4 space-y-4 cursor-grab active:cursor-grabbing">
               <div className="flex items-start gap-4">
                 <Avatar className="h-12 w-12 border border-border">
                   <AvatarImage 
@@ -135,6 +120,15 @@ export const KanbanCard = ({
                     {description}
                   </p>
                 </div>
+                {selectionMode && (
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                    <Check 
+                      className={`h-5 w-5 text-primary ${
+                        !isSelected ? 'opacity-0' : 'opacity-100'
+                      } transition-opacity`}
+                    />
+                  </div>
+                )}
               </div>
               
               <div className="space-y-2">
