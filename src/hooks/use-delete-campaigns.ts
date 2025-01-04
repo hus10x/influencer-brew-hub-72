@@ -9,29 +9,29 @@ export const useDeleteCampaigns = (onSuccess?: () => void) => {
   return useMutation({
     mutationFn: async (campaignIds: string[]) => {
       try {
-        // First, get all collaboration IDs for these campaigns
-        const { data: collaborations, error: fetchError } = await supabase
+        // First, get all collaborations for these campaigns
+        const { data: collaborations, error: fetchCollabError } = await supabase
           .from("collaborations")
           .select("id")
           .in("campaign_id", campaignIds);
 
-        if (fetchError) {
-          console.error("Error fetching collaborations:", fetchError);
-          throw fetchError;
+        if (fetchCollabError) {
+          console.error("Error fetching collaborations:", fetchCollabError);
+          throw fetchCollabError;
         }
 
         const collaborationIds = collaborations?.map(c => c.id) || [];
 
         if (collaborationIds.length > 0) {
-          // First get all submission IDs
-          const { data: submissions, error: submissionsQueryError } = await supabase
+          // Get all submissions for these collaborations
+          const { data: submissions, error: submissionsError } = await supabase
             .from("collaboration_submissions")
             .select("id")
             .in("collaboration_id", collaborationIds);
 
-          if (submissionsQueryError) {
-            console.error("Error fetching submissions:", submissionsQueryError);
-            throw submissionsQueryError;
+          if (submissionsError) {
+            console.error("Error fetching submissions:", submissionsError);
+            throw submissionsError;
           }
 
           const submissionIds = submissions?.map(s => s.id) || [];
@@ -48,40 +48,42 @@ export const useDeleteCampaigns = (onSuccess?: () => void) => {
               throw verificationError;
             }
 
-            // Delete collaboration submissions
-            const { error: submissionsError } = await supabase
+            // Delete submissions
+            const { error: submissionDeleteError } = await supabase
               .from("collaboration_submissions")
               .delete()
               .in("collaboration_id", collaborationIds);
 
-            if (submissionsError) {
-              console.error("Error deleting submissions:", submissionsError);
-              throw submissionsError;
+            if (submissionDeleteError) {
+              console.error("Error deleting submissions:", submissionDeleteError);
+              throw submissionDeleteError;
             }
           }
 
           // Delete collaborations
-          const { error: collaborationsError } = await supabase
+          const { error: collabDeleteError } = await supabase
             .from("collaborations")
             .delete()
             .in("campaign_id", campaignIds);
 
-          if (collaborationsError) {
-            console.error("Error deleting collaborations:", collaborationsError);
-            throw collaborationsError;
+          if (collabDeleteError) {
+            console.error("Error deleting collaborations:", collabDeleteError);
+            throw collabDeleteError;
           }
         }
 
         // Finally delete the campaigns
-        const { error: campaignsError } = await supabase
+        const { error: campaignError } = await supabase
           .from("campaigns")
           .delete()
           .in("id", campaignIds);
 
-        if (campaignsError) {
-          console.error("Error deleting campaigns:", campaignsError);
-          throw campaignsError;
+        if (campaignError) {
+          console.error("Error deleting campaigns:", campaignError);
+          throw campaignError;
         }
+
+        return campaignIds;
       } catch (error) {
         console.error("Error in deletion process:", error);
         throw error;
