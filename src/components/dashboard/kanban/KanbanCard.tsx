@@ -1,7 +1,6 @@
-import { Card } from "@/components/ui/card";
-import { CalendarDays } from "lucide-react";
+import React, { useState } from "react";
+import { CalendarDays, Building2 } from "lucide-react";
 import { Draggable } from "@hello-pangea/dnd";
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -16,6 +15,7 @@ import { CardHeader } from "./card/CardHeader";
 import { CardMetrics } from "./card/CardMetrics";
 import { CollaborationsList } from "./card/CollaborationsList";
 import { CampaignForm } from "../CampaignForm";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface KanbanCardProps {
   id: string;
@@ -27,6 +27,7 @@ interface KanbanCardProps {
   onSelect: () => void;
   index: number;
   selectionMode: boolean;
+  businessId: string;
 }
 
 export const KanbanCard = ({
@@ -39,10 +40,30 @@ export const KanbanCard = ({
   onSelect,
   index,
   selectionMode,
+  businessId,
 }: KanbanCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCollabDialogOpen, setIsCollabDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  const { data: business, isLoading: isLoadingBusiness } = useQuery({
+    queryKey: ["business", businessId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("businesses")
+        .select("*")
+        .eq("id", businessId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching business:", error);
+        throw error;
+      }
+
+      return data;
+    },
+    enabled: !!businessId,
+  });
 
   const { data: collaborations = [], isLoading: isLoadingCollaborations } = useQuery({
     queryKey: ["collaborations", id],
@@ -76,23 +97,36 @@ export const KanbanCard = ({
             ...provided.draggableProps.style,
           }}
         >
-          <Card 
+          <div 
             className={`w-full bg-card text-card-foreground hover:shadow-md transition-shadow relative border border-primary/10 ${
               isSelected ? 'ring-2 ring-primary' : ''
             } ${snapshot.isDragging ? 'shadow-lg' : ''}`}
           >
             <div className="p-4 space-y-4 cursor-grab active:cursor-grabbing">
-              <CardHeader
-                title={title}
-                selectionMode={selectionMode}
-                isSelected={isSelected}
-                onSelect={onSelect}
-                onEdit={() => setIsEditDialogOpen(true)}
-              />
-              
-              <p className="text-sm text-foreground/80 dark:text-foreground/70 line-clamp-2">
-                {description}
-              </p>
+              <div className="flex items-start gap-4">
+                <Avatar className="h-12 w-12 border border-border">
+                  <AvatarImage 
+                    src={business?.logo_url} 
+                    alt={business?.business_name} 
+                  />
+                  <AvatarFallback>
+                    <Building2 className="h-6 w-6 text-muted-foreground" />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <CardHeader
+                    title={title}
+                    selectionMode={selectionMode}
+                    isSelected={isSelected}
+                    onSelect={onSelect}
+                    onEdit={() => setIsEditDialogOpen(true)}
+                  />
+                  
+                  <p className="text-sm text-foreground/80 dark:text-foreground/70 line-clamp-2 mt-2">
+                    {description}
+                  </p>
+                </div>
+              </div>
               
               <div className="space-y-2">
                 <div className="flex items-center text-sm text-muted-foreground dark:text-muted-foreground/70">
@@ -115,7 +149,7 @@ export const KanbanCard = ({
                 />
               </div>
             </div>
-          </Card>
+          </div>
 
           <Dialog open={isCollabDialogOpen} onOpenChange={setIsCollabDialogOpen}>
             <DialogContent className="max-w-[600px] max-h-[90vh] overflow-y-auto bg-card">

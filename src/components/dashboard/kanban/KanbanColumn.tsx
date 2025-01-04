@@ -56,6 +56,7 @@ export const KanbanColumn = ({
                   onSelect={() => onSelect(campaign.id)}
                   index={index}
                   selectionMode={selectionMode}
+                  businessId={campaign.business_id}
                 />
               ))
             )}
