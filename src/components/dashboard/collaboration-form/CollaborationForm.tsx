@@ -91,7 +91,7 @@ export const CollaborationForm = forwardRef(({
   };
 
   useImperativeHandle(ref, () => ({
-    submitForm: () => {
+    submitForm: async () => {
       return new Promise<void>((resolve, reject) => {
         form.handleSubmit(async (data) => {
           try {

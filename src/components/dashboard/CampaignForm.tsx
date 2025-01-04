@@ -107,15 +107,28 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
         return data[0];
       }
     },
-    onSuccess: (campaign) => {
+    onSuccess: async (campaign) => {
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+      
       if (!isCreatingCollaboration) {
         toast.success(campaign ? "Campaign updated successfully" : "Campaign created successfully");
         form.reset();
         onSuccess();
-      } else {
+        return;
+      }
+
+      try {
         setCreatedCampaignId(campaign.id);
-        collaborationFormRef.current?.submitForm();
+        await collaborationFormRef.current?.submitForm();
+        toast.success("Campaign and collaboration created successfully");
+        form.reset();
+        onSuccess();
+      } catch (error) {
+        console.error("Error creating collaboration:", error);
+        toast.error("Failed to create collaboration");
+      } finally {
+        setIsCreatingCollaboration(false);
+        setCreatedCampaignId(null);
       }
     },
     onError: (error) => {
