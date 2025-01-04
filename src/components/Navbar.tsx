@@ -33,33 +33,29 @@ export const Navbar = () => {
     
     setIsLoggingOut(true);
     try {
-      // First check if there's an active session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        console.log('No active session found');
-        setIsLoggedIn(false);
-        navigate('/');
-        return;
-      }
-
-      // Clear local state first
-      setIsLoggedIn(false);
-      
-      // Clear any stored auth data
-      localStorage.removeItem('supabase.auth.token');
-      
-      // Attempt to sign out
+      // First attempt to sign out
       const { error } = await supabase.auth.signOut();
       
       if (error) {
         console.error("Logout error:", error);
-        toast.error("There was an issue with the logout, but you've been logged out locally");
+        // If we get a session not found error, we can consider the user logged out
+        if (error.message.includes('session_not_found')) {
+          setIsLoggedIn(false);
+          // Clear any stored auth data
+          localStorage.removeItem('supabase.auth.token');
+          navigate('/');
+          return;
+        }
+        toast.error("There was an issue with the logout");
       } else {
+        // Clear local state and storage after successful logout
+        setIsLoggedIn(false);
+        localStorage.removeItem('supabase.auth.token');
         toast.success("Logged out successfully");
       }
     } catch (error) {
       console.error("Error during logout:", error);
-      toast.error("There was an issue with the logout, but you've been logged out locally");
+      toast.error("There was an issue with the logout");
     } finally {
       setIsLoggingOut(false);
       // Always navigate home
