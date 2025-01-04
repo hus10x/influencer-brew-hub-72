@@ -30,12 +30,15 @@ export const BusinessFilter = ({ onFilterChange }: BusinessFilterProps) => {
   const [open, setOpen] = useState(false);
   const [selectedBusinesses, setSelectedBusinesses] = useState<string[]>([]);
 
-  const { data: businesses = [], isLoading, error } = useQuery({
+  const { data: businesses, isLoading, error } = useQuery({
     queryKey: ["businesses"],
     queryFn: async () => {
       try {
         const { data: userData } = await supabase.auth.getUser();
-        if (!userData.user) return [];
+        if (!userData.user) {
+          console.error("User not authenticated");
+          return [];
+        }
 
         const { data, error } = await supabase
           .from("businesses")
@@ -47,12 +50,13 @@ export const BusinessFilter = ({ onFilterChange }: BusinessFilterProps) => {
           return [];
         }
 
-        return (data || []) as Business[];
+        return data as Business[] || [];
       } catch (err) {
         console.error("Error in business query:", err);
         return [];
       }
     },
+    initialData: [], // Provide initial empty array
   });
 
   const handleSelect = (businessId: string) => {
