@@ -9,9 +9,6 @@ import { CompensationSection } from "./CompensationSection";
 import { FormHeader } from "./sections/FormHeader";
 import { FormActions } from "./sections/FormActions";
 import { useCollaborationForm } from "./hooks/useCollaborationForm";
-import { NoActiveCampaignsDialog } from "./components/NoActiveCampaignsDialog";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
 interface CollaborationFormProps {
   campaignId?: string;
@@ -37,22 +34,6 @@ export const CollaborationForm = forwardRef(({
     initialData?.requirements || [""]
   );
 
-  const [showNoCampaignsDialog, setShowNoCampaignsDialog] = useState(false);
-
-  // Fetch active campaigns
-  const { data: campaigns = [] } = useQuery({
-    queryKey: ["active-campaigns"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("campaigns")
-        .select("*")
-        .eq("status", "active");
-      
-      if (error) throw error;
-      return data;
-    },
-  });
-
   useImperativeHandle(ref, () => ({
     submitForm: async () => {
       return new Promise<void>((resolve, reject) => {
@@ -68,29 +49,12 @@ export const CollaborationForm = forwardRef(({
     }
   }));
 
-  // Show dialog if standalone and no active campaigns
-  if (isStandalone && campaigns.length === 0) {
-    return (
-      <NoActiveCampaignsDialog
-        isOpen={true}
-        onOpenChange={setShowNoCampaignsDialog}
-        onCreateCampaign={() => {
-          // Handle campaign creation dialog
-          if (onSuccess) onSuccess();
-        }}
-        onCancel={() => {
-          if (onSuccess) onSuccess();
-        }}
-      />
-    );
-  }
-
   return (
     <>
       {initialData && <FormHeader isEditing />}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {isStandalone && <CampaignSelector form={form} campaigns={campaigns} />}
+          {isStandalone && <CampaignSelector form={form} />}
           <BasicDetailsSection form={form} />
           <RequirementsSection 
             form={form} 
