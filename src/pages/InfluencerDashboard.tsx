@@ -31,10 +31,21 @@ const InfluencerDashboard = () => {
         throw error;
       }
 
+      console.log('Raw data from query:', data);
+
       // Filter out collaborations where campaign or business is null
-      const validCollaborations = data?.filter(
-        collab => collab.campaign && collab.campaign.business
-      ) || [];
+      const validCollaborations = data?.filter(collab => {
+        console.log('Checking collaboration:', collab);
+        const isValid = collab && collab.campaign && collab.campaign.business;
+        if (!isValid) {
+          console.log('Invalid collaboration found:', {
+            hasCollab: !!collab,
+            hasCampaign: !!(collab && collab.campaign),
+            hasBusiness: !!(collab && collab.campaign && collab.campaign.business)
+          });
+        }
+        return isValid;
+      }) || [];
 
       console.log('Filtered collaborations:', validCollaborations);
       return validCollaborations;
