@@ -27,8 +27,10 @@ const features = [
 
 const FeatureCard = memo(({ feature, index, isInView }: { feature: typeof features[number]; index: number; isInView: boolean }) => (
   <div
-    className={`p-6 rounded-2xl bg-background border border-border shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 ${isInView ? 'animate-fade-up' : 'opacity-0'}`}
-    style={{ animationDelay: `${index * 150}ms` }}
+    className={`p-6 rounded-2xl bg-background border border-border shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 ${
+      isInView ? 'animate-fade-up opacity-100' : 'opacity-0'
+    }`}
+    style={{ animationDelay: `${index * 100}ms` }}
   >
     <feature.icon className="w-12 h-12 text-primary mb-4" />
     <h3 className="text-xl font-semibold text-foreground mb-2">{feature.title}</h3>
