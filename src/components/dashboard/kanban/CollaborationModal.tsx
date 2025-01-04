@@ -35,6 +35,17 @@ export const CollaborationModal = ({
   };
 
   if (isEditing) {
+    const formData = {
+      id: collaboration.id,
+      campaignId: collaboration.campaign_id,
+      title: collaboration.title,
+      description: collaboration.description,
+      requirements: collaboration.requirements,
+      compensation: collaboration.compensation,
+      deadline: new Date(collaboration.deadline),
+      maxSpots: collaboration.max_spots,
+    };
+
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
@@ -43,7 +54,7 @@ export const CollaborationModal = ({
           </DialogHeader>
           <CollaborationForm
             onSuccess={handleEditSuccess}
-            initialData={collaboration}
+            initialData={formData}
             isStandalone={false}
           />
         </DialogContent>
