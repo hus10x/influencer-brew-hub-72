@@ -29,7 +29,7 @@ serve(async (req) => {
 
     console.log('Starting transaction for campaign creation with status:', campaignData.status)
 
-    // Start a transaction using single query with error handling
+    // Start a transaction
     const { data: campaign, error: campaignError } = await supabaseClient
       .from('campaigns')
       .insert({
@@ -46,24 +46,29 @@ serve(async (req) => {
 
     console.log('Campaign created successfully:', campaign.id)
 
-    // Create collaboration with campaign ID
-    const { data: collaboration, error: collaborationError } = await supabaseClient
-      .from('collaborations')
-      .insert({
-        ...collaborationData,
-        campaign_id: campaign.id,
-        status: 'open', // Set initial status
-      })
-      .select()
-      .single()
+    // Only create collaboration if data is provided
+    let collaboration = null
+    if (collaborationData) {
+      console.log('Creating collaboration for campaign:', campaign.id)
+      const { data: newCollaboration, error: collaborationError } = await supabaseClient
+        .from('collaborations')
+        .insert({
+          ...collaborationData,
+          campaign_id: campaign.id,
+          status: 'open', // Set initial status
+        })
+        .select()
+        .single()
 
-    if (collaborationError) {
-      console.error('Collaboration creation error:', collaborationError)
-      // If collaboration fails, we should ideally rollback but we'll handle this in a future update
-      throw collaborationError
+      if (collaborationError) {
+        console.error('Collaboration creation error:', collaborationError)
+        // If collaboration fails, we should ideally rollback but we'll handle this in a future update
+        throw collaborationError
+      }
+
+      collaboration = newCollaboration
+      console.log('Collaboration created successfully:', collaboration.id)
     }
-
-    console.log('Collaboration created successfully:', collaboration.id)
 
     return new Response(
       JSON.stringify({ campaign, collaboration }),
