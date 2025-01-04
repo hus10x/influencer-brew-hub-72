@@ -13,13 +13,11 @@ import {
 } from "@/components/ui/dialog";
 import { CampaignForm } from "./CampaignForm";
 import { CollaborationForm } from "./collaboration-form/CollaborationForm";
-import { NoActiveCampaignsDialog } from "./collaboration-form/components/NoActiveCampaignsDialog";
 import { toast } from "sonner";
 
 export const QuickActions = () => {
   const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
   const [isCollaborationDialogOpen, setIsCollaborationDialogOpen] = useState(false);
-  const [showNoActiveCampaignsDialog, setShowNoActiveCampaignsDialog] = useState(false);
 
   const { data: activeCampaigns, isLoading } = useQuery({
     queryKey: ["active-campaigns"],
@@ -57,16 +55,12 @@ export const QuickActions = () => {
   const handleNewCollaborationClick = () => {
     if (!isLoading) {
       if (!activeCampaigns?.length) {
-        setShowNoActiveCampaignsDialog(true);
+        toast.error("You need to create an active campaign before creating a collaboration");
+        setIsCampaignDialogOpen(true);
       } else {
         setIsCollaborationDialogOpen(true);
       }
     }
-  };
-
-  const handleCreateCampaign = () => {
-    setShowNoActiveCampaignsDialog(false);
-    setIsCampaignDialogOpen(true);
   };
 
   return (
@@ -115,13 +109,6 @@ export const QuickActions = () => {
             />
           </DialogContent>
         </Dialog>
-
-        <NoActiveCampaignsDialog 
-          isOpen={showNoActiveCampaignsDialog}
-          onOpenChange={setShowNoActiveCampaignsDialog}
-          onCreateCampaign={handleCreateCampaign}
-          onCancel={() => setShowNoActiveCampaignsDialog(false)}
-        />
       </div>
     </div>
   );
