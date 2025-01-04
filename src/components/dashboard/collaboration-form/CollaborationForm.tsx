@@ -172,7 +172,6 @@ export const CollaborationForm = forwardRef(({
     },
   });
 
-  // Show dialog if there are no campaigns and form is standalone
   useEffect(() => {
     if (isStandalone && !isLoadingCampaigns && !campaigns?.length) {
       setShowNoCampaignsDialog(true);
