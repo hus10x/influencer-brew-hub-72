@@ -22,20 +22,30 @@ export const useDeleteCampaigns = (onSuccess?: () => void) => {
       const collaborationIds = collaborations?.map(c => c.id) || [];
 
       if (collaborationIds.length > 0) {
-        // Delete story verifications linked to collaboration submissions
-        const { error: verificationError } = await supabase
-          .from("story_verifications")
-          .delete()
-          .in("collaboration_submission_id", function(builder) {
-            builder
-              .select("id")
-              .from("collaboration_submissions")
-              .in("collaboration_id", collaborationIds);
-          });
+        // First get all submission IDs
+        const { data: submissions, error: submissionsQueryError } = await supabase
+          .from("collaboration_submissions")
+          .select("id")
+          .in("collaboration_id", collaborationIds);
 
-        if (verificationError) {
-          console.error("Error deleting verifications:", verificationError);
-          throw verificationError;
+        if (submissionsQueryError) {
+          console.error("Error fetching submissions:", submissionsQueryError);
+          throw submissionsQueryError;
+        }
+
+        const submissionIds = submissions?.map(s => s.id) || [];
+
+        if (submissionIds.length > 0) {
+          // Delete story verifications first
+          const { error: verificationError } = await supabase
+            .from("story_verifications")
+            .delete()
+            .in("collaboration_submission_id", submissionIds);
+
+          if (verificationError) {
+            console.error("Error deleting verifications:", verificationError);
+            throw verificationError;
+          }
         }
 
         // Delete collaboration submissions
