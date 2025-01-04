@@ -12,6 +12,7 @@ import { BasicDetailsSection } from "./BasicDetailsSection";
 import { RequirementsSection } from "./RequirementsSection";
 import { ImageUploadSection } from "./ImageUploadSection";
 import { CompensationSection } from "./CompensationSection";
+import { BusinessSelector } from "./BusinessSelector";
 
 interface CollaborationFormProps {
   campaignId?: string;
@@ -44,10 +45,10 @@ export const CollaborationForm = ({
       deadline: "",
       max_spots: 1,
       campaign_id: campaignId || "",
+      business_id: businessId || "",
     },
   });
 
-  // Fetch campaigns for the selector
   const { data: campaigns } = useQuery({
     queryKey: ["campaigns"],
     queryFn: async () => {
@@ -124,7 +125,7 @@ export const CollaborationForm = ({
           imageUrl = await uploadImage(data.image[0]);
         }
 
-        const effectiveBusinessId = businessId || userBusiness?.id;
+        const effectiveBusinessId = businessId || data.business_id || userBusiness?.id;
         if (!effectiveBusinessId) {
           throw new Error("No business ID available");
         }
@@ -142,7 +143,6 @@ export const CollaborationForm = ({
         };
 
         if (initialData) {
-          // Update existing collaboration
           const { error } = await supabase
             .from("collaborations")
             .update(collaborationData)
@@ -150,7 +150,6 @@ export const CollaborationForm = ({
 
           if (error) throw error;
         } else {
-          // Create new collaboration
           const { error } = await supabase
             .from("collaborations")
             .insert(collaborationData);
@@ -187,6 +186,9 @@ export const CollaborationForm = ({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {isStandalone && !campaignId && campaigns && campaigns.length > 0 && (
           <CampaignSelector form={form} campaigns={campaigns} />
+        )}
+        {isStandalone && !businessId && (
+          <BusinessSelector form={form} isStandalone={isStandalone} />
         )}
         <BasicDetailsSection form={form} />
         <RequirementsSection
