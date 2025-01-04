@@ -6,6 +6,19 @@ import { Campaign, CampaignStatus } from "./kanban/types";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import { toast } from "sonner";
 import { useUpdateCampaignStatus } from "@/hooks/use-update-campaign-status";
+import { useDeleteCampaigns } from "@/hooks/use-delete-campaigns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 
 const CAMPAIGN_STATUSES: Record<CampaignStatus, string> = {
   draft: "Draft",
@@ -16,8 +29,13 @@ const CAMPAIGN_STATUSES: Record<CampaignStatus, string> = {
 export const KanbanBoard = () => {
   const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const windowWidth = window.innerWidth;
   const updateCampaignStatus = useUpdateCampaignStatus();
+  const deleteCampaigns = useDeleteCampaigns(() => {
+    setSelectionMode(false);
+    setSelectedCampaigns([]);
+  });
 
   const { data: campaigns = [], isLoading } = useQuery({
     queryKey: ["campaigns"],
@@ -83,21 +101,89 @@ export const KanbanBoard = () => {
     }
   };
 
+  const handleDeleteSelected = () => {
+    if (selectedCampaigns.length === 0) {
+      toast.error("No campaigns selected");
+      return;
+    }
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    deleteCampaigns.mutate(selectedCampaigns);
+    setShowDeleteDialog(false);
+  };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-13rem)]">
-        {Object.entries(CAMPAIGN_STATUSES).map(([status, label]) => (
-          <KanbanColumn
-            key={status}
-            status={status as CampaignStatus}
-            campaigns={campaigns.filter((campaign) => campaign.status === status)}
-            selectedCampaigns={selectedCampaigns}
-            onSelect={handleCampaignSelect}
-            selectionMode={selectionMode}
-            windowWidth={windowWidth}
-          />
-        ))}
-      </div>
-    </DragDropContext>
+    <>
+      {selectionMode && (
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              {selectedCampaigns.length} selected
+            </span>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDeleteSelected}
+              disabled={selectedCampaigns.length === 0}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Selected
+            </Button>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSelectionMode(false);
+              setSelectedCampaigns([]);
+            }}
+          >
+            Cancel
+          </Button>
+        </div>
+      )}
+      <DragDropContext onDragEnd={onDragEnd}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-13rem)]">
+          {Object.entries(CAMPAIGN_STATUSES).map(([status, label]) => (
+            <KanbanColumn
+              key={status}
+              status={status as CampaignStatus}
+              campaigns={campaigns.filter((campaign) => campaign.status === status)}
+              selectedCampaigns={selectedCampaigns}
+              onSelect={handleCampaignSelect}
+              selectionMode={selectionMode}
+              windowWidth={windowWidth}
+            />
+          ))}
+        </div>
+      </DragDropContext>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the selected campaigns
+              and all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
