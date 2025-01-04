@@ -1,9 +1,9 @@
 import { Droppable } from "@hello-pangea/dnd";
 import { KanbanCard } from "./KanbanCard";
-import { Campaign } from "./types";
+import { Campaign, CampaignStatus } from "./types";
 
 interface KanbanColumnProps {
-  status: string;
+  status: CampaignStatus;
   campaigns: Campaign[];
   selectedCampaigns: string[];
   onSelect: (campaignId: string) => void;
