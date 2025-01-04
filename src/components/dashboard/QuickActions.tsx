@@ -62,6 +62,7 @@ export const QuickActions = () => {
   const handleNewCollaborationClick = () => {
     if (!isLoading && (!activeCampaigns?.length)) {
       setShowNoCampaignsAlert(true);
+      setIsCollaborationDialogOpen(false);
     } else {
       setIsCollaborationDialogOpen(true);
     }
@@ -122,7 +123,7 @@ export const QuickActions = () => {
         </Dialog>
 
         <AlertDialog 
-          open={showNoCampaignsAlert} 
+          open={showNoCampaignsAlert}
           onOpenChange={setShowNoCampaignsAlert}
         >
           <AlertDialogContent>
