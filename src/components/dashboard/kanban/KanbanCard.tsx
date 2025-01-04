@@ -93,10 +93,12 @@ export const KanbanCard = ({
           <div 
             className={`group w-full bg-card text-card-foreground hover:shadow-md transition-shadow relative border border-primary/10 ${
               isSelected ? 'ring-2 ring-primary' : ''
-            } ${snapshot.isDragging ? 'shadow-lg' : ''}`}
+            } ${snapshot.isDragging ? 'shadow-lg' : ''} ${
+              selectionMode ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'
+            }`}
             onClick={() => selectionMode && onSelect()}
           >
-            <div className="p-4 space-y-4 cursor-grab active:cursor-grabbing">
+            <div className="p-4 space-y-4">
               <div className="flex items-start gap-4">
                 <Avatar className="h-12 w-12 border border-border">
                   <AvatarImage 
@@ -121,7 +123,7 @@ export const KanbanCard = ({
                   </p>
                 </div>
                 {selectionMode && (
-                  <div className="absolute right-4 top-4">
+                  <div className="absolute right-4 top-4 p-1.5 rounded-full bg-background/80 backdrop-blur-sm border border-border">
                     <Check 
                       className={`h-5 w-5 ${
                         isSelected ? 'text-primary' : 'text-muted-foreground/30'
