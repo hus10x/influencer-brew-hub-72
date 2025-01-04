@@ -11,6 +11,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { CampaignForm } from "./CampaignForm";
 import { CollaborationForm } from "./collaboration-form/CollaborationForm";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -38,6 +48,7 @@ const FormSkeleton = () => (
 export const QuickActions = () => {
   const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
   const [isCollaborationDialogOpen, setIsCollaborationDialogOpen] = useState(false);
+  const [showNoCampaignsAlert, setShowNoCampaignsAlert] = useState(false);
 
   const { data: activeCampaigns, isLoading } = useQuery({
     queryKey: ["active-campaigns"],
@@ -70,7 +81,11 @@ export const QuickActions = () => {
   });
 
   const handleNewCollaborationClick = () => {
-    setIsCollaborationDialogOpen(true);
+    if (!activeCampaigns?.length) {
+      setShowNoCampaignsAlert(true);
+    } else {
+      setIsCollaborationDialogOpen(true);
+    }
   };
 
   return (
@@ -127,6 +142,28 @@ export const QuickActions = () => {
             )}
           </DialogContent>
         </Dialog>
+
+        <AlertDialog open={showNoCampaignsAlert} onOpenChange={setShowNoCampaignsAlert}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>No Active Campaigns</AlertDialogTitle>
+              <AlertDialogDescription>
+                You need to create a campaign before you can create a collaboration. Would you like to create a campaign now?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  setShowNoCampaignsAlert(false);
+                  setIsCampaignDialogOpen(true);
+                }}
+              >
+                Create Campaign
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
