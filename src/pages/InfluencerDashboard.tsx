@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { DollarSign } from "lucide-react";
 
 const InfluencerDashboard = () => {
   const navigate = useNavigate();
@@ -63,7 +63,7 @@ const InfluencerDashboard = () => {
                   />
                 ) : (
                   <div className="h-full w-full bg-muted flex items-center justify-center rounded-t-lg">
-                    <span className="text-muted-foreground">No image available</span>
+                    <ImageIcon className="h-12 w-12 text-muted-foreground" />
                   </div>
                 )}
               </div>
@@ -77,32 +77,16 @@ const InfluencerDashboard = () => {
                       </p>
                     </CardHeader>
                     <CardContent className="p-0">
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground line-clamp-2">
                         {collab.description}
                       </p>
-                      
-                      <div className="mt-4 space-y-2">
-                        <h4 className="text-sm font-medium">Requirements:</h4>
-                        <ul className="list-disc list-inside text-sm text-muted-foreground">
-                          {collab.requirements.map((req, index) => (
-                            <li key={index}>{req}</li>
-                          ))}
-                        </ul>
-                      </div>
-
                       <div className="mt-4 flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="h-4 w-4" />
-                          <span className="text-sm font-medium">{collab.compensation}</span>
-                        </div>
-                        <Button 
-                          onClick={() => {
-                            // TODO: Implement join collaboration logic
-                            console.log('Join collaboration:', collab.id);
-                          }}
-                        >
-                          Join Collaboration
-                        </Button>
+                        <span className="text-sm font-medium">
+                          ${collab.compensation}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          {collab.filled_spots}/{collab.max_spots} spots filled
+                        </span>
                       </div>
                     </CardContent>
                   </div>
