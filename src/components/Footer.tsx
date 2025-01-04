@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Twitter } from "lucide-react";
+import { Facebook, Instagram, Twitter, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const navigation = {
@@ -23,7 +23,12 @@ const Footer = () => {
       <div className="mx-auto max-w-7xl px-6 py-12 lg:py-16">
         <div className="xl:grid xl:grid-cols-3 xl:gap-8">
           <div className="space-y-8">
-            <h2 className="text-2xl font-bold text-foreground">Hikayat</h2>
+            <div className="flex items-center space-x-3">
+              <BookOpen className="h-6 w-6 text-primary" />
+              <span className="font-sans text-2xl font-bold tracking-tight text-primary">
+                hikayat
+              </span>
+            </div>
             <p className="text-sm leading-6 text-muted-foreground">
               Connecting food influencers with restaurants for authentic collaborations.
             </p>
