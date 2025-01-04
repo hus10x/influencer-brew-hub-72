@@ -22,7 +22,7 @@ export const QuickActions = () => {
       <div className="flex items-center flex-wrap gap-4">
         <Dialog open={isCampaignDialogOpen} onOpenChange={setIsCampaignDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="lg" className="bg-primary hover:bg-primary/90">
+            <Button size="lg">
               <Plus className="w-4 h-4" />
               New Campaign
             </Button>
