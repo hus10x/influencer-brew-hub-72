@@ -10,6 +10,7 @@ import { CollaborationsList } from "./card/CollaborationsList";
 import { CampaignEditDialog } from "./dialogs/CampaignEditDialog";
 import { CollaborationDialog } from "./dialogs/CollaborationDialog";
 import { CampaignStatus } from "./types";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface KanbanCardProps {
   id: string;
@@ -95,7 +96,19 @@ export const KanbanCard = ({
               isSelected ? 'ring-2 ring-primary' : ''
             } ${snapshot.isDragging ? 'shadow-lg' : ''}`}
           >
-            <div className="p-4 space-y-4 cursor-grab active:cursor-grabbing">
+            {selectionMode && (
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
+                <RadioGroup 
+                  value={isSelected ? "selected" : "unselected"} 
+                  onValueChange={() => onSelect()}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <RadioGroupItem value="selected" id="selected" />
+                </RadioGroup>
+              </div>
+            )}
+            
+            <div className={`p-4 space-y-4 cursor-grab active:cursor-grabbing ${selectionMode ? 'pl-12' : ''}`}>
               <div className="flex items-start gap-4">
                 <Avatar className="h-12 w-12 border border-border">
                   <AvatarImage 
