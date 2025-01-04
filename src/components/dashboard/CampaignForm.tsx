@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Form } from "@/components/ui/form";
 import { toast } from "sonner";
 import { BusinessSelect } from "./campaign-form/BusinessSelect";
@@ -12,6 +12,7 @@ import { FormActions } from "./campaign-form/FormActions";
 import type { CampaignFormData } from "./campaign-form/types";
 import { createCampaignWithCollaboration } from "@/services/campaign";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -40,6 +41,19 @@ interface CampaignFormProps {
 export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
   const [collaborationData, setCollaborationData] = useState(null);
   const queryClient = useQueryClient();
+
+  // Add businesses query
+  const { data: businesses = [] } = useQuery({
+    queryKey: ['businesses'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('businesses')
+        .select('*');
+      
+      if (error) throw error;
+      return data;
+    }
+  });
 
   const form = useForm<CampaignFormData>({
     resolver: zodResolver(formSchema),
@@ -115,7 +129,7 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
     <div className="space-y-8">
       <Form {...form}>
         <form onSubmit={form.handleSubmit((values) => onSubmit(values))} className="space-y-6">
-          <BusinessSelect form={form} />
+          <BusinessSelect form={form} businesses={businesses} />
           <CampaignDetails form={form} />
           <DateFields form={form} />
           
