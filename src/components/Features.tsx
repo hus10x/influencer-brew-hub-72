@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { Camera, Users, Zap, Trophy } from "lucide-react";
+import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 
 const features = [
   {
@@ -24,9 +25,9 @@ const features = [
   },
 ] as const;
 
-const FeatureCard = memo(({ feature, index }: { feature: typeof features[number]; index: number }) => (
+const FeatureCard = memo(({ feature, index, isInView }: { feature: typeof features[number]; index: number; isInView: boolean }) => (
   <div
-    className="p-6 rounded-2xl bg-background border border-border shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-up"
+    className={`p-6 rounded-2xl bg-background border border-border shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 ${isInView ? 'animate-fade-up' : 'opacity-0'}`}
     style={{ animationDelay: `${index * 150}ms` }}
   >
     <feature.icon className="w-12 h-12 text-primary mb-4" />
@@ -37,10 +38,12 @@ const FeatureCard = memo(({ feature, index }: { feature: typeof features[number]
 FeatureCard.displayName = "FeatureCard";
 
 const Features = () => {
+  const { ref, isInView } = useScrollAnimation();
+
   return (
     <section className="py-24 bg-purple-50/80 dark:bg-background px-6">
-      <div className="container mx-auto">
-        <div className="text-center max-w-3xl mx-auto mb-16 animate-fade-up">
+      <div className="container mx-auto" ref={ref}>
+        <div className={`text-center max-w-3xl mx-auto mb-16 ${isInView ? 'animate-fade-up' : 'opacity-0'}`}>
           <span className="px-3 py-1 text-sm font-medium bg-primary/10 text-primary rounded-full">
             Why Choose Us
           </span>
@@ -53,7 +56,7 @@ const Features = () => {
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((feature, index) => (
-            <FeatureCard key={feature.title} feature={feature} index={index} />
+            <FeatureCard key={feature.title} feature={feature} index={index} isInView={isInView} />
           ))}
         </div>
       </div>

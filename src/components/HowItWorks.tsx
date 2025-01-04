@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
 import { memo } from "react";
+import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 
 const steps = [
   {
@@ -19,9 +20,9 @@ const steps = [
   },
 ] as const;
 
-const StepCard = memo(({ step, index }: { step: typeof steps[number]; index: number }) => (
+const StepCard = memo(({ step, index, isInView }: { step: typeof steps[number]; index: number; isInView: boolean }) => (
   <div
-    className="relative p-8 bg-background border border-border rounded-2xl shadow-sm hover:shadow-md transition-shadow animate-fade-up dark:shadow-none"
+    className={`relative p-8 bg-background border border-border rounded-2xl shadow-sm hover:shadow-md transition-shadow dark:shadow-none ${isInView ? 'animate-fade-up' : 'opacity-0'}`}
     style={{ animationDelay: `${index * 150}ms` }}
   >
     <div className="flex items-center mb-4">
@@ -29,7 +30,7 @@ const StepCard = memo(({ step, index }: { step: typeof steps[number]; index: num
         {step.number}
       </span>
       <div 
-        className="ml-auto bg-primary/10 p-2 rounded-full animate-fade-in"
+        className={`ml-auto bg-primary/10 p-2 rounded-full ${isInView ? 'animate-fade-in' : 'opacity-0'}`}
         style={{ animationDelay: `${(index * 150) + 300}ms` }}
       >
         <Check className="w-5 h-5 text-primary" />
@@ -42,10 +43,12 @@ const StepCard = memo(({ step, index }: { step: typeof steps[number]; index: num
 StepCard.displayName = "StepCard";
 
 const HowItWorks = () => {
+  const { ref, isInView } = useScrollAnimation();
+
   return (
     <section className="py-24 bg-purple-100/80 dark:bg-background px-6">
-      <div className="container mx-auto">
-        <div className="text-center max-w-3xl mx-auto mb-16 animate-fade-up">
+      <div className="container mx-auto" ref={ref}>
+        <div className={`text-center max-w-3xl mx-auto mb-16 ${isInView ? 'animate-fade-up' : 'opacity-0'}`}>
           <span className="px-3 py-1 text-sm font-medium bg-primary/10 text-primary rounded-full">
             Simple Process
           </span>
@@ -56,7 +59,7 @@ const HowItWorks = () => {
         </div>
         <div className="grid lg:grid-cols-3 gap-8">
           {steps.map((step, index) => (
-            <StepCard key={step.number} step={step} index={index} />
+            <StepCard key={step.number} step={step} index={index} isInView={isInView} />
           ))}
         </div>
       </div>
