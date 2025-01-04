@@ -22,3 +22,10 @@ export interface CollaborationFormProps {
   initialData?: CollaborationFormData & { id: string };
   campaigns?: Tables<"campaigns">[];
 }
+
+// Add specific type for campaign selection
+export interface CampaignOption {
+  id: string;
+  title: string;
+  status: string;
+}

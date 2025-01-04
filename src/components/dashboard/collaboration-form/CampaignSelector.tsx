@@ -2,6 +2,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import { UseFormReturn } from "react-hook-form";
 import { CollaborationFormData } from "./types";
 import { Tables } from "@/integrations/supabase/types";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface CampaignSelectorProps {
   form: UseFormReturn<CollaborationFormData>;
@@ -11,6 +12,8 @@ interface CampaignSelectorProps {
 export const CampaignSelector = ({ form, campaigns }: CampaignSelectorProps) => {
   if (!campaigns || campaigns.length === 0) return null;
 
+  const activeCampaigns = campaigns.filter(campaign => campaign.status === 'active');
+
   return (
     <FormField
       control={form.control}
@@ -19,17 +22,21 @@ export const CampaignSelector = ({ form, campaigns }: CampaignSelectorProps) => 
         <FormItem>
           <FormLabel>Campaign</FormLabel>
           <FormControl>
-            <select 
-              className="w-full p-2 border rounded-md dark:bg-card dark:border-input dark:text-foreground" 
-              {...field}
+            <Select 
+              onValueChange={field.onChange} 
+              defaultValue={field.value}
             >
-              <option value="">Select a campaign</option>
-              {campaigns.map((campaign) => (
-                <option key={campaign.id} value={campaign.id}>
-                  {campaign.title}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a campaign" />
+              </SelectTrigger>
+              <SelectContent>
+                {activeCampaigns.map((campaign) => (
+                  <SelectItem key={campaign.id} value={campaign.id}>
+                    {campaign.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </FormControl>
           <FormMessage />
         </FormItem>
