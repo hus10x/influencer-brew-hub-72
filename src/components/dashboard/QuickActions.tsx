@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -48,6 +48,7 @@ export const QuickActions = () => {
   const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
   const [isCollaborationDialogOpen, setIsCollaborationDialogOpen] = useState(false);
   const [showNoCampaignsAlert, setShowNoCampaignsAlert] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: activeCampaigns, isLoading } = useQuery({
     queryKey: ["active-campaigns"],
@@ -88,6 +89,12 @@ export const QuickActions = () => {
     }
   };
 
+  const handleCampaignSuccess = () => {
+    setIsCampaignDialogOpen(false);
+    // Invalidate and refetch active campaigns
+    queryClient.invalidateQueries({ queryKey: ["active-campaigns"] });
+  };
+
   return (
     <div className="space-y-4 animate-fade-up">
       <h2 className="text-2xl font-semibold tracking-tight">Quick Actions</h2>
@@ -107,7 +114,7 @@ export const QuickActions = () => {
             {isLoading ? (
               <FormSkeleton />
             ) : (
-              <CampaignForm onSuccess={() => setIsCampaignDialogOpen(false)} />
+              <CampaignForm onSuccess={handleCampaignSuccess} />
             )}
           </DialogContent>
         </Dialog>
