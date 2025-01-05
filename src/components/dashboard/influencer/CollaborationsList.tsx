@@ -1,10 +1,32 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DollarSign, Building2 } from "lucide-react";
-import { Tables } from "@/integrations/supabase/types";
+
+type CollaborationWithRelations = {
+  id: string;
+  title: string;
+  description: string;
+  requirements: string[];
+  compensation: number;
+  deadline: string;
+  image_url: string | null;
+  status: string;
+  campaign_id: string;
+  max_spots: number;
+  filled_spots: number;
+  created_at: string;
+  updated_at: string;
+  campaign: {
+    id: string;
+    business: {
+      id: string;
+      business_name: string;
+    } | null;
+  } | null;
+};
 
 interface CollaborationsListProps {
-  collaborations: Tables<"collaborations">[];
+  collaborations: CollaborationWithRelations[];
   isLoading: boolean;
   onJoinCollaboration: (id: string) => void;
 }

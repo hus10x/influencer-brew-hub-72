@@ -6,10 +6,33 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { CollaborationsList } from "@/components/dashboard/influencer/CollaborationsList";
 
+type CollaborationWithRelations = {
+  id: string;
+  title: string;
+  description: string;
+  requirements: string[];
+  compensation: number;
+  deadline: string;
+  image_url: string | null;
+  status: string;
+  campaign_id: string;
+  max_spots: number;
+  filled_spots: number;
+  created_at: string;
+  updated_at: string;
+  campaign: {
+    id: string;
+    business: {
+      id: string;
+      business_name: string;
+    } | null;
+  } | null;
+};
+
 const InfluencerDashboard = () => {
   const navigate = useNavigate();
 
-  const { data: collaborations = [], isLoading, refetch } = useQuery({
+  const { data: collaborations = [], isLoading, refetch } = useQuery<CollaborationWithRelations[]>({
     queryKey: ['open-collaborations'],
     queryFn: async () => {
       try {
@@ -32,7 +55,7 @@ const InfluencerDashboard = () => {
             )
           `)
           .eq('status', 'open')
-          .eq('campaign.status', 'active') // Only show collaborations from active campaigns
+          .eq('campaign.status', 'active')
           .order('created_at', { ascending: false });
 
         if (error) {
