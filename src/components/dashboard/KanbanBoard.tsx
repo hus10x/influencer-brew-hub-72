@@ -51,26 +51,36 @@ export const KanbanBoard = () => {
   const { data: campaigns = [], isLoading } = useQuery({
     queryKey: ["campaigns", selectedBusinessId || "all"],
     queryFn: async () => {
+      console.log('Fetching campaigns...');
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("Not authenticated");
 
-      let query = supabase
-        .from("campaigns")
-        .select("*");
+      // First, get all businesses for the user
+      const { data: businesses, error: businessError } = await supabase
+        .from("businesses")
+        .select("id")
+        .eq("user_id", userData.user.id);
 
-      // Only apply business filter if a specific business is selected
+      if (businessError) {
+        console.error("Error fetching businesses:", businessError);
+        throw businessError;
+      }
+
+      if (!businesses?.length) {
+        console.log('No businesses found for user');
+        return [];
+      }
+
+      // Build the campaigns query
+      let query = supabase.from("campaigns").select("*");
+      
       if (selectedBusinessId) {
+        // If a specific business is selected, filter for it
         query = query.eq('business_id', selectedBusinessId);
       } else {
-        // If no business selected, get all businesses for the user
-        const { data: businesses } = await supabase
-          .from("businesses")
-          .select("id")
-          .eq("user_id", userData.user.id);
-
-        if (!businesses?.length) return [];
-        
-        query = query.in('business_id', businesses.map(b => b.id));
+        // Otherwise, get campaigns for all user's businesses
+        const businessIds = businesses.map(b => b.id);
+        query = query.in('business_id', businessIds);
       }
 
       const { data, error } = await query;
@@ -80,6 +90,7 @@ export const KanbanBoard = () => {
         throw error;
       }
 
+      console.log("Fetched campaigns:", data);
       return (data || []).map(campaign => ({
         ...campaign,
         status: campaign.status as CampaignStatus
