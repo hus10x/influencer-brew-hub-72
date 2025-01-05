@@ -14,6 +14,7 @@ import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { BusinessList } from "@/components/business/BusinessList";
 import { KanbanBoard } from "@/components/dashboard/KanbanBoard";
+import { SettingsLayout } from "@/components/settings/SettingsLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 
@@ -53,6 +54,8 @@ const ClientDashboard = () => {
 
   const renderContent = () => {
     switch (activeTab) {
+      case "settings":
+        return <SettingsLayout />;
       case "businesses":
         return <BusinessList />;
       case "campaigns":
