@@ -25,6 +25,13 @@ const formSchema = z.object({
     .refine((date) => new Date(date) > new Date(), {
       message: "End date must be in the future",
     }),
+}).refine((data) => {
+  const startDate = new Date(data.start_date);
+  const endDate = new Date(data.end_date);
+  return endDate > startDate;
+}, {
+  message: "End date must be after start date",
+  path: ["end_date"],
 });
 
 interface CampaignFormProps {
@@ -89,9 +96,15 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
 
   const mutation = useMutation({
     mutationFn: async (values: CampaignFormData) => {
+      const startDate = new Date(values.start_date);
+      const now = new Date();
+      // Set status based on start date
+      const status = startDate <= now ? 'active' : 'draft';
+
       if (collaborationData) {
-        return createCampaignWithCollaboration(values, collaborationData);
+        return createCampaignWithCollaboration(values, collaborationData, status);
       }
+
       const { data, error } = await supabase
         .from("campaigns")
         .insert({
@@ -100,6 +113,7 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
           business_id: values.business_id,
           start_date: values.start_date,
           end_date: values.end_date,
+          status,
         })
         .select()
         .single();
@@ -129,17 +143,12 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
     form.handleSubmit((values) => mutation.mutate(values))();
   };
 
-  const onSubmit = (values: CampaignFormData, status: 'draft' | 'active' = 'active') => {
+  const onSubmit = (values: CampaignFormData) => {
     const startDate = new Date(values.start_date);
     const endDate = new Date(values.end_date);
     
     if (startDate > endDate) {
       toast.error("Start date cannot be after end date");
-      return;
-    }
-
-    if (endDate < new Date()) {
-      toast.error("End date must be in the future");
       return;
     }
 
