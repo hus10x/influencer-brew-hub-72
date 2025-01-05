@@ -54,7 +54,17 @@ export const KanbanBoard = () => {
 
       const { data, error } = await supabase
         .from("campaigns")
-        .select("*")
+        .select(`
+          *,
+          collaborations (
+            id,
+            title,
+            description,
+            status,
+            filled_spots,
+            max_spots
+          )
+        `)
         .in("business_id", businessIds);
 
       if (error) {
@@ -64,8 +74,9 @@ export const KanbanBoard = () => {
 
       return (data || []).map(campaign => ({
         ...campaign,
-        status: campaign.status as CampaignStatus
-      })) as Campaign[];
+        status: campaign.status as CampaignStatus,
+        collaborations: campaign.collaborations || []
+      }));
     },
   });
 
@@ -120,10 +131,45 @@ export const KanbanBoard = () => {
         }
       });
 
+    // Also subscribe to collaborations changes
+    const collabChannel = supabase
+      .channel('collab-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'collaborations'
+        },
+        async (payload) => {
+          console.log('Collaboration change detected:', payload);
+          
+          // Handle different types of changes
+          switch (payload.eventType) {
+            case 'INSERT':
+              toast.success('New collaboration added');
+              break;
+            case 'DELETE':
+              toast.info('Collaboration removed');
+              break;
+            case 'UPDATE':
+              if (payload.new?.status !== payload.old?.status) {
+                toast.info(`Collaboration status updated to ${payload.new?.status}`);
+              }
+              break;
+          }
+          
+          // Refetch to update the UI with new collaboration data
+          await refetch();
+        }
+      )
+      .subscribe();
+
     // Cleanup subscription on unmount
     return () => {
-      console.log('Cleaning up campaign subscription...');
+      console.log('Cleaning up campaign and collaboration subscriptions...');
       supabase.removeChannel(channel);
+      supabase.removeChannel(collabChannel);
     };
   }, [refetch]);
 
