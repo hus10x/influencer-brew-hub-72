@@ -9,24 +9,26 @@ const preventInputZoom = () => {
   const addZoomPreventionToInputs = () => {
     const inputs = document.querySelectorAll('input, textarea');
     inputs.forEach(input => {
-      input.style.fontSize = '16px'; // Minimum font size to prevent zoom
-      
-      // Prevent zoom on focus
-      input.addEventListener('focus', (e) => {
-        // Set viewport to prevent zoom
-        const viewport = document.querySelector('meta[name="viewport"]');
-        if (viewport) {
-          viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0');
-        }
-      });
-      
-      // Reset viewport on blur
-      input.addEventListener('blur', (e) => {
-        const viewport = document.querySelector('meta[name="viewport"]');
-        if (viewport) {
-          viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
-        }
-      });
+      if (input instanceof HTMLElement) {
+        input.style.fontSize = '16px'; // Minimum font size to prevent zoom
+        
+        // Prevent zoom on focus
+        input.addEventListener('focus', () => {
+          // Set viewport to prevent zoom
+          const viewport = document.querySelector('meta[name="viewport"]');
+          if (viewport) {
+            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0');
+          }
+        });
+        
+        // Reset viewport on blur
+        input.addEventListener('blur', () => {
+          const viewport = document.querySelector('meta[name="viewport"]');
+          if (viewport) {
+            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
+          }
+        });
+      }
     });
   };
 
@@ -73,7 +75,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
         const { data: profile } = await supabase
           .from('profiles')
-          .select('user_type')
+          .select('user_type, email')
           .eq('id', user.id)
           .single();
 
@@ -84,16 +86,25 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        const { data, error } = await supabase
+        // If no profile exists, create one with the user's email
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData.user?.email) {
+          throw new Error('User email not found');
+        }
+
+        const { error } = await supabase
           .from('profiles')
-          .insert({ id: user.id, user_type: 'user' })
-          .single();
+          .insert({
+            id: user.id,
+            email: userData.user.email,
+            user_type: 'user'
+          });
 
         if (error) {
           throw error;
         }
 
-        setUserType(data.user_type);
+        setUserType('user');
         setIsAuthenticated(true);
         setIsLoading(false);
       } catch (error) {
