@@ -15,9 +15,10 @@ vi.mock('@/integrations/supabase/client', () => ({
       order: vi.fn().mockReturnThis(),
       data: [],
       error: null,
-      // Add missing required properties
+      // Required properties from PostgrestQueryBuilder
       url: '',
       headers: {},
+      // Required methods
       insert: vi.fn().mockReturnThis(),
       upsert: vi.fn().mockReturnThis(),
       delete: vi.fn().mockReturnThis(),
@@ -42,7 +43,7 @@ vi.mock('@/integrations/supabase/client', () => ({
       or: vi.fn().mockReturnThis(),
       textSearch: vi.fn().mockReturnThis(),
       like: vi.fn().mockReturnThis(),
-      // Add return type for resolved promise
+      // Promise-like behavior
       then: vi.fn().mockImplementation((callback) => callback({ data: [], error: null })),
       catch: vi.fn().mockReturnThis(),
       finally: vi.fn().mockReturnThis(),
