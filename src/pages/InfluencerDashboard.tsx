@@ -10,9 +10,6 @@ import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CollaborationSkeleton } from "@/components/dashboard/influencer/CollaborationSkeleton";
 
-const InfluencerDashboard = () => {
-  const navigate = useNavigate();
-
   const { data: collaborations = [], isLoading, refetch } = useQuery({
     queryKey: ['open-collaborations'],
     queryFn: async () => {
@@ -78,6 +75,9 @@ const InfluencerDashboard = () => {
       }
     }
   });
+
+const InfluencerDashboard = () => {
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check authentication status when component mounts
@@ -207,23 +207,29 @@ const InfluencerDashboard = () => {
                         {collab.description}
                       </p>
                       
-                      <div className="mt-4 space-y-2">
-                        <h4 className="text-sm font-medium">Requirements:</h4>
-                        <ul className="list-disc list-inside text-sm text-muted-foreground">
-                          {collab.requirements.map((req, index) => (
-                            <li key={index}>{req}</li>
-                          ))}
-                        </ul>
+                      <div className="mt-4 grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-medium">Requirements:</h4>
+                          <ul className="list-disc list-inside text-sm text-muted-foreground">
+                            {collab.requirements.map((req, index) => (
+                              <li key={index}>{req}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-medium">Compensation:</h4>
+                          <div className="flex items-center gap-2">
+                            <DollarSign className="h-4 w-4" />
+                            <span className="text-sm font-medium">{collab.compensation}</span>
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </div>
                 </div>
 
-                <div className="mt-4 flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4" />
-                    <span className="text-sm font-medium">{collab.compensation}</span>
-                  </div>
+                <div className="mt-4 flex justify-end">
                   <Button 
                     onClick={() => {
                       // TODO: Implement join collaboration logic
