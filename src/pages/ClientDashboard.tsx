@@ -21,7 +21,7 @@ const ClientDashboard = () => {
   const sidebarItems = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
     { id: "campaigns", label: "Campaigns", icon: PlusCircle },
-    { id: "businesses", label: "Business Management", icon: Store },
+    { id: "businesses", label: "Manage Business", icon: Store },
     { id: "metrics", label: "Metrics", icon: BarChart3 },
     { id: "influencers", label: "Influencers", icon: Users },
     { id: "settings", label: "Settings", icon: Settings },
