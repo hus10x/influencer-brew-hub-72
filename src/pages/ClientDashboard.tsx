@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   BarChart3,
   FileText,
@@ -8,69 +8,15 @@ import {
   PlusCircle,
   LayoutDashboard,
 } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { DashboardMetricCard } from "@/components/dashboard/DashboardMetricCard";
 import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { BusinessList } from "@/components/business/BusinessList";
 import { KanbanBoard } from "@/components/dashboard/KanbanBoard";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
-  const queryClient = useQueryClient();
-
-  // Set up real-time subscription for campaign changes
-  useEffect(() => {
-    console.log('Setting up campaign subscription...');
-    
-    const channel = supabase
-      .channel('schema-db-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
-          schema: 'public',
-          table: 'campaigns'
-        },
-        (payload) => {
-          console.log('Campaign change detected:', payload);
-          // Invalidate and refetch campaigns query
-          queryClient.invalidateQueries({ queryKey: ["campaigns"] });
-          queryClient.invalidateQueries({ queryKey: ["active-campaigns"] });
-          
-          // Show toast notification based on the event type
-          switch (payload.eventType) {
-            case 'INSERT':
-              toast.success('New campaign created');
-              break;
-            case 'UPDATE':
-              if (payload.new.status !== payload.old.status) {
-                toast.info(`Campaign status updated to ${payload.new.status}`);
-              } else {
-                toast.info('Campaign updated');
-              }
-              break;
-            case 'DELETE':
-              toast.info('Campaign removed');
-              break;
-          }
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('Subscribed to campaign changes');
-        }
-      });
-
-    // Cleanup subscription
-    return () => {
-      console.log('Cleaning up campaign subscription');
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
 
   const sidebarItems = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
