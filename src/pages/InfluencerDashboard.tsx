@@ -110,16 +110,6 @@ const InfluencerDashboard = () => {
         async (payload) => {
           console.log('Collaboration change detected:', payload);
           await refetch();
-          
-          if (payload.eventType === 'INSERT' && payload.new.status === 'open') {
-            toast.info('New collaboration opportunity available!');
-          } else if (payload.eventType === 'DELETE') {
-            toast.info('A collaboration has been removed');
-          } else if (payload.eventType === 'UPDATE') {
-            if (payload.old.status === 'open' && payload.new.status !== 'open') {
-              toast.info('A collaboration is no longer available');
-            }
-          }
         }
       )
       .subscribe(async (status) => {
