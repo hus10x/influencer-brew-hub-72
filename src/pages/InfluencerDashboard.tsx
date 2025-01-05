@@ -10,6 +10,9 @@ import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CollaborationSkeleton } from "@/components/dashboard/influencer/CollaborationSkeleton";
 
+const InfluencerDashboard = () => {
+  const navigate = useNavigate();
+
   const { data: collaborations = [], isLoading, refetch } = useQuery({
     queryKey: ['open-collaborations'],
     queryFn: async () => {
@@ -75,9 +78,6 @@ import { CollaborationSkeleton } from "@/components/dashboard/influencer/Collabo
       }
     }
   });
-
-const InfluencerDashboard = () => {
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Check authentication status when component mounts
