@@ -167,6 +167,8 @@ export const KanbanCard = ({
               end_date: endDate.toISOString(),
               business_id: businessId,
               status,
+              created_at: null, // These fields are optional in the Campaign type
+              updated_at: null,
             }}
           />
 

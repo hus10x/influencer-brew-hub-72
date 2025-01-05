@@ -43,6 +43,9 @@ interface CampaignFormProps {
     start_date: string;
     end_date: string;
     business_id: string;
+    status?: string;
+    created_at?: string | null;
+    updated_at?: string | null;
   };
 }
 

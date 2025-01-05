@@ -17,11 +17,7 @@ export const CampaignEditDialog = ({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
         <CampaignForm
-          initialData={{
-            ...campaign,
-            created_at: campaign.created_at || null,
-            updated_at: campaign.updated_at || null,
-          }}
+          campaign={campaign}
           onSuccess={() => onOpenChange(false)}
         />
       </DialogContent>
