@@ -7,6 +7,8 @@ interface FormActionsProps {
 }
 
 export const FormActions = ({ isLoading, isEditing, isStandalone = true }: FormActionsProps) => {
+  if (!isStandalone) return null;
+  
   return (
     <Button type="submit" disabled={isLoading} className="w-full">
       {isLoading 
