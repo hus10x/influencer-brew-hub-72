@@ -96,7 +96,7 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
   });
 
   const mutation = useMutation({
-    mutationFn: async (values: CampaignFormData) => {
+    mutationFn: async (values: CampaignFormData & { status?: 'draft' | 'active' }) => {
       try {
         if (collaborationData) {
           return await createCampaignWithCollaboration(values, collaborationData);
@@ -110,7 +110,7 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
             business_id: values.business_id,
             start_date: values.start_date,
             end_date: values.end_date,
-            status: 'active', // Explicitly set status to active
+            status: values.status || 'active', // Default to active if not specified
           })
           .select()
           .single();
@@ -146,7 +146,7 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
       setIsProcessingCollaboration(true);
       setCollaborationData(data);
       await form.handleSubmit(async (values) => {
-        await mutation.mutateAsync(values);
+        await mutation.mutateAsync({ ...values, status: 'active' });
       })();
     } catch (error) {
       console.error("Error handling collaboration data:", error);
@@ -156,7 +156,7 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
     }
   };
 
-  const onSubmit = async (values: CampaignFormData) => {
+  const onSubmit = async (values: CampaignFormData, status: 'draft' | 'active' = 'active') => {
     try {
       const startDate = new Date(values.start_date);
       const endDate = new Date(values.end_date);
@@ -166,7 +166,7 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
         return;
       }
 
-      await mutation.mutateAsync(values);
+      await mutation.mutateAsync({ ...values, status });
     } catch (error) {
       console.error("Error submitting form:", error);
       toast.error("Failed to submit form");

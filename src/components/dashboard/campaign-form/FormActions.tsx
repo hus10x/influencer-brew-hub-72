@@ -30,6 +30,7 @@ export const FormActions = ({
         type="submit"
         className="flex-1"
         disabled={isLoading}
+        onClick={() => form.handleSubmit((values) => onSubmit(values, 'active'))()}
       >
         {isLoading ? (
           <span className="flex items-center">
@@ -37,7 +38,7 @@ export const FormActions = ({
             {isCreatingCollaboration ? "Creating Campaign & Collaboration..." : "Creating Campaign..."}
           </span>
         ) : (
-          campaign ? "Update Campaign" : "Create Campaign & Collaboration"
+          campaign ? "Update Campaign" : "Create Campaign"
         )}
       </Button>
       {!campaign && (
@@ -51,7 +52,7 @@ export const FormActions = ({
           {isLoading ? (
             <span className="flex items-center">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
+              Saving as Draft...
             </span>
           ) : (
             "Save as Draft"
