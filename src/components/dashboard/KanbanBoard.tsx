@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Trash2, GripVertical } from "lucide-react";
+import { BusinessFilter } from "./BusinessFilter";
 
 const CAMPAIGN_STATUSES: Record<CampaignStatus, string> = {
   draft: "Draft",
@@ -30,6 +31,7 @@ export const KanbanBoard = () => {
   const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
   const windowWidth = window.innerWidth;
   const updateCampaignStatus = useUpdateCampaignStatus();
   const deleteCampaigns = useDeleteCampaigns(() => {
@@ -38,7 +40,7 @@ export const KanbanBoard = () => {
   });
 
   const { data: campaigns = [], isLoading } = useQuery({
-    queryKey: ["campaigns"],
+    queryKey: ["campaigns", selectedBusinessId],
     queryFn: async () => {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("Not authenticated");
@@ -50,7 +52,7 @@ export const KanbanBoard = () => {
 
       if (!businesses?.length) return [];
 
-      const businessIds = businesses.map(b => b.id);
+      const businessIds = selectedBusinessId ? [selectedBusinessId] : businesses.map(b => b.id);
 
       const { data, error } = await supabase
         .from("campaigns")
@@ -121,7 +123,10 @@ export const KanbanBoard = () => {
   return (
     <>
       <div className="mb-4 flex items-center justify-between">
-        <div className="flex-1" />
+        <BusinessFilter 
+          selectedBusinessId={selectedBusinessId}
+          onBusinessSelect={setSelectedBusinessId}
+        />
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
