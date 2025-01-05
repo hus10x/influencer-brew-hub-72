@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2, GripVertical } from "lucide-react";
 import { RealtimeHandler } from "./kanban/components/RealtimeHandler";
 import { filterCollaborationsByStatus } from "./kanban/utils/campaignUtils";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const CAMPAIGN_STATUSES: Record<CampaignStatus, string> = {
   draft: "Draft",
