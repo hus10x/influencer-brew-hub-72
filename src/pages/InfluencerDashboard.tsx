@@ -8,6 +8,7 @@ import { Navbar } from "@/components/Navbar";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CollaborationSkeleton } from "@/components/dashboard/influencer/CollaborationSkeleton";
 
 const InfluencerDashboard = () => {
   const navigate = useNavigate();
@@ -139,7 +140,21 @@ const InfluencerDashboard = () => {
   }, [navigate, refetch]);
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="container mx-auto py-6 px-4 space-y-6 pt-24">
+          <div className="space-y-2 text-center py-8">
+            <h1 className="text-4xl font-bold">Collab Now ✨</h1>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, index) => (
+              <CollaborationSkeleton key={index} />
+            ))}
+          </div>
+        </main>
+      </div>
+    );
   }
 
   return (
@@ -172,14 +187,14 @@ const InfluencerDashboard = () => {
                     <CardHeader className="p-0">
                       <CardTitle className="text-xl">{collab.title}</CardTitle>
                       <div className="flex items-center gap-2 mt-1">
-                        <Avatar className="h-6 w-6 rounded-md">
+                        <Avatar className="h-10 w-10 rounded-md">
                           <AvatarImage 
                             src={collab.campaign?.business?.logo_url || ""} 
                             alt={collab.campaign?.business?.business_name}
                             className="rounded-md"
                           />
                           <AvatarFallback className="rounded-md">
-                            <Building2 className="h-4 w-4" />
+                            <Building2 className="h-5 w-5" />
                           </AvatarFallback>
                         </Avatar>
                         <p className="text-sm text-muted-foreground">
