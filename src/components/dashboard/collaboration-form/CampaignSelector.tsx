@@ -3,6 +3,9 @@ import { UseFormReturn } from "react-hook-form";
 import { CollaborationFormData } from "./types";
 import { Tables } from "@/integrations/supabase/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface CampaignSelectorProps {
   form: UseFormReturn<CollaborationFormData>;
@@ -10,6 +13,32 @@ interface CampaignSelectorProps {
 }
 
 export const CampaignSelector = ({ form, campaigns }: CampaignSelectorProps) => {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    // Subscribe to real-time updates for campaigns
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'campaigns'
+        },
+        () => {
+          // Invalidate and refetch campaigns query
+          queryClient.invalidateQueries({ queryKey: ['campaigns'] });
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   if (!campaigns || campaigns.length === 0) return null;
 
   const activeCampaigns = campaigns.filter(campaign => campaign.status === 'active');
