@@ -28,18 +28,12 @@ const ClientDashboard = () => {
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'collaborations'
         },
-        (payload) => {
-          // Only notify for new collaborations
-          if (payload.eventType === 'INSERT') {
-            toast.info('New collaboration created successfully!');
-          } else if (payload.eventType === 'DELETE') {
-            toast.info('Collaboration has been removed');
-          }
-          // No toast for status updates, but UI will still update via React Query
+        () => {
+          toast.info('New collaboration created successfully!');
         }
       )
       .subscribe();
