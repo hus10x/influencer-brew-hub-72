@@ -18,32 +18,15 @@ serve(async (req) => {
     )
 
     const { campaignData, collaborationData } = await req.json()
-
-    const { data: { user } } = await supabaseClient.auth.getUser(
-      req.headers.get('Authorization')?.replace('Bearer ', '') ?? ''
-    )
-
-    if (!user) {
-      throw new Error('Not authenticated')
-    }
-
-    console.log('Starting transaction for campaign creation')
-    console.log('Campaign data:', campaignData)
-    console.log('Collaboration data:', collaborationData)
-
-    // Set campaign status based on whether there's collaboration data
-    const status = collaborationData ? 'active' : (campaignData.status || 'draft')
+    console.log('Received campaign data:', campaignData)
+    console.log('Received collaboration data:', collaborationData)
 
     // Start a transaction
     const { data: campaign, error: campaignError } = await supabaseClient
       .from('campaigns')
       .insert({
-        title: campaignData.title,
-        description: campaignData.description,
-        business_id: campaignData.business_id,
-        start_date: campaignData.start_date,
-        end_date: campaignData.end_date,
-        status: status,
+        ...campaignData,
+        status: collaborationData ? 'active' : 'draft'
       })
       .select()
       .single()
@@ -53,30 +36,23 @@ serve(async (req) => {
       throw campaignError
     }
 
-    console.log('Campaign created successfully:', campaign.id)
+    console.log('Campaign created successfully:', campaign)
 
-    // Only create collaboration if data is provided
     let collaboration = null
-    if (collaborationData) {
-      console.log('Creating collaboration for campaign:', campaign.id)
+    if (collaborationData && campaign) {
       const { data: newCollaboration, error: collaborationError } = await supabaseClient
         .from('collaborations')
         .insert({
-          title: collaborationData.title,
-          description: collaborationData.description,
-          requirements: collaborationData.requirements,
-          compensation: collaborationData.compensation,
-          deadline: collaborationData.deadline,
-          max_spots: collaborationData.max_spots,
+          ...collaborationData,
           campaign_id: campaign.id,
-          status: 'open',
+          status: 'open'
         })
         .select()
         .single()
 
       if (collaborationError) {
         console.error('Collaboration creation error:', collaborationError)
-        // If collaboration fails, we should roll back the campaign
+        // Rollback campaign creation
         await supabaseClient
           .from('campaigns')
           .delete()
@@ -85,7 +61,7 @@ serve(async (req) => {
       }
 
       collaboration = newCollaboration
-      console.log('Collaboration created successfully:', collaboration.id)
+      console.log('Collaboration created successfully:', collaboration)
     }
 
     return new Response(

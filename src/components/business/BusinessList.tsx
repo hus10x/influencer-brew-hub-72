@@ -4,7 +4,7 @@ import { BusinessCard } from "./BusinessCard";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -37,6 +37,29 @@ export const BusinessList = () => {
       return data;
     },
   });
+
+  // Set up real-time subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'campaigns'
+        },
+        (payload) => {
+          console.log('Real-time update received:', payload);
+          queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const handleEdit = (business: Tables<"businesses">) => {
     setEditingBusiness(business);
