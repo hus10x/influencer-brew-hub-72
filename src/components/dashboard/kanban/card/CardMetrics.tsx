@@ -1,4 +1,4 @@
-import { Users, DollarSign } from "lucide-react";
+import { Users } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
