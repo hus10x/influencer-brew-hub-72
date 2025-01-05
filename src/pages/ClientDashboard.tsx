@@ -22,6 +22,41 @@ const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const queryClient = useQueryClient();
 
+  // Unified campaigns query
+  const { data: campaigns = [] } = useQuery({
+    queryKey: ["campaigns"],
+    queryFn: async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error("Not authenticated");
+
+      const { data: businesses } = await supabase
+        .from("businesses")
+        .select("id")
+        .eq("user_id", userData.user.id);
+
+      if (!businesses?.length) return [];
+
+      const businessIds = businesses.map(b => b.id);
+
+      const { data, error } = await supabase
+        .from("campaigns")
+        .select("*")
+        .in("business_id", businessIds);
+
+      if (error) {
+        console.error("Error fetching campaigns:", error);
+        throw error;
+      }
+
+      return data || [];
+    },
+    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+    gcTime: 1000 * 60 * 10, // Keep unused data in cache for 10 minutes
+  });
+
+  // Filter active campaigns for QuickActions
+  const activeCampaigns = campaigns.filter(campaign => campaign.status === 'active');
+
   // Set up real-time subscription for campaign changes
   useEffect(() => {
     console.log('Setting up campaign subscription...');
@@ -39,7 +74,6 @@ const ClientDashboard = () => {
           console.log('Campaign change detected:', payload);
           // Invalidate and refetch campaigns query
           queryClient.invalidateQueries({ queryKey: ["campaigns"] });
-          queryClient.invalidateQueries({ queryKey: ["active-campaigns"] });
           
           // Show toast notification based on the event type
           switch (payload.eventType) {
@@ -89,13 +123,15 @@ const ClientDashboard = () => {
         return (
           <div className="space-y-6">
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight text-foreground dark:text-foreground">Manage Your Campaigns</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground dark:text-foreground">
+                Manage Your Campaigns
+              </h1>
               <p className="text-muted-foreground dark:text-muted-foreground/90">
                 Drag and drop campaigns between columns to update their status
               </p>
             </div>
-            <QuickActions />
-            <KanbanBoard />
+            <QuickActions campaigns={activeCampaigns} />
+            <KanbanBoard campaigns={campaigns} />
           </div>
         );
       case "overview":
@@ -103,12 +139,14 @@ const ClientDashboard = () => {
         return (
           <div className="space-y-6">
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight text-foreground dark:text-foreground">Overview</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground dark:text-foreground">
+                Overview
+              </h1>
               <p className="text-muted-foreground dark:text-muted-foreground/90">
                 View how campaigns and collaborations impact your business
               </p>
             </div>
-            <QuickActions />
+            <QuickActions campaigns={activeCampaigns} />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <DashboardMetricCard
                 title="ROI Budget"
@@ -117,7 +155,7 @@ const ClientDashboard = () => {
               />
               <DashboardMetricCard
                 title="Live Campaigns"
-                value="4"
+                value={activeCampaigns.length.toString()}
                 subtitle="Active collaborations"
               />
               <DashboardMetricCard

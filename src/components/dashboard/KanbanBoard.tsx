@@ -1,9 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import { KanbanColumn } from "./kanban/KanbanColumn";
 import { useState } from "react";
 import { Campaign, CampaignStatus } from "./kanban/types";
-import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import { toast } from "sonner";
 import { useUpdateCampaignStatus } from "@/hooks/use-update-campaign-status";
 import { useDeleteCampaigns } from "@/hooks/use-delete-campaigns";
@@ -26,7 +24,11 @@ const CAMPAIGN_STATUSES: Record<CampaignStatus, string> = {
   completed: "Completed",
 };
 
-export const KanbanBoard = () => {
+interface KanbanBoardProps {
+  campaigns: Campaign[];
+}
+
+export const KanbanBoard = ({ campaigns }: KanbanBoardProps) => {
   const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -35,38 +37,6 @@ export const KanbanBoard = () => {
   const deleteCampaigns = useDeleteCampaigns(() => {
     setSelectionMode(false);
     setSelectedCampaigns([]);
-  });
-
-  const { data: campaigns = [], isLoading } = useQuery({
-    queryKey: ["campaigns"],
-    queryFn: async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error("Not authenticated");
-
-      const { data: businesses } = await supabase
-        .from("businesses")
-        .select("id")
-        .eq("user_id", userData.user.id);
-
-      if (!businesses?.length) return [];
-
-      const businessIds = businesses.map(b => b.id);
-
-      const { data, error } = await supabase
-        .from("campaigns")
-        .select("*")
-        .in("business_id", businessIds);
-
-      if (error) {
-        console.error("Error fetching campaigns:", error);
-        throw error;
-      }
-
-      return (data || []).map(campaign => ({
-        ...campaign,
-        status: campaign.status as CampaignStatus
-      })) as Campaign[];
-    },
   });
 
   const handleCampaignSelect = (campaignId: string) => {
@@ -113,10 +83,6 @@ export const KanbanBoard = () => {
     deleteCampaigns.mutate(selectedCampaigns);
     setShowDeleteDialog(false);
   };
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <>
