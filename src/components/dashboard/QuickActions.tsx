@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Plus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +23,6 @@ import {
 import { CampaignForm } from "./CampaignForm";
 import { CollaborationForm } from "./collaboration-form/CollaborationForm";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Campaign } from "./kanban/types";
 
 const FormSkeleton = () => (
   <div className="space-y-6">
@@ -44,19 +44,52 @@ const FormSkeleton = () => (
   </div>
 );
 
-interface QuickActionsProps {
-  campaigns: Campaign[];
-}
-
-export const QuickActions = ({ campaigns = [] }: QuickActionsProps) => {
+export const QuickActions = () => {
   const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
   const [isCollaborationDialogOpen, setIsCollaborationDialogOpen] = useState(false);
   const [showNoCampaignsAlert, setShowNoCampaignsAlert] = useState(false);
   const queryClient = useQueryClient();
 
+  const { data: activeCampaigns, isLoading } = useQuery({
+    queryKey: ["active-campaigns"],
+    queryFn: async () => {
+      console.log('Fetching active campaigns...');
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error("Not authenticated");
+
+      const { data: businesses } = await supabase
+        .from("businesses")
+        .select("id")
+        .eq("user_id", userData.user.id);
+
+      if (!businesses?.length) return [];
+
+      const businessIds = businesses.map(b => b.id);
+
+      const { data: campaigns, error } = await supabase
+        .from("campaigns")
+        .select("*")
+        .in("business_id", businessIds)
+        .eq("status", "active");
+
+      if (error) {
+        console.error("Error fetching campaigns:", error);
+        throw error;
+      }
+      
+      console.log("Active campaigns:", campaigns);
+      return campaigns || [];
+    },
+    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+    gcTime: 1000 * 60 * 10, // Keep unused data in cache for 10 minutes
+    refetchInterval: 1000 * 60 * 2, // Refetch every 2 minutes
+    refetchOnWindowFocus: true, // Refetch when window regains focus
+    retry: 2, // Retry failed requests twice
+  });
+
   const handleNewCollaborationClick = () => {
-    console.log("Active campaigns:", campaigns);
-    if (!campaigns || campaigns.length === 0) {
+    console.log("Active campaigns:", activeCampaigns);
+    if (!activeCampaigns || activeCampaigns.length === 0) {
       setShowNoCampaignsAlert(true);
     } else {
       setIsCollaborationDialogOpen(true);
@@ -65,8 +98,8 @@ export const QuickActions = ({ campaigns = [] }: QuickActionsProps) => {
 
   const handleCampaignSuccess = () => {
     setIsCampaignDialogOpen(false);
-    // Invalidate and refetch campaigns immediately
-    queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+    // Invalidate and refetch active campaigns immediately
+    queryClient.invalidateQueries({ queryKey: ["active-campaigns"] });
   };
 
   return (
@@ -85,8 +118,11 @@ export const QuickActions = ({ campaigns = [] }: QuickActionsProps) => {
                 Create a new campaign to manage your collaborations
               </DialogDescription>
             </DialogHeader>
-            <FormSkeleton />
-            <CampaignForm onSuccess={handleCampaignSuccess} />
+            {isLoading ? (
+              <FormSkeleton />
+            ) : (
+              <CampaignForm onSuccess={handleCampaignSuccess} />
+            )}
           </DialogContent>
         </Dialog>
 
@@ -106,12 +142,15 @@ export const QuickActions = ({ campaigns = [] }: QuickActionsProps) => {
                 Create a new collaboration opportunity for influencers
               </DialogDescription>
             </DialogHeader>
-            <FormSkeleton />
-            <CollaborationForm 
-              onSuccess={() => setIsCollaborationDialogOpen(false)} 
-              isStandalone={true}
-              campaigns={campaigns}
-            />
+            {isLoading ? (
+              <FormSkeleton />
+            ) : (
+              <CollaborationForm 
+                onSuccess={() => setIsCollaborationDialogOpen(false)} 
+                isStandalone={true}
+                campaigns={activeCampaigns}
+              />
+            )}
           </DialogContent>
         </Dialog>
 

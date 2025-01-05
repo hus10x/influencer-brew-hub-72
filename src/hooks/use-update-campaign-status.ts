@@ -14,20 +14,11 @@ export const useUpdateCampaignStatus = () => {
       campaignId: string;
       status: Campaign['status'];
     }) => {
-      console.log('Updating campaign status:', { campaignId, status });
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("campaigns")
         .update({ status })
-        .eq("id", campaignId)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error in updateCampaignStatus:', error);
-        throw error;
-      }
-
-      return data;
+        .eq("id", campaignId);
+      if (error) throw error;
     },
     onMutate: async ({ campaignId, status }) => {
       // Cancel any outgoing refetches
@@ -51,15 +42,13 @@ export const useUpdateCampaignStatus = () => {
     },
     onError: (err, variables, context) => {
       console.error("Error updating campaign status:", err);
-      toast.error("Failed to update campaign status. Please try again.");
+      toast.error("Failed to update campaign status");
       if (context?.previousCampaigns) {
         queryClient.setQueryData(["campaigns"], context.previousCampaigns);
       }
     },
-    onSuccess: (data) => {
-      toast.success(`Campaign status updated to ${data.status}`);
-      // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+    onSuccess: () => {
+      toast.success("Campaign status updated");
     },
   });
 };
