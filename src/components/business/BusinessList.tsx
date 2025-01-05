@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { BusinessProfileForm } from "./BusinessProfileForm";
+import { RealtimeChannel } from "@supabase/supabase-js";
 
 export const BusinessList = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -40,6 +41,7 @@ export const BusinessList = () => {
 
   // Set up real-time subscription with proper error handling
   useEffect(() => {
+    let retryTimeout: NodeJS.Timeout;
     const channel = supabase
       .channel('schema-db-changes')
       .on(
@@ -61,10 +63,15 @@ export const BusinessList = () => {
       .subscribe((status) => {
         console.log('Subscription status:', status);
         
-        if (status === 'SUBSCRIPTION_ERROR') {
-          console.error('Subscription error occurred');
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to real-time updates');
+        }
+        
+        if (status === 'CHANNEL_ERROR') {
+          console.error('Channel error occurred');
           // Attempt to reconnect after a delay
-          setTimeout(() => {
+          retryTimeout = setTimeout(() => {
+            console.log('Attempting to reconnect...');
             channel.subscribe();
           }, 5000);
         }
@@ -72,6 +79,7 @@ export const BusinessList = () => {
 
     return () => {
       console.log('Cleaning up real-time subscription');
+      clearTimeout(retryTimeout);
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
