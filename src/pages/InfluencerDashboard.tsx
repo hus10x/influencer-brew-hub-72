@@ -91,16 +91,14 @@ const InfluencerDashboard = () => {
       .on(
         'postgres_changes',
         {
-          event: '*', // Listen to all events on campaigns
+          event: '*',
           schema: 'public',
           table: 'campaigns'
         },
         async (payload) => {
           console.log('Campaign change detected:', payload);
-          // Always refetch when any campaign changes occur
           await refetch();
           
-          // Only show notification for newly activated campaigns
           if (payload.eventType === 'UPDATE' && 
               payload.old.status !== payload.new.status && 
               payload.new.status === 'active') {
@@ -115,17 +113,9 @@ const InfluencerDashboard = () => {
         }
       });
 
-    // Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
-        navigate('/login');
-      }
-    });
-
     return () => {
       console.log('Cleaning up real-time subscription');
       supabase.removeChannel(channel);
-      subscription.unsubscribe();
     };
   }, [navigate, refetch]);
 

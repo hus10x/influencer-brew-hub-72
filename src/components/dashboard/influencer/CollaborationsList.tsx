@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DollarSign } from "lucide-react";
+import { DollarSign, Building2 } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 
 interface CollaborationsListProps {
@@ -48,6 +48,12 @@ export const CollaborationsList = ({
               <div className="space-y-2">
                 <CardHeader className="p-0">
                   <CardTitle className="text-xl">{collab.title}</CardTitle>
+                  {collab.campaign?.business?.business_name && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                      <Building2 className="h-4 w-4" />
+                      <span>{collab.campaign.business.business_name}</span>
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent className="p-0">
                   <p className="text-sm text-muted-foreground">
