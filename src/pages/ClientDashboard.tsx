@@ -14,7 +14,6 @@ import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { BusinessList } from "@/components/business/BusinessList";
 import { KanbanBoard } from "@/components/dashboard/KanbanBoard";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 
@@ -22,7 +21,7 @@ const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
-    // Single subscription for collaboration changes
+    // Keep subscription for real-time updates without toast notifications
     const subscription = supabase
       .channel('collaborations-channel')
       .on(
@@ -32,11 +31,8 @@ const ClientDashboard = () => {
           schema: 'public',
           table: 'collaborations'
         },
-        (payload) => {
-          // Only show notification for new open collaborations
-          if (payload.new && payload.new.status === 'open') {
-            toast.info('New collaboration created successfully!');
-          }
+        () => {
+          // Real-time updates will still trigger React Query cache updates
         }
       )
       .subscribe();
