@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Building2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useEffect } from "react";
 
 interface Business {
   id: string;
@@ -12,7 +11,7 @@ interface Business {
 }
 
 interface BusinessFilterProps {
-  onBusinessSelect: (businessId: string | null) => void;
+  onBusinessSelect: (businessId: string) => void;
   selectedBusinessId: string | null;
 }
 
@@ -36,21 +35,6 @@ export const BusinessFilter = ({ onBusinessSelect, selectedBusinessId }: Busines
       return data as Business[] || [];
     },
   });
-
-  // Load saved filter from localStorage
-  useEffect(() => {
-    const savedFilter = localStorage.getItem("selectedBusinessId");
-    if (savedFilter && selectedBusinessId !== savedFilter) {
-      onBusinessSelect(savedFilter);
-    }
-  }, []);
-
-  // Save filter to localStorage
-  const handleBusinessSelect = (value: string) => {
-    const businessId = value === "all" ? null : value;
-    localStorage.setItem("selectedBusinessId", businessId || "all");
-    onBusinessSelect(businessId);
-  };
 
   if (isLoading) {
     return (
@@ -77,7 +61,7 @@ export const BusinessFilter = ({ onBusinessSelect, selectedBusinessId }: Busines
       <Building2 className="h-4 w-4 text-muted-foreground" />
       <Select
         value={selectedBusinessId || "all"}
-        onValueChange={handleBusinessSelect}
+        onValueChange={onBusinessSelect}
       >
         <SelectTrigger className="w-[200px]">
           <SelectValue placeholder="Filter by business" />

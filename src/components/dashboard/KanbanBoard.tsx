@@ -31,9 +31,8 @@ export const KanbanBoard = () => {
   const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(
-    localStorage.getItem("selectedBusinessId") || null
-  );
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   
   const windowWidth = window.innerWidth;
   const updateCampaignStatus = useUpdateCampaignStatus();
@@ -42,11 +41,20 @@ export const KanbanBoard = () => {
     setSelectedCampaigns([]);
   });
 
+  // Initialize selectedBusinessId from localStorage
+  useEffect(() => {
+    const savedFilter = localStorage.getItem("selectedBusinessId");
+    setSelectedBusinessId(savedFilter === "all" ? null : savedFilter);
+    setIsInitialized(true);
+  }, []);
+
   // Reset selection mode and selected campaigns when changing business filter
   useEffect(() => {
-    setSelectionMode(false);
-    setSelectedCampaigns([]);
-  }, [selectedBusinessId]);
+    if (isInitialized) {
+      setSelectionMode(false);
+      setSelectedCampaigns([]);
+    }
+  }, [selectedBusinessId, isInitialized]);
 
   const { data: campaigns = [], isLoading } = useQuery({
     queryKey: ["campaigns", selectedBusinessId || "all"],
@@ -96,6 +104,7 @@ export const KanbanBoard = () => {
         status: campaign.status as CampaignStatus
       })) as Campaign[];
     },
+    enabled: isInitialized, // Only run query after initialization
   });
 
   const handleCampaignSelect = (campaignId: string) => {
@@ -152,7 +161,11 @@ export const KanbanBoard = () => {
       <div className="mb-4 flex items-center justify-between">
         <BusinessFilter 
           selectedBusinessId={selectedBusinessId}
-          onBusinessSelect={setSelectedBusinessId}
+          onBusinessSelect={(id) => {
+            const businessId = id === "all" ? null : id;
+            localStorage.setItem("selectedBusinessId", id || "all");
+            setSelectedBusinessId(businessId);
+          }}
         />
         <div className="flex items-center gap-2">
           <Button
