@@ -221,7 +221,7 @@ const InfluencerDashboard = () => {
                           <h4 className="text-sm font-medium">Compensation:</h4>
                           <div className="flex items-center gap-2">
                             <DollarSign className="h-4 w-4" />
-                            <span className="text-sm font-medium">{collab.compensation}</span>
+                            <span className="text-sm font-medium">BHD {collab.compensation}</span>
                           </div>
                         </div>
                       </div>
