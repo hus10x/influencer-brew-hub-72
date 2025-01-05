@@ -9,7 +9,7 @@ interface BusinessFilterProps {
 }
 
 export const BusinessFilter = ({ onBusinessSelect, selectedBusinessId }: BusinessFilterProps) => {
-  const { data: businesses = [] } = useQuery({
+  const { data: businesses = [], isLoading } = useQuery({
     queryKey: ["businesses"],
     queryFn: async () => {
       const { data: userData } = await supabase.auth.getUser();
