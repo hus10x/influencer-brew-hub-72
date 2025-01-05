@@ -26,18 +26,26 @@ const queryClient = new QueryClient({
 
 // Utility function to reset mobile zoom
 const resetMobileZoom = () => {
-  const viewport = document.querySelector('meta[name="viewport"]');
-  const content = viewport?.getAttribute('content');
+  // Ensure viewport meta tag exists
+  let viewport = document.querySelector('meta[name="viewport"]');
   
-  if (viewport && content) {
-    // Force reset zoom
-    viewport.setAttribute('content', content + ', maximum-scale=1');
-    
-    // Reset back to original after brief delay
-    setTimeout(() => {
-      viewport.setAttribute('content', content);
-    }, 100);
+  // If viewport meta doesn't exist, create it
+  if (!viewport) {
+    viewport = document.createElement('meta');
+    viewport.setAttribute('name', 'viewport');
+    viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
+    document.head.appendChild(viewport);
   }
+
+  const originalContent = viewport.getAttribute('content') || 'width=device-width, initial-scale=1.0';
+  
+  // Force reset zoom with a more aggressive approach
+  viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0');
+  
+  // Reset back to original after brief delay
+  setTimeout(() => {
+    viewport.setAttribute('content', originalContent);
+  }, 300); // Increased delay for better reliability
 };
 
 const App = () => {
@@ -77,6 +85,7 @@ const App = () => {
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         setIsLoggedIn(true);
         // Reset mobile zoom after successful sign in
+        console.log('Resetting mobile zoom...');
         resetMobileZoom();
       } else {
         setIsLoggedIn(!!session);
