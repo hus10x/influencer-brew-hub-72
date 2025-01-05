@@ -53,6 +53,7 @@ export const QuickActions = () => {
   const { data: activeCampaigns, isLoading } = useQuery({
     queryKey: ["active-campaigns"],
     queryFn: async () => {
+      console.log('Fetching active campaigns...');
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("Not authenticated");
 
@@ -79,9 +80,11 @@ export const QuickActions = () => {
       console.log("Active campaigns:", campaigns);
       return campaigns || [];
     },
-    // Add staleTime and refetchInterval for real-time updates
-    staleTime: 1000 * 60, // Consider data stale after 1 minute
-    refetchInterval: 1000 * 30, // Refetch every 30 seconds
+    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+    gcTime: 1000 * 60 * 10, // Keep unused data in cache for 10 minutes
+    refetchInterval: 1000 * 60 * 2, // Refetch every 2 minutes
+    refetchOnWindowFocus: true, // Refetch when window regains focus
+    retry: 2, // Retry failed requests twice
   });
 
   const handleNewCollaborationClick = () => {

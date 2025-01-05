@@ -92,7 +92,19 @@ export const useCollaborationForm = ({
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["collaborations"] });
+      // Optimistically update queries
+      queryClient.invalidateQueries({ 
+        queryKey: ["collaborations"],
+        exact: false,
+        refetchType: "active"
+      });
+      
+      // Update active campaigns count
+      queryClient.invalidateQueries({ 
+        queryKey: ["active-campaigns"],
+        exact: true
+      });
+      
       onSuccess?.();
     },
     onError: (error) => {
