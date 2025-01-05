@@ -3,10 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DollarSign } from "lucide-react";
+import { DollarSign, Building2 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const InfluencerDashboard = () => {
   const navigate = useNavigate();
@@ -15,7 +16,6 @@ const InfluencerDashboard = () => {
     queryKey: ['open-collaborations'],
     queryFn: async () => {
       try {
-        // First check if we have a valid session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError || !session) {
@@ -31,7 +31,11 @@ const InfluencerDashboard = () => {
             *,
             campaign:campaigns(
               *,
-              business:businesses(*)
+              business:businesses(
+                id,
+                business_name,
+                logo_url
+              )
             )
           `)
           .eq('status', 'open')
@@ -100,12 +104,8 @@ const InfluencerDashboard = () => {
         },
         async (payload) => {
           console.log('Collaboration change detected:', payload);
-          
-          // Always refetch when there's any change to collaborations
-          // This ensures we have the latest state from the server
           await refetch();
           
-          // Show appropriate notifications based on event type
           if (payload.eventType === 'INSERT' && payload.new.status === 'open') {
             toast.info('New collaboration opportunity available!');
           } else if (payload.eventType === 'DELETE') {
@@ -171,9 +171,20 @@ const InfluencerDashboard = () => {
                   <div className="space-y-2">
                     <CardHeader className="p-0">
                       <CardTitle className="text-xl">{collab.title}</CardTitle>
-                      <p className="text-sm text-muted-foreground">
-                        {collab.campaign?.business?.business_name || 'Unknown Business'}
-                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage 
+                            src={collab.campaign?.business?.logo_url || ""} 
+                            alt={collab.campaign?.business?.business_name} 
+                          />
+                          <AvatarFallback>
+                            <Building2 className="h-4 w-4" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <p className="text-sm text-muted-foreground">
+                          {collab.campaign?.business?.business_name || 'Unknown Business'}
+                        </p>
+                      </div>
                     </CardHeader>
                     <CardContent className="p-0">
                       <p className="text-sm text-muted-foreground">
@@ -213,7 +224,6 @@ const InfluencerDashboard = () => {
       </main>
     </div>
   );
-
 };
 
 export default InfluencerDashboard;
