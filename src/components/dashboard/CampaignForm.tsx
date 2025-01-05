@@ -98,8 +98,11 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
   const mutation = useMutation({
     mutationFn: async (values: CampaignFormData & { status?: 'draft' | 'active' }) => {
       try {
+        // If we have collaboration data, always set status to active
+        const status = collaborationData ? 'active' : (values.status || 'active');
+        
         if (collaborationData) {
-          return await createCampaignWithCollaboration(values, collaborationData);
+          return await createCampaignWithCollaboration({ ...values, status }, collaborationData);
         }
 
         const { data, error } = await supabase
@@ -110,12 +113,18 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
             business_id: values.business_id,
             start_date: values.start_date,
             end_date: values.end_date,
-            status: values.status || 'active', // Default to active if not specified
+            status,
           })
           .select()
           .single();
 
-        if (error) throw error;
+        if (error) {
+          // Check for specific error about campaign status
+          if (error.message?.includes("Collaboration can only be created for active campaigns")) {
+            throw new Error("Campaign must be active to add collaborations");
+          }
+          throw error;
+        }
         return data;
       } catch (error) {
         console.error("Error in mutation:", error);
@@ -133,9 +142,10 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
       setIsProcessingCollaboration(false);
       onSuccess();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Error:", error);
-      toast.error("Failed to create campaign. Please try again.");
+      // Show a more user-friendly error message
+      toast.error(error.message || "Failed to create campaign. Please try again.");
       setCollaborationData(null);
       setIsProcessingCollaboration(false);
     },
