@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { KanbanColumn } from "./kanban/KanbanColumn";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Campaign, CampaignStatus } from "./kanban/types";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
-import { toast } from "sonner";
 import { useUpdateCampaignStatus } from "@/hooks/use-update-campaign-status";
 import { useDeleteCampaigns } from "@/hooks/use-delete-campaigns";
 import {
@@ -19,6 +18,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Trash2, GripVertical } from "lucide-react";
+import { RealtimeHandler } from "./kanban/components/RealtimeHandler";
+import { filterCollaborationsByStatus } from "./kanban/utils/campaignUtils";
 
 const CAMPAIGN_STATUSES: Record<CampaignStatus, string> = {
   draft: "Draft",
@@ -75,103 +76,13 @@ export const KanbanBoard = () => {
       return (data || []).map(campaign => ({
         ...campaign,
         status: campaign.status as CampaignStatus,
-        collaborations: campaign.collaborations || []
+        collaborations: filterCollaborationsByStatus({
+          ...campaign,
+          collaborations: campaign.collaborations || []
+        })
       }));
     },
   });
-
-  // Set up real-time subscription
-  useEffect(() => {
-    console.log('Setting up real-time subscription for campaigns...');
-    
-    const channel = supabase
-      .channel('schema-db-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'campaigns'
-        },
-        async (payload) => {
-          console.log('Campaign change detected:', payload);
-          
-          // Handle different types of changes
-          switch (payload.eventType) {
-            case 'INSERT':
-              toast.success('New campaign created');
-              break;
-            case 'DELETE':
-              toast.info('Campaign deleted');
-              break;
-            case 'UPDATE':
-              const oldStatus = payload.old?.status;
-              const newStatus = payload.new?.status;
-              
-              if (oldStatus !== newStatus) {
-                toast.info(`Campaign status updated to ${newStatus}`);
-              }
-              break;
-          }
-          
-          // Refetch campaigns to update the UI
-          await refetch();
-        }
-      )
-      .subscribe((status) => {
-        console.log('Subscription status:', status);
-        
-        if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to campaign changes');
-        }
-        
-        if (status === 'CHANNEL_ERROR') {
-          console.error('Error subscribing to campaign changes');
-          toast.error('Error connecting to real-time updates');
-        }
-      });
-
-    // Also subscribe to collaborations changes
-    const collabChannel = supabase
-      .channel('collab-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'collaborations'
-        },
-        async (payload) => {
-          console.log('Collaboration change detected:', payload);
-          
-          // Handle different types of changes
-          switch (payload.eventType) {
-            case 'INSERT':
-              toast.success('New collaboration added');
-              break;
-            case 'DELETE':
-              toast.info('Collaboration removed');
-              break;
-            case 'UPDATE':
-              if (payload.new?.status !== payload.old?.status) {
-                toast.info(`Collaboration status updated to ${payload.new?.status}`);
-              }
-              break;
-          }
-          
-          // Refetch to update the UI with new collaboration data
-          await refetch();
-        }
-      )
-      .subscribe();
-
-    // Cleanup subscription on unmount
-    return () => {
-      console.log('Cleaning up campaign and collaboration subscriptions...');
-      supabase.removeChannel(channel);
-      supabase.removeChannel(collabChannel);
-    };
-  }, [refetch]);
 
   const handleCampaignSelect = (campaignId: string) => {
     setSelectedCampaigns((prev) =>
@@ -224,6 +135,11 @@ export const KanbanBoard = () => {
 
   return (
     <>
+      <RealtimeHandler 
+        onCampaignUpdate={refetch}
+        onCollaborationUpdate={refetch}
+      />
+
       <div className="mb-4 flex items-center justify-between">
         <div className="flex-1" />
         <div className="flex items-center gap-2">
