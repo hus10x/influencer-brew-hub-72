@@ -1,19 +1,18 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Form } from "@/components/ui/form";
-import { toast } from "sonner";
 import { BusinessSelect } from "./campaign-form/BusinessSelect";
 import { CampaignDetails } from "./campaign-form/CampaignDetails";
 import { DateFields } from "./campaign-form/DateFields";
 import { CollaborationForm } from "./collaboration-form/CollaborationForm";
 import { FormActions } from "./campaign-form/FormActions";
 import type { CampaignFormData } from "./campaign-form/types";
-import { createCampaignWithCollaboration } from "@/services/campaign";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { useCampaignMutation } from "./campaign-form/hooks/useCampaignMutation";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -49,7 +48,6 @@ interface CampaignFormProps {
 export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
   const [collaborationData, setCollaborationData] = useState(null);
   const [isProcessingCollaboration, setIsProcessingCollaboration] = useState(false);
-  const queryClient = useQueryClient();
 
   // First get the current user
   const { data: userData, isLoading: isLoadingUser } = useQuery({
@@ -75,7 +73,6 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
       
       if (error) {
         console.error("Error fetching businesses:", error);
-        toast.error("Failed to load businesses");
         throw error;
       }
       
@@ -95,60 +92,10 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
     },
   });
 
-  const mutation = useMutation({
-    mutationFn: async (values: CampaignFormData & { status?: 'draft' | 'active' }) => {
-      try {
-        // If we have collaboration data, always set status to active
-        const status = collaborationData ? 'active' : (values.status || 'active');
-        
-        if (collaborationData) {
-          return await createCampaignWithCollaboration({ ...values, status }, collaborationData);
-        }
-
-        const { data, error } = await supabase
-          .from("campaigns")
-          .insert({
-            title: values.title,
-            description: values.description,
-            business_id: values.business_id,
-            start_date: values.start_date,
-            end_date: values.end_date,
-            status,
-          })
-          .select()
-          .single();
-
-        if (error) {
-          // Check for specific error about campaign status
-          if (error.message?.includes("Collaboration can only be created for active campaigns")) {
-            throw new Error("Campaign must be active to add collaborations");
-          }
-          throw error;
-        }
-        return data;
-      } catch (error) {
-        console.error("Error in mutation:", error);
-        throw error;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
-      toast.success(collaborationData 
-        ? "Campaign and collaboration created successfully" 
-        : "Campaign created successfully"
-      );
-      form.reset();
-      setCollaborationData(null);
-      setIsProcessingCollaboration(false);
-      onSuccess();
-    },
-    onError: (error: any) => {
-      console.error("Error:", error);
-      // Show a more user-friendly error message
-      toast.error(error.message || "Failed to create campaign. Please try again.");
-      setCollaborationData(null);
-      setIsProcessingCollaboration(false);
-    },
+  const mutation = useCampaignMutation({
+    onSuccess,
+    setCollaborationData,
+    setIsProcessingCollaboration,
   });
 
   const handleCollaborationData = async (data: any) => {
@@ -156,13 +103,12 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
       setIsProcessingCollaboration(true);
       setCollaborationData(data);
       await form.handleSubmit(async (values) => {
-        await mutation.mutateAsync({ ...values, status: 'active' });
+        await mutation.mutateAsync({ ...values, status: 'active', collaborationData: data });
       })();
     } catch (error) {
       console.error("Error handling collaboration data:", error);
       setIsProcessingCollaboration(false);
       setCollaborationData(null);
-      toast.error("Failed to process collaboration data");
     }
   };
 
@@ -179,7 +125,6 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
       await mutation.mutateAsync({ ...values, status });
     } catch (error) {
       console.error("Error submitting form:", error);
-      toast.error("Failed to submit form");
     }
   };
 
