@@ -106,6 +106,7 @@ const InfluencerDashboard = () => {
           } else if (payload.eventType === 'DELETE') {
             toast.info('A collaboration has been removed');
           }
+          // Force a refetch to update the UI
           await refetch();
         }
       )
