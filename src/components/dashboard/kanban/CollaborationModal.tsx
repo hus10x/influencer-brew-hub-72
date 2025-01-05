@@ -7,10 +7,11 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Users, Pencil } from "lucide-react";
+import { DollarSign, Users, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { CollaborationForm } from "../collaboration-form/CollaborationForm";
 import { Tables } from "@/integrations/supabase/types";
+import { useDeleteCollaboration } from "@/hooks/use-delete-collaboration";
 
 interface CollaborationModalProps {
   collaboration: Tables<"collaborations"> | null;
@@ -24,6 +25,7 @@ export const CollaborationModal = ({
   onClose,
 }: CollaborationModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const deleteCollaboration = useDeleteCollaboration(onClose);
 
   if (!collaboration) return null;
 
@@ -32,6 +34,12 @@ export const CollaborationModal = ({
   const handleEditSuccess = () => {
     setIsEditing(false);
     onClose();
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this collaboration?")) {
+      await deleteCollaboration.mutateAsync(collaboration.id);
+    }
   };
 
   if (isEditing) {
@@ -71,14 +79,23 @@ export const CollaborationModal = ({
               <DialogTitle>{collaboration.title}</DialogTitle>
               <DialogDescription>Collaboration Details</DialogDescription>
             </div>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setIsEditing(true)}
-              className="mr-8"
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsEditing(true)}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="destructive"
+                size="icon"
+                onClick={handleDelete}
+                disabled={deleteCollaboration.isPending}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </DialogHeader>
 
