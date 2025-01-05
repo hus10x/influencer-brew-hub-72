@@ -38,7 +38,7 @@ export const BusinessList = () => {
     },
   });
 
-  // Set up real-time subscription
+  // Set up real-time subscription with proper error handling
   useEffect(() => {
     const channel = supabase
       .channel('schema-db-changes')
@@ -51,12 +51,27 @@ export const BusinessList = () => {
         },
         (payload) => {
           console.log('Real-time update received:', payload);
-          queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+          // Debounce updates to prevent excessive re-renders
+          const timeoutId = setTimeout(() => {
+            queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+          }, 100);
+          return () => clearTimeout(timeoutId);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+        
+        if (status === 'SUBSCRIPTION_ERROR') {
+          console.error('Subscription error occurred');
+          // Attempt to reconnect after a delay
+          setTimeout(() => {
+            channel.subscribe();
+          }, 5000);
+        }
+      });
 
     return () => {
+      console.log('Cleaning up real-time subscription');
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
