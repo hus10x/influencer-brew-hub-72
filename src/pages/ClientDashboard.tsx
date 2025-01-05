@@ -22,7 +22,7 @@ const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
-    // Subscribe to collaboration changes
+    // Single subscription for collaboration changes
     const subscription = supabase
       .channel('collaborations-channel')
       .on(
@@ -32,8 +32,11 @@ const ClientDashboard = () => {
           schema: 'public',
           table: 'collaborations'
         },
-        () => {
-          toast.info('New collaboration created successfully!');
+        (payload) => {
+          // Only show notification for new open collaborations
+          if (payload.new && payload.new.status === 'open') {
+            toast.info('New collaboration created successfully!');
+          }
         }
       )
       .subscribe();
