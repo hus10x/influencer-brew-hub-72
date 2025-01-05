@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { LogIn, UserPlus, Moon, Sun, LogOut, BookOpen, Display } from "lucide-react";
+import { LogIn, UserPlus, Moon, Sun, LogOut, BookOpen, Monitor } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -107,7 +107,7 @@ export const Navbar = () => {
               ) : theme === "light" ? (
                 <Moon className="h-5 w-5" />
               ) : (
-                <Display className="h-5 w-5" />
+                <Monitor className="h-5 w-5" />
               )}
             </Button>
           </div>
