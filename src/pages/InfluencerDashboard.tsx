@@ -40,6 +40,7 @@ const InfluencerDashboard = () => {
           throw error;
         }
 
+        console.log('Fetched collaborations:', data);
         return data || [];
       } catch (error) {
         console.error('Error in queryFn:', error);
@@ -98,10 +99,11 @@ const InfluencerDashboard = () => {
           console.log('Campaign status change detected:', payload);
           if (payload.old.status !== payload.new.status) {
             console.log('Campaign status changed from', payload.old.status, 'to', payload.new.status);
-            // Only notify and refetch if the campaign is being activated
+            // Always refetch when campaign status changes
+            await refetch();
+            
+            // Only notify for active campaigns
             if (payload.new.status === 'active') {
-              console.log('Campaign activated, refetching collaborations...');
-              await refetch();
               toast.info('New campaign activated with collaboration opportunities!');
             }
           }
