@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2, GripVertical } from "lucide-react";
 import { RealtimeHandler } from "./kanban/components/RealtimeHandler";
 import { filterCollaborationsByStatus } from "./kanban/utils/campaignUtils";
+import { toast } from "@/hooks/use-toast";
 
 const CAMPAIGN_STATUSES: Record<CampaignStatus, string> = {
   draft: "Draft",
@@ -63,7 +64,14 @@ export const KanbanBoard = () => {
             description,
             status,
             filled_spots,
-            max_spots
+            max_spots,
+            campaign_id,
+            compensation,
+            created_at,
+            deadline,
+            image_url,
+            requirements,
+            updated_at
           )
         `)
         .in("business_id", businessIds);
