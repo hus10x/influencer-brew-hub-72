@@ -69,7 +69,6 @@ const InfluencerDashboard = () => {
 
     console.log('Setting up real-time subscriptions...');
     
-    // Subscribe to both collaboration and campaign changes
     const channel = supabase
       .channel('schema-db-changes')
       .on(
@@ -99,7 +98,8 @@ const InfluencerDashboard = () => {
           console.log('Campaign status change detected:', payload);
           if (payload.old.status !== payload.new.status) {
             console.log('Campaign status changed from', payload.old.status, 'to', payload.new.status);
-            if (payload.old.status === 'draft' && payload.new.status === 'active') {
+            // Only notify and refetch if the campaign is being activated
+            if (payload.new.status === 'active') {
               console.log('Campaign activated, refetching collaborations...');
               await refetch();
               toast.info('New campaign activated with collaboration opportunities!');
