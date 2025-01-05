@@ -180,27 +180,29 @@ const InfluencerDashboard = () => {
                     <span className="text-muted-foreground">No image available</span>
                   </div>
                 )}
+                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-10 w-10 rounded-md">
+                      <AvatarImage 
+                        src={collab.campaign?.business?.logo_url || ""} 
+                        alt={collab.campaign?.business?.business_name}
+                        className="rounded-md"
+                      />
+                      <AvatarFallback className="rounded-md">
+                        <Building2 className="h-5 w-5" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <p className="text-sm text-white font-medium">
+                      {collab.campaign?.business?.business_name || 'Unknown Business'}
+                    </p>
+                  </div>
+                </div>
               </div>
               <div className="flex-1 p-6 flex flex-col">
                 <div className="flex-1">
                   <div className="space-y-2">
                     <CardHeader className="p-0">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-10 w-10 rounded-md">
-                          <AvatarImage 
-                            src={collab.campaign?.business?.logo_url || ""} 
-                            alt={collab.campaign?.business?.business_name}
-                            className="rounded-md"
-                          />
-                          <AvatarFallback className="rounded-md">
-                            <Building2 className="h-5 w-5" />
-                          </AvatarFallback>
-                        </Avatar>
-                        <p className="text-sm text-muted-foreground">
-                          {collab.campaign?.business?.business_name || 'Unknown Business'}
-                        </p>
-                      </div>
-                      <CardTitle className="text-xl mt-2">{collab.title}</CardTitle>
+                      <CardTitle className="text-xl">{collab.title}</CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
                       <p className="text-sm text-muted-foreground">
