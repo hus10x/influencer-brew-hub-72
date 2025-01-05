@@ -44,8 +44,8 @@ vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     from: vi.fn((table: string) => ({
       ...createMockQueryBuilder(),
-      // Add required properties
-      url: '',
+      // Fix: Create proper URL object instead of string
+      url: new URL('https://example.com'),
       headers: {},
     })),
   },
@@ -134,7 +134,7 @@ describe('Settings Integration', () => {
     // Mock successful data fetch
     vi.mocked(supabase.from).mockImplementation((table: string) => ({
       ...createMockQueryBuilder(),
-      url: '',
+      url: new URL('https://example.com'),
       headers: {},
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -171,7 +171,7 @@ describe('Settings Integration', () => {
     // Mock error response
     vi.mocked(supabase.from).mockImplementation((table: string) => ({
       ...createMockQueryBuilder(),
-      url: '',
+      url: new URL('https://example.com'),
       headers: {},
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
