@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { KanbanColumn } from "./kanban/KanbanColumn";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Campaign, CampaignStatus } from "./kanban/types";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import { toast } from "sonner";
@@ -37,7 +37,7 @@ export const KanbanBoard = () => {
     setSelectedCampaigns([]);
   });
 
-  const { data: campaigns = [], isLoading } = useQuery({
+  const { data: campaigns = [], isLoading, refetch } = useQuery({
     queryKey: ["campaigns"],
     queryFn: async () => {
       const { data: userData } = await supabase.auth.getUser();
@@ -68,6 +68,64 @@ export const KanbanBoard = () => {
       })) as Campaign[];
     },
   });
+
+  // Set up real-time subscription
+  useEffect(() => {
+    console.log('Setting up real-time subscription for campaigns...');
+    
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'campaigns'
+        },
+        async (payload) => {
+          console.log('Campaign change detected:', payload);
+          
+          // Handle different types of changes
+          switch (payload.eventType) {
+            case 'INSERT':
+              toast.success('New campaign created');
+              break;
+            case 'DELETE':
+              toast.info('Campaign deleted');
+              break;
+            case 'UPDATE':
+              const oldStatus = payload.old?.status;
+              const newStatus = payload.new?.status;
+              
+              if (oldStatus !== newStatus) {
+                toast.info(`Campaign status updated to ${newStatus}`);
+              }
+              break;
+          }
+          
+          // Refetch campaigns to update the UI
+          await refetch();
+        }
+      )
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+        
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to campaign changes');
+        }
+        
+        if (status === 'CHANNEL_ERROR') {
+          console.error('Error subscribing to campaign changes');
+          toast.error('Error connecting to real-time updates');
+        }
+      });
+
+    // Cleanup subscription on unmount
+    return () => {
+      console.log('Cleaning up campaign subscription...');
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
 
   const handleCampaignSelect = (campaignId: string) => {
     setSelectedCampaigns((prev) =>
