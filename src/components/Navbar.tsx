@@ -12,6 +12,7 @@ export const Navbar = () => {
   const { theme, setTheme } = useTheme();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [hasToggledTheme, setHasToggledTheme] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -58,6 +59,15 @@ export const Navbar = () => {
     }
   };
 
+  const handleThemeToggle = () => {
+    if (!hasToggledTheme && theme === 'system') {
+      setTheme('dark');
+    } else {
+      setTheme(theme === 'dark' ? 'light' : 'dark');
+    }
+    setHasToggledTheme(true);
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border shadow-sm dark:shadow-none">
       <div className="container mx-auto px-6 py-4">
@@ -100,14 +110,14 @@ export const Navbar = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : theme === "light" ? "system" : "dark")}
+              onClick={handleThemeToggle}
             >
-              {theme === "dark" ? (
-                <Sun className="h-5 w-5" />
-              ) : theme === "light" ? (
+              {!hasToggledTheme && theme === "system" ? (
+                <Monitor className="h-5 w-5" />
+              ) : theme === "dark" ? (
                 <Moon className="h-5 w-5" />
               ) : (
-                <Monitor className="h-5 w-5" />
+                <Sun className="h-5 w-5" />
               )}
             </Button>
           </div>
