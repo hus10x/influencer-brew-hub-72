@@ -6,6 +6,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useState } from "react";
 
 interface CollaborationModalHeaderProps {
   title: string;
@@ -20,6 +21,13 @@ export const CollaborationModalHeader = ({
   onDelete,
   isDeleting,
 }: CollaborationModalHeaderProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleDelete = () => {
+    onDelete();
+    setIsOpen(false);
+  };
+
   return (
     <DialogHeader className="pr-12">
       <div className="flex justify-between items-center gap-4">
@@ -31,7 +39,7 @@ export const CollaborationModalHeader = ({
           <Button variant="outline" size="icon" onClick={onEdit}>
             <Pencil className="h-4 w-4" />
           </Button>
-          <Popover>
+          <Popover open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
@@ -53,6 +61,7 @@ export const CollaborationModalHeader = ({
                     variant="outline"
                     size="sm"
                     className="px-3"
+                    onClick={() => setIsOpen(false)}
                     disabled={isDeleting}
                   >
                     Cancel
@@ -61,7 +70,7 @@ export const CollaborationModalHeader = ({
                     variant="destructive"
                     size="sm"
                     className="px-3"
-                    onClick={onDelete}
+                    onClick={handleDelete}
                     disabled={isDeleting}
                   >
                     Delete
