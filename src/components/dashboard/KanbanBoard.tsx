@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Trash2, GripVertical } from "lucide-react";
 import { BusinessFilter } from "./BusinessFilter";
+import { KanbanSkeleton } from "./kanban/KanbanSkeleton";
 
 const CAMPAIGN_STATUSES: Record<CampaignStatus, string> = {
   draft: "Draft",
@@ -153,7 +154,7 @@ export const KanbanBoard = () => {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <KanbanSkeleton />;
   }
 
   return (
