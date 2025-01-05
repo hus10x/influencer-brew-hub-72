@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { LogIn, UserPlus, Moon, Sun, LogOut, BookOpen } from "lucide-react";
+import { LogIn, UserPlus, Moon, Sun, LogOut, BookOpen, Display } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -33,22 +33,18 @@ export const Navbar = () => {
     
     setIsLoggingOut(true);
     try {
-      // First attempt to sign out
       const { error } = await supabase.auth.signOut();
       
       if (error) {
         console.error("Logout error:", error);
-        // If we get a session not found error, we can consider the user logged out
         if (error.message.includes('session_not_found')) {
           setIsLoggedIn(false);
-          // Clear any stored auth data
           localStorage.removeItem('supabase.auth.token');
           navigate('/');
           return;
         }
         toast.error("There was an issue with the logout");
       } else {
-        // Clear local state and storage after successful logout
         setIsLoggedIn(false);
         localStorage.removeItem('supabase.auth.token');
         toast.success("Logged out successfully");
@@ -58,7 +54,6 @@ export const Navbar = () => {
       toast.error("There was an issue with the logout");
     } finally {
       setIsLoggingOut(false);
-      // Always navigate home
       navigate("/");
     }
   };
@@ -105,12 +100,14 @@ export const Navbar = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              onClick={() => setTheme(theme === "dark" ? "light" : theme === "light" ? "system" : "dark")}
             >
               {theme === "dark" ? (
                 <Sun className="h-5 w-5" />
-              ) : (
+              ) : theme === "light" ? (
                 <Moon className="h-5 w-5" />
+              ) : (
+                <Display className="h-5 w-5" />
               )}
             </Button>
           </div>
