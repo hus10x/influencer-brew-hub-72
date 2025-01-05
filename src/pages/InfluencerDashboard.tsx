@@ -91,21 +91,20 @@ const InfluencerDashboard = () => {
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE',
+          event: '*', // Listen to all events on campaigns
           schema: 'public',
           table: 'campaigns'
         },
         async (payload) => {
-          console.log('Campaign status change detected:', payload);
-          if (payload.old.status !== payload.new.status) {
-            console.log('Campaign status changed from', payload.old.status, 'to', payload.new.status);
-            // Always refetch when campaign status changes
-            await refetch();
-            
-            // Only notify for active campaigns
-            if (payload.new.status === 'active') {
-              toast.info('New campaign activated with collaboration opportunities!');
-            }
+          console.log('Campaign change detected:', payload);
+          // Always refetch when any campaign changes occur
+          await refetch();
+          
+          // Only show notification for newly activated campaigns
+          if (payload.eventType === 'UPDATE' && 
+              payload.old.status !== payload.new.status && 
+              payload.new.status === 'active') {
+            toast.info('New campaign activated with collaboration opportunities!');
           }
         }
       )
