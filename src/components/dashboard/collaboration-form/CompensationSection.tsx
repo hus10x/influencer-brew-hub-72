@@ -15,7 +15,7 @@ export const CompensationSection = ({ form }: CompensationSectionProps) => {
         name="compensation"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Compensation (USD)</FormLabel>
+            <FormLabel>Compensation (BHD)</FormLabel>
             <FormControl>
               <Input
                 type="number"
