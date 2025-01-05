@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, DollarSign } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CollaborationCard } from "../CollaborationCard";
 import { Tables } from "@/integrations/supabase/types";
@@ -26,9 +26,8 @@ export const CollaborationsList = ({
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-sm text-muted-foreground truncate">
             {collaborations.length} Collaboration{collaborations.length !== 1 ? 's' : ''} | 
-            <DollarSign className="h-3 w-3 inline mx-1" />
             <span className="whitespace-nowrap">
-              {collaborations.length > 0 
+              BHD {collaborations.length > 0 
                 ? `${Math.min(...collaborations.map(c => c.compensation))}-${Math.max(...collaborations.map(c => c.compensation))} per collab`
                 : 'No collaborations yet'
               }
