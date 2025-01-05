@@ -172,12 +172,13 @@ const InfluencerDashboard = () => {
                     <CardHeader className="p-0">
                       <CardTitle className="text-xl">{collab.title}</CardTitle>
                       <div className="flex items-center gap-2 mt-1">
-                        <Avatar className="h-6 w-6">
+                        <Avatar className="h-6 w-6 rounded-md">
                           <AvatarImage 
                             src={collab.campaign?.business?.logo_url || ""} 
-                            alt={collab.campaign?.business?.business_name} 
+                            alt={collab.campaign?.business?.business_name}
+                            className="rounded-md"
                           />
-                          <AvatarFallback>
+                          <AvatarFallback className="rounded-md">
                             <Building2 className="h-4 w-4" />
                           </AvatarFallback>
                         </Avatar>
