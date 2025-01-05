@@ -94,14 +94,18 @@ const InfluencerDashboard = () => {
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
           schema: 'public',
           table: 'collaborations',
           filter: 'status=eq.open'
         },
         async (payload) => {
-          console.log('New collaboration detected:', payload);
-          toast.info('New collaboration opportunity available!');
+          console.log('Collaboration change detected:', payload);
+          if (payload.eventType === 'INSERT') {
+            toast.info('New collaboration opportunity available!');
+          } else if (payload.eventType === 'DELETE') {
+            toast.info('A collaboration has been removed');
+          }
           await refetch();
         }
       )
