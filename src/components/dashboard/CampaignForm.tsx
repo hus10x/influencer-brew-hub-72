@@ -96,13 +96,9 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
 
   const mutation = useMutation({
     mutationFn: async (values: CampaignFormData) => {
-      const startDate = new Date(values.start_date);
-      const now = new Date();
-      // Set status based on start date
-      const status = startDate <= now ? 'active' : 'draft';
-
+      // Status is now handled by the database trigger, no need to set it here
       if (collaborationData) {
-        return createCampaignWithCollaboration(values, collaborationData, status);
+        return createCampaignWithCollaboration(values, collaborationData);
       }
 
       const { data, error } = await supabase
@@ -113,7 +109,6 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
           business_id: values.business_id,
           start_date: values.start_date,
           end_date: values.end_date,
-          status,
         })
         .select()
         .single();
