@@ -94,25 +94,25 @@ const InfluencerDashboard = () => {
       .on(
         'postgres_changes',
         {
-          event: '*', // Listen to all events
+          event: '*',
           schema: 'public',
           table: 'collaborations'
         },
         async (payload) => {
           console.log('Collaboration change detected:', payload);
           
-          // Handle different event types
+          // Always refetch when there's any change to collaborations
+          // This ensures we have the latest state from the server
+          await refetch();
+          
+          // Show appropriate notifications based on event type
           if (payload.eventType === 'INSERT' && payload.new.status === 'open') {
             toast.info('New collaboration opportunity available!');
-            await refetch();
           } else if (payload.eventType === 'DELETE') {
             toast.info('A collaboration has been removed');
-            await refetch();
           } else if (payload.eventType === 'UPDATE') {
-            // Check if status changed from 'open' to something else
             if (payload.old.status === 'open' && payload.new.status !== 'open') {
               toast.info('A collaboration is no longer available');
-              await refetch();
             }
           }
         }
@@ -213,6 +213,7 @@ const InfluencerDashboard = () => {
       </main>
     </div>
   );
+
 };
 
 export default InfluencerDashboard;
