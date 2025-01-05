@@ -127,11 +127,7 @@ export const KanbanBoard = () => {
 
   const handleDeleteSelected = () => {
     if (selectedCampaigns.length === 0) {
-      toast({
-        title: "Error",
-        description: "No campaigns selected",
-        variant: "destructive"
-      });
+      toast.error("No campaigns selected");
       return;
     }
     setShowDeleteDialog(true);
