@@ -2,11 +2,10 @@ import { DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/di
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { useState } from "react";
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 interface CollaborationModalHeaderProps {
   title: string;
@@ -21,13 +20,6 @@ export const CollaborationModalHeader = ({
   onDelete,
   isDeleting,
 }: CollaborationModalHeaderProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const handleDelete = () => {
-    onDelete();
-    setIsOpen(false);
-  };
-
   return (
     <DialogHeader className="pr-12">
       <div className="flex justify-between items-center gap-4">
@@ -39,8 +31,8 @@ export const CollaborationModalHeader = ({
           <Button variant="outline" size="icon" onClick={onEdit}>
             <Pencil className="h-4 w-4" />
           </Button>
-          <Popover open={isOpen} onOpenChange={setIsOpen}>
-            <PopoverTrigger asChild>
+          <HoverCard>
+            <HoverCardTrigger asChild>
               <Button
                 variant="outline"
                 size="icon"
@@ -49,8 +41,8 @@ export const CollaborationModalHeader = ({
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-48 p-3">
+            </HoverCardTrigger>
+            <HoverCardContent className="w-48 p-3">
               <div className="space-y-3">
                 <p className="text-sm font-medium">Delete collaboration?</p>
                 <p className="text-sm text-muted-foreground">
@@ -58,27 +50,18 @@ export const CollaborationModalHeader = ({
                 </p>
                 <div className="flex justify-end gap-2">
                   <Button
-                    variant="outline"
-                    size="sm"
-                    className="px-3"
-                    onClick={() => setIsOpen(false)}
-                    disabled={isDeleting}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
                     variant="destructive"
                     size="sm"
                     className="px-3"
-                    onClick={handleDelete}
+                    onClick={onDelete}
                     disabled={isDeleting}
                   >
                     Delete
                   </Button>
                 </div>
               </div>
-            </PopoverContent>
-          </Popover>
+            </HoverCardContent>
+          </HoverCard>
         </div>
       </div>
     </DialogHeader>
