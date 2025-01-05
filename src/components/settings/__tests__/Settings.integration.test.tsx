@@ -32,7 +32,6 @@ vi.mock('@/integrations/supabase/client', () => ({
       gte: vi.fn().mockReturnThis(),
       lt: vi.fn().mockReturnThis(),
       lte: vi.fn().mockReturnThis(),
-      like: vi.fn().mockReturnThis(),
       ilike: vi.fn().mockReturnThis(),
       is: vi.fn().mockReturnThis(),
       in: vi.fn().mockReturnThis(),
@@ -42,6 +41,11 @@ vi.mock('@/integrations/supabase/client', () => ({
       not: vi.fn().mockReturnThis(),
       or: vi.fn().mockReturnThis(),
       textSearch: vi.fn().mockReturnThis(),
+      like: vi.fn().mockReturnThis(),
+      // Add return type for resolved promise
+      then: vi.fn().mockImplementation((callback) => callback({ data: [], error: null })),
+      catch: vi.fn().mockReturnThis(),
+      finally: vi.fn().mockReturnThis(),
     })),
   },
 }));
