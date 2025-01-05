@@ -120,8 +120,17 @@ export const KanbanBoard = () => {
         campaignId: draggableId,
         status: newStatus
       });
+      
+      // Show success message when campaign status is updated
+      toast.success(`Campaign status updated to ${newStatus}`);
+      
+      // If moving to draft, show additional info about collaborations
+      if (newStatus === 'draft') {
+        toast.info("Associated collaborations will be closed");
+      }
     } catch (error) {
       console.error('Error updating campaign status:', error);
+      toast.error("Failed to update campaign status");
     }
   };
 

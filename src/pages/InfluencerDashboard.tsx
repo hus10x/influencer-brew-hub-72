@@ -37,6 +37,7 @@ const InfluencerDashboard = () => {
             )
           `)
           .eq('status', 'open')
+          .eq('campaign.status', 'active') // Only show collaborations from active campaigns
           .order('created_at', { ascending: false });
 
         if (error) {
