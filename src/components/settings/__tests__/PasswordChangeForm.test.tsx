@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PasswordChangeForm } from '../PasswordChangeForm';
 import { toast } from 'sonner';
 
@@ -39,8 +39,8 @@ describe('PasswordChangeForm', () => {
     fireEvent.click(submitButton);
     
     expect(await screen.findByText(/current password is required/i)).toBeInTheDocument();
-    expect(await screen.findByText(/new password is required/i)).toBeInTheDocument();
-    expect(await screen.findByText(/confirm password is required/i)).toBeInTheDocument();
+    expect(await screen.findByText(/password must be at least 8 characters/i)).toBeInTheDocument();
+    expect(await screen.findByText(/please confirm your password/i)).toBeInTheDocument();
   });
 
   it('validates password requirements', async () => {
@@ -62,6 +62,6 @@ describe('PasswordChangeForm', () => {
     fireEvent.change(confirmPasswordInput, { target: { value: 'DifferentPass123!' } });
     fireEvent.blur(confirmPasswordInput);
     
-    expect(await screen.findByText(/passwords must match/i)).toBeInTheDocument();
+    expect(await screen.findByText(/passwords don't match/i)).toBeInTheDocument();
   });
 });
