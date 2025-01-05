@@ -181,7 +181,7 @@ const InfluencerDashboard = () => {
                   </div>
                 )}
                 <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-end gap-2">
                     <Avatar className="h-10 w-10 rounded-md">
                       <AvatarImage 
                         src={collab.campaign?.business?.logo_url || ""} 
