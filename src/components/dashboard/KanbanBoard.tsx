@@ -86,6 +86,7 @@ export const KanbanBoard = () => {
         status: campaign.status as CampaignStatus,
         collaborations: filterCollaborationsByStatus({
           ...campaign,
+          status: campaign.status as CampaignStatus,
           collaborations: campaign.collaborations || []
         })
       }));
