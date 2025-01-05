@@ -14,9 +14,40 @@ import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { BusinessList } from "@/components/business/BusinessList";
 import { KanbanBoard } from "@/components/dashboard/KanbanBoard";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
+
+  useEffect(() => {
+    // Subscribe to collaboration changes
+    const subscription = supabase
+      .channel('collaborations-channel')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'collaborations'
+        },
+        (payload) => {
+          // Only notify for new collaborations
+          if (payload.eventType === 'INSERT') {
+            toast.info('New collaboration created successfully!');
+          } else if (payload.eventType === 'DELETE') {
+            toast.info('Collaboration has been removed');
+          }
+          // No toast for status updates, but UI will still update via React Query
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const sidebarItems = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
