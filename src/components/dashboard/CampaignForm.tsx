@@ -48,6 +48,7 @@ interface CampaignFormProps {
 
 export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
   const [collaborationData, setCollaborationData] = useState(null);
+  const [isProcessingCollaboration, setIsProcessingCollaboration] = useState(false);
   const queryClient = useQueryClient();
 
   // First get the current user
@@ -96,25 +97,29 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
 
   const mutation = useMutation({
     mutationFn: async (values: CampaignFormData) => {
-      // Status is now handled by the database trigger, no need to set it here
-      if (collaborationData) {
-        return createCampaignWithCollaboration(values, collaborationData);
+      try {
+        if (collaborationData) {
+          return await createCampaignWithCollaboration(values, collaborationData);
+        }
+
+        const { data, error } = await supabase
+          .from("campaigns")
+          .insert({
+            title: values.title,
+            description: values.description,
+            business_id: values.business_id,
+            start_date: values.start_date,
+            end_date: values.end_date,
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      } catch (error) {
+        console.error("Error in mutation:", error);
+        throw error;
       }
-
-      const { data, error } = await supabase
-        .from("campaigns")
-        .insert({
-          title: values.title,
-          description: values.description,
-          business_id: values.business_id,
-          start_date: values.start_date,
-          end_date: values.end_date,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
@@ -124,30 +129,47 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
       );
       form.reset();
       setCollaborationData(null);
+      setIsProcessingCollaboration(false);
       onSuccess();
     },
     onError: (error) => {
       console.error("Error:", error);
       toast.error("Failed to create campaign. Please try again.");
       setCollaborationData(null);
+      setIsProcessingCollaboration(false);
     },
   });
 
-  const handleCollaborationData = (data: any) => {
-    setCollaborationData(data);
-    form.handleSubmit((values) => mutation.mutate(values))();
+  const handleCollaborationData = async (data: any) => {
+    try {
+      setIsProcessingCollaboration(true);
+      setCollaborationData(data);
+      await form.handleSubmit(async (values) => {
+        await mutation.mutateAsync(values);
+      })();
+    } catch (error) {
+      console.error("Error handling collaboration data:", error);
+      setIsProcessingCollaboration(false);
+      setCollaborationData(null);
+      toast.error("Failed to process collaboration data");
+    }
   };
 
-  const onSubmit = (values: CampaignFormData) => {
-    const startDate = new Date(values.start_date);
-    const endDate = new Date(values.end_date);
-    
-    if (startDate > endDate) {
-      toast.error("Start date cannot be after end date");
-      return;
-    }
+  const onSubmit = async (values: CampaignFormData) => {
+    try {
+      const startDate = new Date(values.start_date);
+      const endDate = new Date(values.end_date);
+      
+      if (startDate > endDate) {
+        toast.error("Start date cannot be after end date");
+        return;
+      }
 
-    mutation.mutate(values);
+      await mutation.mutateAsync(values);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast.error("Failed to submit form");
+    }
   };
 
   if (isLoadingUser || isLoadingBusinesses) {
@@ -180,7 +202,7 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
           <FormActions 
             form={form}
             mutation={mutation}
-            isCreatingCollaboration={!!collaborationData}
+            isCreatingCollaboration={isProcessingCollaboration}
             campaign={campaign}
             onSubmit={onSubmit}
           />
