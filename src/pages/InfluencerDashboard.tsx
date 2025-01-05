@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CollaborationCardNew } from "@/components/dashboard/influencer/CollaborationCardNew";
-import { CollaborationDialog } from "@/components/dashboard/kanban/CollaborationDialog";
+import { CollaborationDialog } from "@/components/dashboard/kanban/dialogs/CollaborationDialog";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
