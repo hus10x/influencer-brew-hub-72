@@ -1,33 +1,35 @@
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { Navbar } from "@/components/Navbar";
+import { CollaborationSkeleton } from "@/components/dashboard/influencer/CollaborationSkeleton";
 import { CollaborationCardNew } from "@/components/dashboard/influencer/CollaborationCardNew";
-import { CollaborationDialog } from "@/components/dashboard/kanban/dialogs/CollaborationDialog";
-import { useState } from "react";
-import { Loader2 } from "lucide-react";
 
 const InfluencerDashboard = () => {
-  const [selectedCollaboration, setSelectedCollaboration] = useState(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
-  const { data: collaborations = [], isLoading } = useQuery({
-    queryKey: ["collaborations", "influencer"],
+  const { data: collaborations = [], isLoading, refetch } = useQuery({
+    queryKey: ['open-collaborations'],
     queryFn: async () => {
       try {
-        const { data: userData } = await supabase.auth.getUser();
-        if (!userData.user) throw new Error("Not authenticated");
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !session) {
+          console.error('Session error:', sessionError);
+          toast.error('Please log in to view collaborations');
+          navigate('/login');
+          return [];
+        }
 
         const { data, error } = await supabase
-          .from("collaborations")
+          .from('collaborations')
           .select(`
             *,
-            campaign:campaigns (
-              id,
-              title,
-              description,
-              start_date,
-              end_date,
-              status,
-              business:businesses (
+            campaign:campaigns(
+              *,
+              business:businesses(
                 id,
                 business_name,
                 logo_url
@@ -35,72 +37,144 @@ const InfluencerDashboard = () => {
             )
           `)
           .eq('status', 'open')
-          .eq('campaign.status', 'active') // Only show collaborations from active campaigns
           .order('created_at', { ascending: false });
 
         if (error) {
-          console.error("Error fetching collaborations:", error);
+          console.error('Error fetching collaborations:', error);
           throw error;
         }
 
-        return data || [];
+        console.log('Raw data from query:', data);
+
+        const validCollaborations = data?.filter(collab => {
+          console.log('Checking collaboration:', collab);
+          const isValid = collab && collab.campaign && collab.campaign.business;
+          if (!isValid) {
+            console.log('Invalid collaboration found:', {
+              hasCollab: !!collab,
+              hasCampaign: !!(collab && collab.campaign),
+              hasBusiness: !!(collab && collab.campaign && collab.campaign.business)
+            });
+          }
+          return isValid;
+        }) || [];
+
+        console.log('Filtered collaborations:', validCollaborations);
+        return validCollaborations;
       } catch (error) {
-        console.error("Error in query:", error);
-        throw error;
+        console.error('Error in queryFn:', error);
+        toast.error('Error loading collaborations');
+        return [];
       }
     },
+    meta: {
+      error: (error: Error) => {
+        console.error('Query error:', error);
+        toast.error(error.message);
+      }
+    }
   });
 
-  const handleJoinCollaboration = (collab: any) => {
-    setSelectedCollaboration(collab);
-    setIsDialogOpen(true);
-  };
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error('Please log in to view collaborations');
+        navigate('/login');
+        return;
+      }
+    };
+    
+    checkAuth();
+
+    console.log('Setting up real-time subscription for collaborations...');
+    
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'collaborations'
+        },
+        async (payload) => {
+          console.log('Collaboration change detected:', payload);
+          await refetch();
+          
+          if (payload.eventType === 'INSERT' && payload.new.status === 'open') {
+            toast.info('New collaboration opportunity available!');
+          } else if (payload.eventType === 'DELETE') {
+            toast.info('A collaboration has been removed');
+          } else if (payload.eventType === 'UPDATE') {
+            if (payload.old.status === 'open' && payload.new.status !== 'open') {
+              toast.info('A collaboration is no longer available');
+            }
+          }
+        }
+      )
+      .subscribe(async (status) => {
+        console.log('Subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to real-time updates');
+        }
+      });
+
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate('/login');
+      }
+    });
+
+    return () => {
+      console.log('Cleaning up real-time subscription');
+      supabase.removeChannel(channel);
+      subscription.unsubscribe();
+    };
+  }, [navigate, refetch]);
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="container mx-auto py-6 px-4 space-y-6 pt-24">
+          <div className="space-y-2 text-center py-8">
+            <h1 className="text-4xl font-bold">Collab Now ✨</h1>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, index) => (
+              <CollaborationSkeleton key={index} />
+            ))}
+          </div>
+        </main>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <main className="container mx-auto p-8">
-        <div className="space-y-8">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Available Collaborations</h1>
-            <p className="text-muted-foreground mt-2">
-              Browse and join available collaboration opportunities
-            </p>
-          </div>
+  const handleJoinCollaboration = (collab: any) => {
+    // TODO: Implement join collaboration logic
+    console.log('Join collaboration:', collab.id);
+  };
 
-          {collaborations.length === 0 ? (
-            <div className="text-center py-12">
-              <h3 className="text-lg font-medium">No collaborations available</h3>
-              <p className="text-muted-foreground mt-2">
-                Check back later for new opportunities
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {collaborations.map((collab) => (
-                <CollaborationCardNew
-                  key={collab.id}
-                  collab={collab}
-                  onJoin={handleJoinCollaboration}
-                />
-              ))}
-            </div>
-          )}
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <main className="container mx-auto py-6 px-4 space-y-6 pt-24">
+        <div className="space-y-2 text-center py-8">
+          <h1 className="text-4xl font-bold">Collab Now ✨</h1>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {collaborations.map((collab) => (
+            <CollaborationCardNew 
+              key={collab.id} 
+              collab={collab}
+              onJoin={handleJoinCollaboration}
+            />
+          ))}
         </div>
       </main>
-
-      <CollaborationDialog
-        isOpen={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        collaboration={selectedCollaboration}
-      />
     </div>
   );
 };

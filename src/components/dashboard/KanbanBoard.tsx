@@ -4,6 +4,7 @@ import { KanbanColumn } from "./kanban/KanbanColumn";
 import { useState } from "react";
 import { Campaign, CampaignStatus } from "./kanban/types";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
+import { toast } from "sonner";
 import { useUpdateCampaignStatus } from "@/hooks/use-update-campaign-status";
 import { useDeleteCampaigns } from "@/hooks/use-delete-campaigns";
 import {
@@ -18,9 +19,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Trash2, GripVertical } from "lucide-react";
-import { RealtimeHandler } from "./kanban/components/RealtimeHandler";
-import { filterCollaborationsByStatus } from "./kanban/utils/campaignUtils";
-import { toast } from "sonner";
 
 const CAMPAIGN_STATUSES: Record<CampaignStatus, string> = {
   draft: "Draft",
@@ -39,7 +37,7 @@ export const KanbanBoard = () => {
     setSelectedCampaigns([]);
   });
 
-  const { data: campaigns = [], isLoading, refetch } = useQuery({
+  const { data: campaigns = [], isLoading } = useQuery({
     queryKey: ["campaigns"],
     queryFn: async () => {
       const { data: userData } = await supabase.auth.getUser();
@@ -56,24 +54,7 @@ export const KanbanBoard = () => {
 
       const { data, error } = await supabase
         .from("campaigns")
-        .select(`
-          *,
-          collaborations (
-            id,
-            title,
-            description,
-            status,
-            filled_spots,
-            max_spots,
-            campaign_id,
-            compensation,
-            created_at,
-            deadline,
-            image_url,
-            requirements,
-            updated_at
-          )
-        `)
+        .select("*")
         .in("business_id", businessIds);
 
       if (error) {
@@ -83,13 +64,8 @@ export const KanbanBoard = () => {
 
       return (data || []).map(campaign => ({
         ...campaign,
-        status: campaign.status as CampaignStatus,
-        collaborations: filterCollaborationsByStatus({
-          ...campaign,
-          status: campaign.status as CampaignStatus,
-          collaborations: campaign.collaborations || []
-        })
-      }));
+        status: campaign.status as CampaignStatus
+      })) as Campaign[];
     },
   });
 
@@ -120,17 +96,8 @@ export const KanbanBoard = () => {
         campaignId: draggableId,
         status: newStatus
       });
-      
-      // Show success message when campaign status is updated
-      toast.success(`Campaign status updated to ${newStatus}`);
-      
-      // If moving to draft, show additional info about collaborations
-      if (newStatus === 'draft') {
-        toast.info("Associated collaborations will be closed");
-      }
     } catch (error) {
       console.error('Error updating campaign status:', error);
-      toast.error("Failed to update campaign status");
     }
   };
 
@@ -153,11 +120,6 @@ export const KanbanBoard = () => {
 
   return (
     <>
-      <RealtimeHandler 
-        onCampaignUpdate={refetch}
-        onCollaborationUpdate={refetch}
-      />
-
       <div className="mb-4 flex items-center justify-between">
         <div className="flex-1" />
         <div className="flex items-center gap-2">
