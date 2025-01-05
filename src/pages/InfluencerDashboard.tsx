@@ -1,12 +1,14 @@
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DollarSign } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
+import { toast } from "sonner";
 
 const InfluencerDashboard = () => {
-  const { data: collaborations = [], isLoading } = useQuery({
+  const { data: collaborations = [], isLoading, refetch } = useQuery({
     queryKey: ['open-collaborations'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -46,6 +48,38 @@ const InfluencerDashboard = () => {
       return validCollaborations;
     },
   });
+
+  useEffect(() => {
+    console.log('Setting up real-time subscription for collaborations...');
+    
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'collaborations',
+          filter: 'status=eq.open'
+        },
+        async (payload) => {
+          console.log('New collaboration detected:', payload);
+          toast.info('New collaboration opportunity available!');
+          await refetch();
+        }
+      )
+      .subscribe(async (status) => {
+        console.log('Subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to real-time updates');
+        }
+      });
+
+    return () => {
+      console.log('Cleaning up real-time subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
 
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
