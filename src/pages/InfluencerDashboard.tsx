@@ -6,50 +6,87 @@ import { Button } from "@/components/ui/button";
 import { DollarSign } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const InfluencerDashboard = () => {
+  const navigate = useNavigate();
+
   const { data: collaborations = [], isLoading, refetch } = useQuery({
     queryKey: ['open-collaborations'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('collaborations')
-        .select(`
-          *,
-          campaign:campaigns(
-            *,
-            business:businesses(*)
-          )
-        `)
-        .eq('status', 'open')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching collaborations:', error);
-        throw error;
-      }
-
-      console.log('Raw data from query:', data);
-
-      // Filter out collaborations where campaign or business is null
-      const validCollaborations = data?.filter(collab => {
-        console.log('Checking collaboration:', collab);
-        const isValid = collab && collab.campaign && collab.campaign.business;
-        if (!isValid) {
-          console.log('Invalid collaboration found:', {
-            hasCollab: !!collab,
-            hasCampaign: !!(collab && collab.campaign),
-            hasBusiness: !!(collab && collab.campaign && collab.campaign.business)
-          });
+      try {
+        // First check if we have a valid session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !session) {
+          console.error('Session error:', sessionError);
+          toast.error('Please log in to view collaborations');
+          navigate('/login');
+          return [];
         }
-        return isValid;
-      }) || [];
 
-      console.log('Filtered collaborations:', validCollaborations);
-      return validCollaborations;
+        const { data, error } = await supabase
+          .from('collaborations')
+          .select(`
+            *,
+            campaign:campaigns(
+              *,
+              business:businesses(*)
+            )
+          `)
+          .eq('status', 'open')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching collaborations:', error);
+          throw error;
+        }
+
+        console.log('Raw data from query:', data);
+
+        // Filter out collaborations where campaign or business is null
+        const validCollaborations = data?.filter(collab => {
+          console.log('Checking collaboration:', collab);
+          const isValid = collab && collab.campaign && collab.campaign.business;
+          if (!isValid) {
+            console.log('Invalid collaboration found:', {
+              hasCollab: !!collab,
+              hasCampaign: !!(collab && collab.campaign),
+              hasBusiness: !!(collab && collab.campaign && collab.campaign.business)
+            });
+          }
+          return isValid;
+        }) || [];
+
+        console.log('Filtered collaborations:', validCollaborations);
+        return validCollaborations;
+      } catch (error) {
+        console.error('Error in queryFn:', error);
+        toast.error('Error loading collaborations');
+        return [];
+      }
     },
+    meta: {
+      error: (error: Error) => {
+        console.error('Query error:', error);
+        toast.error(error.message);
+      }
+    }
   });
 
   useEffect(() => {
+    // Check authentication status when component mounts
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error('Please log in to view collaborations');
+        navigate('/login');
+        return;
+      }
+    };
+    
+    checkAuth();
+
     console.log('Setting up real-time subscription for collaborations...');
     
     const channel = supabase
@@ -75,11 +112,19 @@ const InfluencerDashboard = () => {
         }
       });
 
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate('/login');
+      }
+    });
+
     return () => {
       console.log('Cleaning up real-time subscription');
       supabase.removeChannel(channel);
+      subscription.unsubscribe();
     };
-  }, [refetch]);
+  }, [navigate, refetch]);
 
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
