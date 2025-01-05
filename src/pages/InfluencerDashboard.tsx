@@ -51,7 +51,6 @@ const InfluencerDashboard = () => {
 
         // Filter out collaborations where campaign or business is null
         const validCollaborations = data?.filter(collab => {
-          console.log('Checking collaboration:', collab);
           const isValid = collab && collab.campaign && collab.campaign.business;
           if (!isValid) {
             console.log('Invalid collaboration found:', {
@@ -63,8 +62,13 @@ const InfluencerDashboard = () => {
           return isValid;
         }) || [];
 
-        console.log('Filtered collaborations:', validCollaborations);
-        return validCollaborations;
+        // Only return collaborations from active campaigns
+        const activeCollaborations = validCollaborations.filter(
+          collab => collab.campaign.status === 'active'
+        );
+
+        console.log('Filtered collaborations:', activeCollaborations);
+        return activeCollaborations;
       } catch (error) {
         console.error('Error in queryFn:', error);
         toast.error('Error loading collaborations');
