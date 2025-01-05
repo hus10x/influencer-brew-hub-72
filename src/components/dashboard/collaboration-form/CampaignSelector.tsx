@@ -26,9 +26,11 @@ export const CampaignSelector = ({ form, campaigns }: CampaignSelectorProps) => 
           schema: 'public',
           table: 'campaigns'
         },
-        () => {
-          // Invalidate and refetch campaigns query
+        (payload) => {
+          console.log('Campaign change detected:', payload);
+          // Invalidate both queries to ensure consistency
           queryClient.invalidateQueries({ queryKey: ['campaigns'] });
+          queryClient.invalidateQueries({ queryKey: ['active-campaigns'] });
         }
       )
       .subscribe();

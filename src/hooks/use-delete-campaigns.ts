@@ -90,23 +90,36 @@ export const useDeleteCampaigns = (onSuccess?: () => void) => {
       }
     },
     onMutate: async (campaignIds) => {
+      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ["campaigns"] });
+      await queryClient.cancelQueries({ queryKey: ["active-campaigns"] });
+      
+      // Snapshot the previous value
       const previousCampaigns = queryClient.getQueryData<Campaign[]>(["campaigns"]);
       
+      // Optimistically update both queries
       queryClient.setQueryData<Campaign[]>(["campaigns"], (old) => 
+        old?.filter(campaign => !campaignIds.includes(campaign.id)) ?? []
+      );
+      
+      queryClient.setQueryData<Campaign[]>(["active-campaigns"], (old) => 
         old?.filter(campaign => !campaignIds.includes(campaign.id)) ?? []
       );
       
       return { previousCampaigns };
     },
     onSuccess: () => {
+      // Invalidate and refetch all related queries
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+      queryClient.invalidateQueries({ queryKey: ["active-campaigns"] });
       toast.success("Campaigns deleted successfully");
       onSuccess?.();
     },
     onError: (error, _, context) => {
+      // Rollback to the previous state if mutation fails
       if (context?.previousCampaigns) {
         queryClient.setQueryData(["campaigns"], context.previousCampaigns);
+        queryClient.setQueryData(["active-campaigns"], context.previousCampaigns.filter(c => c.status === 'active'));
       }
       console.error("Error deleting campaigns:", error);
       toast.error("Failed to delete campaigns. Please try again.");
