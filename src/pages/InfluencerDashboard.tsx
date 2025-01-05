@@ -97,10 +97,13 @@ const InfluencerDashboard = () => {
         },
         async (payload) => {
           console.log('Campaign status change detected:', payload);
-          if (payload.old.status === 'draft' && payload.new.status === 'active') {
-            console.log('Campaign activated, refetching collaborations...');
-            await refetch();
-            toast.info('New campaign activated with collaboration opportunities!');
+          if (payload.old.status !== payload.new.status) {
+            console.log('Campaign status changed from', payload.old.status, 'to', payload.new.status);
+            if (payload.old.status === 'draft' && payload.new.status === 'active') {
+              console.log('Campaign activated, refetching collaborations...');
+              await refetch();
+              toast.info('New campaign activated with collaboration opportunities!');
+            }
           }
         }
       )
