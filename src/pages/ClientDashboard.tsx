@@ -17,6 +17,7 @@ import { BusinessList } from "@/components/business/BusinessList";
 import { KanbanBoard } from "@/components/dashboard/KanbanBoard";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import type { Campaign, CampaignStatus } from "@/components/dashboard/kanban/types";
 
 const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -48,7 +49,7 @@ const ClientDashboard = () => {
         throw error;
       }
 
-      return data || [];
+      return (data || []) as Campaign[];
     },
     staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
     gcTime: 1000 * 60 * 10, // Keep unused data in cache for 10 minutes

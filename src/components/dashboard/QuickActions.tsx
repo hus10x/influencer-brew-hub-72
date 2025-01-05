@@ -45,7 +45,7 @@ const FormSkeleton = () => (
 );
 
 interface QuickActionsProps {
-  campaigns?: Campaign[];
+  campaigns: Campaign[];
 }
 
 export const QuickActions = ({ campaigns = [] }: QuickActionsProps) => {
