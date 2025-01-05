@@ -10,6 +10,7 @@ import { FormHeader } from "./sections/FormHeader";
 import { FormActions } from "./sections/FormActions";
 import { useCollaborationForm } from "./hooks/useCollaborationForm";
 import { Tables } from "@/integrations/supabase/types";
+import { toast } from "sonner";
 
 interface CollaborationFormProps {
   campaignId?: string;
@@ -30,7 +31,14 @@ export const CollaborationForm = forwardRef(({
 }: CollaborationFormProps, ref) => {
   const { form, isLoading, onSubmit } = useCollaborationForm({
     campaignId,
-    onSuccess,
+    onSuccess: () => {
+      toast.success(initialData ? "Collaboration updated successfully" : "Collaboration created successfully");
+      onSuccess?.();
+    },
+    onError: (error) => {
+      console.error("Error submitting collaboration:", error);
+      toast.error("Failed to save collaboration. Please try again.");
+    },
     initialData,
   });
 
@@ -46,6 +54,7 @@ export const CollaborationForm = forwardRef(({
             await onSubmit(data);
             resolve();
           } catch (error) {
+            console.error("Form submission error:", error);
             reject(error);
           }
         })();
@@ -53,11 +62,20 @@ export const CollaborationForm = forwardRef(({
     }
   }));
 
+  const handleSubmit = async (data: CollaborationFormData) => {
+    try {
+      await onSubmit(data);
+    } catch (error) {
+      console.error("Form submission error:", error);
+      toast.error("Failed to save collaboration. Please try again.");
+    }
+  };
+
   return (
     <>
       {initialData && <FormHeader isEditing />}
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
           {isStandalone && <CampaignSelector form={form} campaigns={campaigns} />}
           <BasicDetailsSection form={form} />
           <RequirementsSection 

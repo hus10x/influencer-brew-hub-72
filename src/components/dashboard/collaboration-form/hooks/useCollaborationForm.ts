@@ -3,16 +3,21 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { collaborationFormSchema, type CollaborationFormData } from "../types";
 
 interface UseCollaborationFormProps {
   campaignId?: string;
   onSuccess?: () => void;
+  onError?: (error: any) => void;
   initialData?: CollaborationFormData & { id: string };
 }
 
-export const useCollaborationForm = ({ campaignId, onSuccess, initialData }: UseCollaborationFormProps) => {
+export const useCollaborationForm = ({ 
+  campaignId, 
+  onSuccess, 
+  onError,
+  initialData 
+}: UseCollaborationFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
 
@@ -88,12 +93,11 @@ export const useCollaborationForm = ({ campaignId, onSuccess, initialData }: Use
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["collaborations"] });
-      toast.success(initialData ? "Collaboration updated successfully" : "Collaboration created successfully");
       onSuccess?.();
     },
     onError: (error) => {
       console.error("Error:", error);
-      toast.error("Failed to save collaboration. Please try again.");
+      onError?.(error);
     },
     onSettled: () => {
       setIsLoading(false);
