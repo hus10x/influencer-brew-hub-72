@@ -181,8 +181,8 @@ const InfluencerDashboard = () => {
                   </div>
                 )}
               </div>
-              <div className="flex-1 p-6">
-                <div className="space-y-4">
+              <div className="flex-1 p-6 flex flex-col">
+                <div className="flex-1">
                   <div className="space-y-2">
                     <CardHeader className="p-0">
                       <div className="flex items-center gap-2">
@@ -215,23 +215,23 @@ const InfluencerDashboard = () => {
                           ))}
                         </ul>
                       </div>
-
-                      <div className="mt-4 flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="h-4 w-4" />
-                          <span className="text-sm font-medium">{collab.compensation}</span>
-                        </div>
-                        <Button 
-                          onClick={() => {
-                            // TODO: Implement join collaboration logic
-                            console.log('Join collaboration:', collab.id);
-                          }}
-                        >
-                          Join Collaboration
-                        </Button>
-                      </div>
                     </CardContent>
                   </div>
+                </div>
+
+                <div className="mt-4 flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4" />
+                    <span className="text-sm font-medium">{collab.compensation}</span>
+                  </div>
+                  <Button 
+                    onClick={() => {
+                      // TODO: Implement join collaboration logic
+                      console.log('Join collaboration:', collab.id);
+                    }}
+                  >
+                    Join Collaboration
+                  </Button>
                 </div>
               </div>
             </Card>
