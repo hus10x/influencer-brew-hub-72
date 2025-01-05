@@ -6,17 +6,20 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { CollaborationForm } from "../../collaboration-form/CollaborationForm";
+import { Tables } from "@/integrations/supabase/types";
 
 interface CollaborationDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   campaignId: string;
+  campaigns?: Tables<"campaigns">[];
 }
 
 export const CollaborationDialog = ({
   isOpen,
   onOpenChange,
   campaignId,
+  campaigns,
 }: CollaborationDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -31,6 +34,7 @@ export const CollaborationDialog = ({
           campaignId={campaignId}
           onSuccess={() => onOpenChange(false)}
           isStandalone={false}
+          campaigns={campaigns}
         />
       </DialogContent>
     </Dialog>

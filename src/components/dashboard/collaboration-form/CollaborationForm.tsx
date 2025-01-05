@@ -24,6 +24,7 @@ export const CollaborationForm = forwardRef(({
   campaignId,
   onSuccess,
   isStandalone = true,
+  onCollaborationData,
   initialData,
   campaigns,
 }: CollaborationFormProps, ref) => {

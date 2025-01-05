@@ -14,6 +14,8 @@ export const CampaignSelector = ({ form, campaigns }: CampaignSelectorProps) => 
 
   const activeCampaigns = campaigns.filter(campaign => campaign.status === 'active');
 
+  if (activeCampaigns.length === 0) return null;
+
   return (
     <FormField
       control={form.control}
