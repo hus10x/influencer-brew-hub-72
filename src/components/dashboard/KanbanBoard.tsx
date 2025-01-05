@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { KanbanColumn } from "./kanban/KanbanColumn";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Campaign, CampaignStatus } from "./kanban/types";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import { toast } from "sonner";
@@ -31,13 +31,22 @@ export const KanbanBoard = () => {
   const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(
+    localStorage.getItem("selectedBusinessId") || null
+  );
+  
   const windowWidth = window.innerWidth;
   const updateCampaignStatus = useUpdateCampaignStatus();
   const deleteCampaigns = useDeleteCampaigns(() => {
     setSelectionMode(false);
     setSelectedCampaigns([]);
   });
+
+  // Reset selection mode and selected campaigns when changing business filter
+  useEffect(() => {
+    setSelectionMode(false);
+    setSelectedCampaigns([]);
+  }, [selectedBusinessId]);
 
   const { data: campaigns = [], isLoading } = useQuery({
     queryKey: ["campaigns", selectedBusinessId],

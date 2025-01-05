@@ -1,7 +1,15 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Building2 } from "lucide-react";
+import { Building2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect } from "react";
+
+interface Business {
+  id: string;
+  business_name: string;
+}
 
 interface BusinessFilterProps {
   onBusinessSelect: (businessId: string | null) => void;
@@ -9,7 +17,7 @@ interface BusinessFilterProps {
 }
 
 export const BusinessFilter = ({ onBusinessSelect, selectedBusinessId }: BusinessFilterProps) => {
-  const { data: businesses = [], isLoading } = useQuery({
+  const { data: businesses = [], isLoading, error } = useQuery({
     queryKey: ["businesses"],
     queryFn: async () => {
       const { data: userData } = await supabase.auth.getUser();
@@ -25,16 +33,51 @@ export const BusinessFilter = ({ onBusinessSelect, selectedBusinessId }: Busines
         throw error;
       }
 
-      return data || [];
+      return data as Business[] || [];
     },
   });
+
+  // Load saved filter from localStorage
+  useEffect(() => {
+    const savedFilter = localStorage.getItem("selectedBusinessId");
+    if (savedFilter && selectedBusinessId !== savedFilter) {
+      onBusinessSelect(savedFilter);
+    }
+  }, []);
+
+  // Save filter to localStorage
+  const handleBusinessSelect = (value: string) => {
+    const businessId = value === "all" ? null : value;
+    localStorage.setItem("selectedBusinessId", businessId || "all");
+    onBusinessSelect(businessId);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2">
+        <Building2 className="h-4 w-4 text-muted-foreground" />
+        <Skeleton className="h-10 w-[200px]" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive" className="w-[300px]">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Failed to load businesses. Please try again.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div className="flex items-center gap-2">
       <Building2 className="h-4 w-4 text-muted-foreground" />
       <Select
         value={selectedBusinessId || "all"}
-        onValueChange={(value) => onBusinessSelect(value === "all" ? null : value)}
+        onValueChange={handleBusinessSelect}
       >
         <SelectTrigger className="w-[200px]">
           <SelectValue placeholder="Filter by business" />
