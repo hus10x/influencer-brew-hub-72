@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Users } from "lucide-react";
 import { useState } from "react";
-import { CollaborationModal } from "./CollaborationModal";
+import { CollaborationModal } from "./kanban/CollaborationModal";
 import { Tables } from "@/integrations/supabase/types";
 
 interface CollaborationCardProps {
