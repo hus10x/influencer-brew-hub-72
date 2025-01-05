@@ -110,6 +110,7 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
             business_id: values.business_id,
             start_date: values.start_date,
             end_date: values.end_date,
+            status: 'active', // Explicitly set status to active
           })
           .select()
           .single();
