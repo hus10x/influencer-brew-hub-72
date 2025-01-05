@@ -229,7 +229,7 @@ const InfluencerDashboard = () => {
                   </div>
                 </div>
 
-                <div className="mt-4 flex justify-end">
+                <div className="mt-4">
                   <Button 
                     onClick={() => {
                       // TODO: Implement join collaboration logic
