@@ -21,6 +21,11 @@ serve(async (req) => {
     console.log('Received campaign data:', campaignData)
     console.log('Received collaboration data:', collaborationData)
 
+    // Validate campaign data
+    if (!campaignData.business_id || !campaignData.title || !campaignData.start_date || !campaignData.end_date) {
+      throw new Error('Missing required campaign fields')
+    }
+
     // Start a transaction
     const { data: campaign, error: campaignError } = await supabaseClient
       .from('campaigns')
@@ -40,6 +45,11 @@ serve(async (req) => {
 
     let collaboration = null
     if (collaborationData && campaign) {
+      // Validate collaboration data
+      if (!collaborationData.title || !collaborationData.description || !collaborationData.requirements) {
+        throw new Error('Missing required collaboration fields')
+      }
+
       const { data: newCollaboration, error: collaborationError } = await supabaseClient
         .from('collaborations')
         .insert({
@@ -74,7 +84,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in create-campaign-with-collaboration:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.details || 'An unexpected error occurred'
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,

@@ -14,7 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { BusinessProfileForm } from "./BusinessProfileForm";
-import { RealtimeChannel } from "@supabase/supabase-js";
+import { toast } from "sonner";
 
 export const BusinessList = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -42,6 +42,8 @@ export const BusinessList = () => {
   // Set up real-time subscription with proper error handling
   useEffect(() => {
     let retryTimeout: NodeJS.Timeout;
+    console.log('Setting up real-time subscription for campaigns...');
+    
     const channel = supabase
       .channel('schema-db-changes')
       .on(
