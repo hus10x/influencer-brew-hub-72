@@ -131,7 +131,7 @@ export const CollaborationModal = ({
               <div>
                 <h4 className="text-sm font-medium">Compensation</h4>
                 <p className="text-sm text-muted-foreground">
-                  ${collaboration.compensation}
+                  BHD {collaboration.compensation}
                 </p>
               </div>
               <div>
