@@ -49,7 +49,7 @@ export const KanbanBoard = () => {
   }, [selectedBusinessId]);
 
   const { data: campaigns = [], isLoading } = useQuery({
-    queryKey: ["campaigns", selectedBusinessId],
+    queryKey: ["campaigns", selectedBusinessId || "all"],
     queryFn: async () => {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("Not authenticated");

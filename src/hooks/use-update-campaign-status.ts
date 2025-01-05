@@ -21,14 +21,19 @@ export const useUpdateCampaignStatus = () => {
       if (error) throw error;
     },
     onMutate: async ({ campaignId, status }) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["campaigns"] });
+      // Get the current filter value from localStorage
+      const currentFilter = localStorage.getItem("selectedBusinessId") || "all";
+      
+      // Cancel outgoing refetches for this query key
+      await queryClient.cancelQueries({ 
+        queryKey: ["campaigns", currentFilter]
+      });
 
-      // Snapshot the previous value
-      const previousCampaigns = queryClient.getQueryData<Campaign[]>(["campaigns"]);
+      // Get current campaigns
+      const previousCampaigns = queryClient.getQueryData<Campaign[]>(["campaigns", currentFilter]);
 
-      // Optimistically update to the new value
-      queryClient.setQueryData<Campaign[]>(["campaigns"], (old) => {
+      // Optimistically update the cache
+      queryClient.setQueryData<Campaign[]>(["campaigns", currentFilter], (old) => {
         if (!old) return [];
         return old.map((campaign) =>
           campaign.id === campaignId
@@ -37,17 +42,25 @@ export const useUpdateCampaignStatus = () => {
         );
       });
 
-      // Return a context object with the snapshotted value
       return { previousCampaigns };
     },
     onError: (err, variables, context) => {
+      // Get the current filter value
+      const currentFilter = localStorage.getItem("selectedBusinessId") || "all";
+      
       console.error("Error updating campaign status:", err);
       toast.error("Failed to update campaign status");
+      
+      // Revert the optimistic update
       if (context?.previousCampaigns) {
-        queryClient.setQueryData(["campaigns"], context.previousCampaigns);
+        queryClient.setQueryData(["campaigns", currentFilter], context.previousCampaigns);
       }
     },
     onSuccess: () => {
+      const currentFilter = localStorage.getItem("selectedBusinessId") || "all";
+      queryClient.invalidateQueries({ 
+        queryKey: ["campaigns", currentFilter]
+      });
       toast.success("Campaign status updated");
     },
   });
