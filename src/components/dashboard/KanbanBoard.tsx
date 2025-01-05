@@ -54,19 +54,26 @@ export const KanbanBoard = () => {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("Not authenticated");
 
-      const { data: businesses } = await supabase
-        .from("businesses")
-        .select("id")
-        .eq("user_id", userData.user.id);
-
-      if (!businesses?.length) return [];
-
-      const businessIds = selectedBusinessId ? [selectedBusinessId] : businesses.map(b => b.id);
-
-      const { data, error } = await supabase
+      let query = supabase
         .from("campaigns")
-        .select("*")
-        .in("business_id", businessIds);
+        .select("*");
+
+      // Only apply business filter if a specific business is selected
+      if (selectedBusinessId) {
+        query = query.eq('business_id', selectedBusinessId);
+      } else {
+        // If no business selected, get all businesses for the user
+        const { data: businesses } = await supabase
+          .from("businesses")
+          .select("id")
+          .eq("user_id", userData.user.id);
+
+        if (!businesses?.length) return [];
+        
+        query = query.in('business_id', businesses.map(b => b.id));
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error("Error fetching campaigns:", error);
