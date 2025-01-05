@@ -185,8 +185,7 @@ const InfluencerDashboard = () => {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <CardHeader className="p-0">
-                      <CardTitle className="text-xl">{collab.title}</CardTitle>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-2">
                         <Avatar className="h-10 w-10 rounded-md">
                           <AvatarImage 
                             src={collab.campaign?.business?.logo_url || ""} 
@@ -201,6 +200,7 @@ const InfluencerDashboard = () => {
                           {collab.campaign?.business?.business_name || 'Unknown Business'}
                         </p>
                       </div>
+                      <CardTitle className="text-xl mt-2">{collab.title}</CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
                       <p className="text-sm text-muted-foreground">
