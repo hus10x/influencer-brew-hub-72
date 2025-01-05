@@ -235,12 +235,13 @@ const InfluencerDashboard = () => {
                   </div>
                 </div>
 
-                <div className="mt-4">
+                <div className="mt-4 w-full">
                   <Button 
                     onClick={() => {
                       // TODO: Implement join collaboration logic
                       console.log('Join collaboration:', collab.id);
                     }}
+                    className="w-full md:w-auto"
                   >
                     Join Collaboration
                   </Button>
