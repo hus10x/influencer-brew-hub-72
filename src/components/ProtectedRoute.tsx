@@ -1,30 +1,52 @@
-import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useState, useEffect } from "react";
 
-// Utility function for zoom reset
-const resetMobileZoom = () => {
-  // Ensure viewport meta tag exists
-  let viewport = document.querySelector('meta[name="viewport"]');
-  
-  // If viewport meta doesn't exist, create it
-  if (!viewport) {
-    viewport = document.createElement('meta');
-    viewport.setAttribute('name', 'viewport');
-    viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
-    document.head.appendChild(viewport);
-  }
+// Utility function to prevent iOS zoom on input focus
+const preventInputZoom = () => {
+  // Add event listeners to all input fields and textareas
+  const addZoomPreventionToInputs = () => {
+    const inputs = document.querySelectorAll('input, textarea');
+    inputs.forEach(input => {
+      input.style.fontSize = '16px'; // Minimum font size to prevent zoom
+      
+      // Prevent zoom on focus
+      input.addEventListener('focus', (e) => {
+        // Set viewport to prevent zoom
+        const viewport = document.querySelector('meta[name="viewport"]');
+        if (viewport) {
+          viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0');
+        }
+      });
+      
+      // Reset viewport on blur
+      input.addEventListener('blur', (e) => {
+        const viewport = document.querySelector('meta[name="viewport"]');
+        if (viewport) {
+          viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
+        }
+      });
+    });
+  };
 
-  const originalContent = viewport.getAttribute('content') || 'width=device-width, initial-scale=1.0';
-  
-  // Force reset zoom with a more aggressive approach
-  viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0');
-  
-  // Reset back to original after brief delay
-  setTimeout(() => {
-    viewport.setAttribute('content', originalContent);
-  }, 500); // Increased delay for better reliability
+  // Initial setup
+  addZoomPreventionToInputs();
+
+  // Setup a mutation observer to handle dynamically added inputs
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.addedNodes.length) {
+        addZoomPreventionToInputs();
+      }
+    });
+  });
+
+  // Start observing the document with the configured parameters
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  // Return cleanup function
+  return () => observer.disconnect();
 };
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -33,68 +55,47 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [userType, setUserType] = useState<string | null>(null);
 
   useEffect(() => {
+    // Apply zoom prevention after component mounts
+    const cleanup = preventInputZoom();
+    return cleanup;
+  }, []);
+
+  useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
           setIsAuthenticated(false);
           setIsLoading(false);
           return;
         }
 
-        // First try to get the existing profile
-        const { data: profile, error: fetchError } = await supabase
+        const { data: profile } = await supabase
           .from('profiles')
           .select('user_type')
-          .eq('id', session.user.id)
-          .maybeSingle();
+          .eq('id', user.id)
+          .single();
 
-        if (fetchError) {
-          console.error('Error fetching profile:', fetchError);
-          toast.error('Error fetching user profile');
-          setIsAuthenticated(false);
-          setIsLoading(false);
-          return;
-        }
-
-        // If profile exists, use its user_type
         if (profile) {
-          console.log('Found profile with user_type:', profile.user_type);
           setUserType(profile.user_type);
           setIsAuthenticated(true);
           setIsLoading(false);
-          // Reset zoom after authentication is confirmed
-          resetMobileZoom();
           return;
         }
 
-        // If no profile exists, create one with the user_type from URL
-        const desiredUserType = window.location.pathname.includes('influencer') ? 'influencer' : 'business';
-        
-        const { error: upsertError } = await supabase
+        const { data, error } = await supabase
           .from('profiles')
-          .upsert({
-            id: session.user.id,
-            email: session.user.email,
-            user_type: desiredUserType
-          }, {
-            onConflict: 'id'
-          });
+          .insert({ id: user.id, user_type: 'user' })
+          .single();
 
-        if (upsertError) {
-          console.error('Error upserting profile:', upsertError);
-          toast.error('Error creating user profile');
-          setIsAuthenticated(false);
-          setIsLoading(false);
-          return;
+        if (error) {
+          throw error;
         }
 
-        setUserType(desiredUserType);
+        setUserType(data.user_type);
         setIsAuthenticated(true);
         setIsLoading(false);
-        // Reset zoom after profile creation
-        resetMobileZoom();
       } catch (error) {
         console.error('Auth check error:', error);
         toast.error('Authentication error');
@@ -107,22 +108,11 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return null;
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  // Redirect based on user type
-  if (userType === 'business' && window.location.pathname === '/influencer') {
-    console.log('Redirecting business user from influencer to client dashboard');
-    return <Navigate to="/client" replace />;
-  }
-  
-  if (userType === 'influencer' && window.location.pathname === '/client') {
-    console.log('Redirecting influencer from client to influencer dashboard');
-    return <Navigate to="/influencer" replace />;
+    return <Navigate to="/login" />;
   }
 
   return <>{children}</>;
