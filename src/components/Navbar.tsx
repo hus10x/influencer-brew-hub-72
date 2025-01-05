@@ -111,7 +111,6 @@ export const Navbar = () => {
               variant="ghost"
               size="icon"
               onClick={handleThemeToggle}
-              className="hidden lg:inline-flex"
             >
               {!hasToggledTheme && theme === "system" ? (
                 <Monitor className="h-5 w-5" />
