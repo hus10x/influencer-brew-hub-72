@@ -1,41 +1,21 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { DollarSign } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { CollaborationsList } from "@/components/dashboard/influencer/CollaborationsList";
-
-type CollaborationWithRelations = {
-  id: string;
-  title: string;
-  description: string;
-  requirements: string[];
-  compensation: number;
-  deadline: string;
-  image_url: string | null;
-  status: string;
-  campaign_id: string;
-  max_spots: number;
-  filled_spots: number;
-  created_at: string;
-  updated_at: string;
-  campaign: {
-    id: string;
-    business: {
-      id: string;
-      business_name: string;
-    } | null;
-  } | null;
-};
 
 const InfluencerDashboard = () => {
   const navigate = useNavigate();
 
-  const { data: collaborations = [], isLoading, refetch } = useQuery<CollaborationWithRelations[]>({
+  const { data: collaborations = [], isLoading, refetch } = useQuery({
     queryKey: ['open-collaborations'],
     queryFn: async () => {
       try {
+        // First check if we have a valid session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError || !session) {
@@ -55,7 +35,6 @@ const InfluencerDashboard = () => {
             )
           `)
           .eq('status', 'open')
-          .eq('campaign.status', 'active')
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -63,8 +42,24 @@ const InfluencerDashboard = () => {
           throw error;
         }
 
-        console.log('Fetched collaborations:', data);
-        return data || [];
+        console.log('Raw data from query:', data);
+
+        // Filter out collaborations where campaign or business is null
+        const validCollaborations = data?.filter(collab => {
+          console.log('Checking collaboration:', collab);
+          const isValid = collab && collab.campaign && collab.campaign.business;
+          if (!isValid) {
+            console.log('Invalid collaboration found:', {
+              hasCollab: !!collab,
+              hasCampaign: !!(collab && collab.campaign),
+              hasBusiness: !!(collab && collab.campaign && collab.campaign.business)
+            });
+          }
+          return isValid;
+        }) || [];
+
+        console.log('Filtered collaborations:', validCollaborations);
+        return validCollaborations;
       } catch (error) {
         console.error('Error in queryFn:', error);
         toast.error('Error loading collaborations');
@@ -80,6 +75,7 @@ const InfluencerDashboard = () => {
   });
 
   useEffect(() => {
+    // Check authentication status when component mounts
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -91,7 +87,7 @@ const InfluencerDashboard = () => {
     
     checkAuth();
 
-    console.log('Setting up real-time subscriptions...');
+    console.log('Setting up real-time subscription for collaborations...');
     
     const channel = supabase
       .channel('schema-db-changes')
@@ -104,28 +100,20 @@ const InfluencerDashboard = () => {
         },
         async (payload) => {
           console.log('Collaboration change detected:', payload);
+          
+          // Always refetch when there's any change to collaborations
+          // This ensures we have the latest state from the server
           await refetch();
           
+          // Show appropriate notifications based on event type
           if (payload.eventType === 'INSERT' && payload.new.status === 'open') {
             toast.info('New collaboration opportunity available!');
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'campaigns'
-        },
-        async (payload) => {
-          console.log('Campaign change detected:', payload);
-          await refetch();
-          
-          if (payload.eventType === 'UPDATE' && 
-              payload.old.status !== payload.new.status && 
-              payload.new.status === 'active') {
-            toast.info('New campaign activated with collaboration opportunities!');
+          } else if (payload.eventType === 'DELETE') {
+            toast.info('A collaboration has been removed');
+          } else if (payload.eventType === 'UPDATE') {
+            if (payload.old.status === 'open' && payload.new.status !== 'open') {
+              toast.info('A collaboration is no longer available');
+            }
           }
         }
       )
@@ -136,16 +124,23 @@ const InfluencerDashboard = () => {
         }
       });
 
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate('/login');
+      }
+    });
+
     return () => {
       console.log('Cleaning up real-time subscription');
       supabase.removeChannel(channel);
+      subscription.unsubscribe();
     };
   }, [navigate, refetch]);
 
-  const handleJoinCollaboration = (collaborationId: string) => {
-    // TODO: Implement join collaboration logic
-    console.log('Join collaboration:', collaborationId);
-  };
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -155,14 +150,70 @@ const InfluencerDashboard = () => {
           <h1 className="text-4xl font-bold">Collab Now ✨</h1>
         </div>
 
-        <CollaborationsList 
-          collaborations={collaborations}
-          isLoading={isLoading}
-          onJoinCollaboration={handleJoinCollaboration}
-        />
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {collaborations.map((collab) => (
+            <Card key={collab.id} className="flex flex-col">
+              <div className="relative h-48 w-full">
+                {collab.image_url ? (
+                  <img
+                    src={collab.image_url}
+                    alt={collab.title}
+                    className="h-full w-full object-cover rounded-t-lg"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-muted flex items-center justify-center rounded-t-lg">
+                    <span className="text-muted-foreground">No image available</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 p-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <CardHeader className="p-0">
+                      <CardTitle className="text-xl">{collab.title}</CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        {collab.campaign?.business?.business_name || 'Unknown Business'}
+                      </p>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <p className="text-sm text-muted-foreground">
+                        {collab.description}
+                      </p>
+                      
+                      <div className="mt-4 space-y-2">
+                        <h4 className="text-sm font-medium">Requirements:</h4>
+                        <ul className="list-disc list-inside text-sm text-muted-foreground">
+                          {collab.requirements.map((req, index) => (
+                            <li key={index}>{req}</li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="mt-4 flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="h-4 w-4" />
+                          <span className="text-sm font-medium">{collab.compensation}</span>
+                        </div>
+                        <Button 
+                          onClick={() => {
+                            // TODO: Implement join collaboration logic
+                            console.log('Join collaboration:', collab.id);
+                          }}
+                        >
+                          Join Collaboration
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
       </main>
     </div>
   );
+
 };
 
 export default InfluencerDashboard;
