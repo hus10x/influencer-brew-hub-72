@@ -12,6 +12,15 @@ import { useState } from "react";
 import { CollaborationForm } from "../collaboration-form/CollaborationForm";
 import { Tables } from "@/integrations/supabase/types";
 import { useDeleteCollaboration } from "@/hooks/use-delete-collaboration";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface CollaborationModalProps {
   collaboration: Tables<"collaborations"> | null;
@@ -26,6 +35,7 @@ export const CollaborationModal = ({
 }: CollaborationModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const deleteCollaboration = useDeleteCollaboration(onClose);
+  const [status, setStatus] = useState(collaboration?.status || "open");
 
   if (!collaboration) return null;
 
@@ -39,6 +49,23 @@ export const CollaborationModal = ({
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete this collaboration?")) {
       await deleteCollaboration.mutateAsync(collaboration.id);
+    }
+  };
+
+  const handleStatusChange = async (newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from("collaborations")
+        .update({ status: newStatus })
+        .eq("id", collaboration.id);
+
+      if (error) throw error;
+
+      setStatus(newStatus);
+      toast.success("Collaboration status updated successfully");
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast.error("Failed to update collaboration status");
     }
   };
 
@@ -125,6 +152,21 @@ export const CollaborationModal = ({
                   <li key={index}>{req}</li>
                 ))}
               </ul>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-medium mb-1">Status</h4>
+              <Select value={status} onValueChange={handleStatusChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="open">Open</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex justify-between items-center pt-2">
