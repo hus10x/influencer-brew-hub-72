@@ -3,6 +3,30 @@ import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+// Utility function for zoom reset
+const resetMobileZoom = () => {
+  // Ensure viewport meta tag exists
+  let viewport = document.querySelector('meta[name="viewport"]');
+  
+  // If viewport meta doesn't exist, create it
+  if (!viewport) {
+    viewport = document.createElement('meta');
+    viewport.setAttribute('name', 'viewport');
+    viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
+    document.head.appendChild(viewport);
+  }
+
+  const originalContent = viewport.getAttribute('content') || 'width=device-width, initial-scale=1.0';
+  
+  // Force reset zoom with a more aggressive approach
+  viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0');
+  
+  // Reset back to original after brief delay
+  setTimeout(() => {
+    viewport.setAttribute('content', originalContent);
+  }, 500); // Increased delay for better reliability
+};
+
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -40,6 +64,8 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
           setUserType(profile.user_type);
           setIsAuthenticated(true);
           setIsLoading(false);
+          // Reset zoom after authentication is confirmed
+          resetMobileZoom();
           return;
         }
 
@@ -67,6 +93,8 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         setUserType(desiredUserType);
         setIsAuthenticated(true);
         setIsLoading(false);
+        // Reset zoom after profile creation
+        resetMobileZoom();
       } catch (error) {
         console.error('Auth check error:', error);
         toast.error('Authentication error');
