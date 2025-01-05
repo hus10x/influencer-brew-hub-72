@@ -24,6 +24,22 @@ const queryClient = new QueryClient({
   },
 });
 
+// Utility function to reset mobile zoom
+const resetMobileZoom = () => {
+  const viewport = document.querySelector('meta[name="viewport"]');
+  const content = viewport?.getAttribute('content');
+  
+  if (viewport && content) {
+    // Force reset zoom
+    viewport.setAttribute('content', content + ', maximum-scale=1');
+    
+    // Reset back to original after brief delay
+    setTimeout(() => {
+      viewport.setAttribute('content', content);
+    }, 100);
+  }
+};
+
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
@@ -60,6 +76,8 @@ const App = () => {
         setIsLoggedIn(false);
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         setIsLoggedIn(true);
+        // Reset mobile zoom after successful sign in
+        resetMobileZoom();
       } else {
         setIsLoggedIn(!!session);
       }
