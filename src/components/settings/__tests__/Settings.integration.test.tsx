@@ -6,47 +6,47 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-// Mock the supabase client
+// Create a more complete mock implementation
+const createMockQueryBuilder = () => ({
+  select: vi.fn().mockReturnThis(),
+  eq: vi.fn().mockReturnThis(),
+  order: vi.fn().mockReturnThis(),
+  single: vi.fn().mockReturnThis(),
+  maybeSingle: vi.fn().mockReturnThis(),
+  limit: vi.fn().mockReturnThis(),
+  range: vi.fn().mockReturnThis(),
+  match: vi.fn().mockReturnThis(),
+  ilike: vi.fn().mockReturnThis(),
+  filter: vi.fn().mockReturnThis(),
+  or: vi.fn().mockReturnThis(),
+  contains: vi.fn().mockReturnThis(),
+  containedBy: vi.fn().mockReturnThis(),
+  in: vi.fn().mockReturnThis(),
+  is: vi.fn().mockReturnThis(),
+  not: vi.fn().mockReturnThis(),
+  neq: vi.fn().mockReturnThis(),
+  gt: vi.fn().mockReturnThis(),
+  gte: vi.fn().mockReturnThis(),
+  lt: vi.fn().mockReturnThis(),
+  lte: vi.fn().mockReturnThis(),
+  like: vi.fn().mockReturnThis(),
+  insert: vi.fn().mockReturnThis(),
+  upsert: vi.fn().mockReturnThis(),
+  update: vi.fn().mockReturnThis(),
+  delete: vi.fn().mockReturnThis(),
+  then: vi.fn().mockImplementation((callback) => Promise.resolve(callback({ data: [], error: null }))),
+  catch: vi.fn().mockReturnThis(),
+  finally: vi.fn().mockReturnThis(),
+});
+
+// Mock supabase client
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    from: vi.fn(() => ({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      data: [],
-      error: null,
-      // Required properties from PostgrestQueryBuilder
+    from: vi.fn((table: string) => ({
+      ...createMockQueryBuilder(),
+      // Add required properties
       url: '',
       headers: {},
-      // Required methods
-      insert: vi.fn().mockReturnThis(),
-      upsert: vi.fn().mockReturnThis(),
-      delete: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-      single: vi.fn().mockReturnThis(),
-      maybeSingle: vi.fn().mockReturnThis(),
-      range: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockReturnThis(),
-      match: vi.fn().mockReturnThis(),
-      neq: vi.fn().mockReturnThis(),
-      gt: vi.fn().mockReturnThis(),
-      gte: vi.fn().mockReturnThis(),
-      lt: vi.fn().mockReturnThis(),
-      lte: vi.fn().mockReturnThis(),
-      ilike: vi.fn().mockReturnThis(),
-      is: vi.fn().mockReturnThis(),
-      in: vi.fn().mockReturnThis(),
-      contains: vi.fn().mockReturnThis(),
-      containedBy: vi.fn().mockReturnThis(),
-      filter: vi.fn().mockReturnThis(),
-      not: vi.fn().mockReturnThis(),
-      or: vi.fn().mockReturnThis(),
-      textSearch: vi.fn().mockReturnThis(),
-      like: vi.fn().mockReturnThis(),
-      // Promise-like behavior
-      then: vi.fn().mockImplementation((callback) => callback({ data: [], error: null })),
-      catch: vi.fn().mockReturnThis(),
-      finally: vi.fn().mockReturnThis(),
     })),
   },
 }));
@@ -133,6 +133,9 @@ describe('Settings Integration', () => {
   it('should display campaign and collaboration history', async () => {
     // Mock successful data fetch
     vi.mocked(supabase.from).mockImplementation((table: string) => ({
+      ...createMockQueryBuilder(),
+      url: '',
+      headers: {},
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       order: vi.fn().mockResolvedValue({
@@ -160,6 +163,35 @@ describe('Settings Integration', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Test Campaign')).toBeInTheDocument();
+    });
+  });
+
+  // Add error handling test
+  it('should handle data fetching errors', async () => {
+    // Mock error response
+    vi.mocked(supabase.from).mockImplementation((table: string) => ({
+      ...createMockQueryBuilder(),
+      url: '',
+      headers: {},
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'Failed to fetch data' },
+      }),
+    }));
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SettingsLayout />
+      </QueryClientProvider>
+    );
+
+    // Navigate to History tab
+    fireEvent.click(screen.getByText('History'));
+
+    await waitFor(() => {
+      expect(screen.getByText(/error loading history/i)).toBeInTheDocument();
     });
   });
 });
