@@ -43,7 +43,7 @@ export const queryClient = new QueryClient({
   },
 });
 
-export const renderWithQuery = (component: React.ReactNode): ReturnType<typeof render> => {
+export const renderWithQuery = (component: React.ReactNode) => {
   return render(
     <QueryClientProvider client={queryClient}>
       {component}
