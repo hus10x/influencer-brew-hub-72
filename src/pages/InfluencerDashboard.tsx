@@ -15,7 +15,6 @@ const InfluencerDashboard = () => {
     queryKey: ['open-collaborations'],
     queryFn: async () => {
       try {
-        // First check if we have a valid session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError || !session) {
@@ -35,6 +34,7 @@ const InfluencerDashboard = () => {
             )
           `)
           .eq('status', 'open')
+          .eq('campaign.status', 'active') // Add filter for active campaigns only
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -75,7 +75,6 @@ const InfluencerDashboard = () => {
   });
 
   useEffect(() => {
-    // Check authentication status when component mounts
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
