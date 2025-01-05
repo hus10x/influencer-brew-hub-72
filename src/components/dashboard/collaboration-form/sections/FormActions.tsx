@@ -7,7 +7,9 @@ interface FormActionsProps {
 }
 
 export const FormActions = ({ isLoading, isEditing, isStandalone = true }: FormActionsProps) => {
-  if (!isStandalone) return null;
+  // Only hide the button when it's embedded in the campaign form (not standalone)
+  // and not in a modal (which is standalone)
+  if (!isStandalone && !isEditing) return null;
   
   return (
     <Button type="submit" disabled={isLoading} className="w-full">
