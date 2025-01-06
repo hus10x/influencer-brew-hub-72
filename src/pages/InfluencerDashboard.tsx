@@ -231,7 +231,7 @@ const InfluencerDashboard = () => {
                       // TODO: Implement join collaboration logic
                       console.log('Join collaboration:', collab.id);
                     }}
-                    className="w-full md:w-auto"
+                    className="w-full md:w-auto dark:text-white"
                   >
                     Join Collaboration
                   </Button>
