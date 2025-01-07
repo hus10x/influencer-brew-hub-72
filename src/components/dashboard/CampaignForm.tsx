@@ -104,7 +104,7 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
 
         const { data, error } = await supabase
           .from("campaigns")
-          .insert({
+          .update({
             title: values.title,
             description: values.description,
             business_id: values.business_id,
