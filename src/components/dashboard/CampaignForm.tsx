@@ -112,6 +112,7 @@ export const CampaignForm = ({ onSuccess, campaign }: CampaignFormProps) => {
             end_date: values.end_date,
             status: values.status || 'active', // Default to active if not specified
           })
+          .eq('id', campaign.id)
           .select()
           .single();
 
