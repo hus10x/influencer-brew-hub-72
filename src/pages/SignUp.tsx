@@ -16,12 +16,37 @@ const SignUp = () => {
         try {
           const { error } = await supabase
             .from('profiles')
-            .insert({ user_type: userType })
-            .eq('id', session.user.id);
+            .insert({
+              id: session.user.id,
+              email: session.user.email,
+              user_type: userType,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
 
           if (error) {
+            console.error('Error creating profile:', error);
             toast.error("Error updating profile: " + error.message);
             return;
+          }
+
+          // If user type is influencer, create influencer record
+          if (userType === 'influencer') {
+            const { error: influencerError } = await supabase
+              .from('influencers')
+              .insert({
+                id: session.user.id,
+                followers_count: 0,
+                engagement_rate: 0,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              });
+
+            if (influencerError) {
+              console.error('Error creating influencer:', influencerError);
+              toast.error("Error creating influencer profile");
+              return;
+            }
           }
 
           // Redirect based on user type
