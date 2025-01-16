@@ -16,7 +16,7 @@ const SignUp = () => {
         try {
           const { error } = await supabase
             .from('profiles')
-            .update({ user_type: userType })
+            .insert({ user_type: userType })
             .eq('id', session.user.id);
 
           if (error) {
