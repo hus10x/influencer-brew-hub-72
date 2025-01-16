@@ -77,7 +77,7 @@ export const Hero = () => {
               </Button>
               <Button
                 size="lg"
-                onClick={() => handleNavigation('business')}
+                onClick={() => navigate("/client")}
               >
                 I'm a Business <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
