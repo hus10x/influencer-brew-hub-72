@@ -3,9 +3,53 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "./Navbar";
 import { HeroCarousel } from "./HeroCarousel";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export const Hero = () => {
   const navigate = useNavigate();
+  const [userType, setUserType] = useState<string | null>(null);
+
+  useEffect(() => {
+    const checkUserType = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('user_type')
+          .eq('id', user.id)
+          .single();
+        
+        if (profile) {
+          setUserType(profile.user_type);
+        }
+      }
+    };
+
+    checkUserType();
+  }, []);
+
+  const handleNavigation = async (type: 'influencer' | 'business') => {
+    if (!userType) {
+      navigate(`/${type}`);
+      return;
+    }
+
+    if (type === 'influencer' && userType === 'business') {
+      toast.error("You have a business profile. Redirecting to client dashboard.");
+      navigate('/client');
+      return;
+    }
+
+    if (type === 'business' && userType === 'influencer') {
+      toast.error("You have an influencer profile. Redirecting to influencer dashboard.");
+      navigate('/influencer');
+      return;
+    }
+
+    navigate(`/${type}`);
+  };
 
   return (
     <>
@@ -27,13 +71,13 @@ export const Hero = () => {
             <div className="flex flex-wrap gap-4">
               <Button
                 size="lg"
-                onClick={() => navigate("/influencer")}
+                onClick={() => handleNavigation('influencer')}
               >
                 I'm an Influencer <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
               <Button
                 size="lg"
-                onClick={() => navigate("/client")}
+                onClick={() => handleNavigation('business')}
               >
                 I'm a Business <ArrowRight className="ml-2 h-4 w-4" />
               </Button>

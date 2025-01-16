@@ -1,9 +1,8 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 
-// Utility function to prevent iOS zoom on input focus
 const preventInputZoom = () => {
   // Add event listeners to all input fields and textareas
   const addZoomPreventionToInputs = () => {
@@ -57,61 +56,12 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [userType, setUserType] = useState<string | null>(null);
 
   const location = useLocation();
-
-const navigate = useNavigate();
-
-useEffect(() => {
-
-const checkAuth = async () => {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setIsAuthenticated(false);
-      setIsLoading(false);
-      return;
-    }
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('user_type')
-      .eq('id', user.id)
-      .single();
-    if (profile) {
-      setUserType(profile.user_type);
-      setIsAuthenticated(true);
-      // Check if user is trying to access the wrong dashboard
-      const path = location.pathname;
-      if (path.includes('/client') && profile.user_type !== 'business') {
-        navigate('/influencer');
-        toast.error("Access denied. Redirecting to influencer dashboard.");
-        return;
-      }
-      if (path.includes('/influencer') && profile.user_type !== 'influencer') {
-        navigate('/client');
-        toast.error("Access denied. Redirecting to client dashboard.");
-        return;
-      }
-    }
-    setIsLoading(false);
-  } catch (error) {
-    console.error('Auth check error:', error);
-    toast.error('Authentication error');
-    setIsAuthenticated(false);
-    setIsLoading(false);
-  }
-};
-checkAuth();
-
-  useEffect(() => {
-    // Apply zoom prevention after component mounts
-    const cleanup = preventInputZoom();
-    return cleanup;
-  }, []);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-
         if (!user) {
           setIsAuthenticated(false);
           setIsLoading(false);
@@ -120,20 +70,26 @@ checkAuth();
 
         const { data: profile } = await supabase
           .from('profiles')
-          .select('user_type, email')
+          .select('user_type')
           .eq('id', user.id)
           .single();
 
         if (profile) {
           setUserType(profile.user_type);
           setIsAuthenticated(true);
-          setIsLoading(false);
-          return;
+          // Check if user is trying to access the wrong dashboard
+          const path = location.pathname;
+          if (path.includes('/client') && profile.user_type !== 'business') {
+            navigate('/influencer');
+            toast.error("Access denied. Redirecting to influencer dashboard.");
+            return;
+          }
+          if (path.includes('/influencer') && profile.user_type !== 'influencer') {
+            navigate('/client');
+            toast.error("Access denied. Redirecting to client dashboard.");
+            return;
+          }
         }
-
-        // If no profile exists, do not create one here
-        // This is now handled by signup.tsx
-        setIsAuthenticated(false);
         setIsLoading(false);
       } catch (error) {
         console.error('Auth check error:', error);
@@ -144,6 +100,12 @@ checkAuth();
     };
 
     checkAuth();
+  }, [navigate, location]);
+
+  useEffect(() => {
+    // Apply zoom prevention after component mounts
+    const cleanup = preventInputZoom();
+    return cleanup;
   }, []);
 
   if (isLoading) {
