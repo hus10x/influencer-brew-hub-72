@@ -86,26 +86,9 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        // If no profile exists, create one with the user's email
-        const { data: userData } = await supabase.auth.getUser();
-        if (!userData.user?.email) {
-          throw new Error('User email not found');
-        }
-
-        const { error } = await supabase
-          .from('profiles')
-          .insert({
-            id: user.id,
-            email: userData.user.email,
-            user_type: 'user'
-          });
-
-        if (error) {
-          throw error;
-        }
-
-        setUserType('user');
-        setIsAuthenticated(true);
+        // If no profile exists, do not create one here
+        // This is now handled by signup.tsx
+        setIsAuthenticated(false);
         setIsLoading(false);
       } catch (error) {
         console.error('Auth check error:', error);
