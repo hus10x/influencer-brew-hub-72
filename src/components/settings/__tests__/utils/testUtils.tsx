@@ -11,7 +11,7 @@ export const createMockQueryBuilder = () => ({
   maybeSingle: vi.fn().mockReturnThis(),
   limit: vi.fn().mockReturnThis(),
   match: vi.fn().mockReturnThis(),
-  filter: vi.fn().mockReturnThis()
+  filter: vi.fn().mockReturnThis(),
 });
 
 export const queryClient = new QueryClient({
