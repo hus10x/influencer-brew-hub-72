@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { HistorySection } from '../HistorySection';
 import { renderWithQuery } from './utils/testUtils';
 import { mockSupabase } from './mocks/supabaseMock';
+import { createMockQueryBuilder } from './utils/testUtils';
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: mockSupabase

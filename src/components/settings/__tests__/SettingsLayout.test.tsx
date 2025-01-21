@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { SettingsLayout } from '../SettingsLayout';
 import { renderWithQuery } from './utils/testUtils';
