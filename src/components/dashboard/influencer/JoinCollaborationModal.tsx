@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Tables } from "@/integrations/supabase/types";
+import { CollaborationSpots } from "./CollaborationSpots";
 
 interface JoinCollaborationModalProps {
   isOpen: boolean;
@@ -38,6 +39,12 @@ export const JoinCollaborationModal = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast.error("Please log in to join collaborations");
+        return;
+      }
+
+      // Check if spots are available
+      if (collaboration.filled_spots >= collaboration.max_spots) {
+        toast.error("Sorry, all spots have been filled");
         return;
       }
 
@@ -117,13 +124,21 @@ export const JoinCollaborationModal = ({
             </p>
           </div>
 
+          <div>
+            <h4 className="text-sm font-medium mb-1">Available Spots</h4>
+            <CollaborationSpots 
+              filledSpots={collaboration.filled_spots} 
+              maxSpots={collaboration.max_spots} 
+            />
+          </div>
+
           <div className="pt-4 space-x-2 flex justify-end">
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
             <Button 
               onClick={handleJoinCollaboration}
-              disabled={isSubmitting}
+              disabled={isSubmitting || collaboration.filled_spots >= collaboration.max_spots}
             >
               {isSubmitting ? "Joining..." : "Join Collaboration"}
             </Button>
