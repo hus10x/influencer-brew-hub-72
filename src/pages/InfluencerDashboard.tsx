@@ -9,9 +9,12 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CollaborationSkeleton } from "@/components/dashboard/influencer/CollaborationSkeleton";
+import { JoinCollaborationModal } from "@/components/dashboard/influencer/JoinCollaborationModal";
+import { useState } from "react";
 
 const InfluencerDashboard = () => {
   const navigate = useNavigate();
+  const [selectedCollaboration, setSelectedCollaboration] = useState(null);
 
   const { data: collaborations = [], isLoading, refetch } = useQuery({
     queryKey: ['open-collaborations'],
@@ -227,10 +230,7 @@ const InfluencerDashboard = () => {
 
                 <div className="mt-4 w-full">
                   <Button 
-                    onClick={() => {
-                      // TODO: Implement join collaboration logic
-                      console.log('Join collaboration:', collab.id);
-                    }}
+                    onClick={() => setSelectedCollaboration(collab)}
                     className="w-full md:w-auto dark:text-white"
                   >
                     Join Collaboration
@@ -240,6 +240,14 @@ const InfluencerDashboard = () => {
             </Card>
           ))}
         </div>
+
+        {selectedCollaboration && (
+          <JoinCollaborationModal
+            isOpen={!!selectedCollaboration}
+            onClose={() => setSelectedCollaboration(null)}
+            collaboration={selectedCollaboration}
+          />
+        )}
       </main>
     </div>
   );
