@@ -11,7 +11,7 @@ export const VerificationStatus = ({ status }: VerificationStatusProps) => {
       case "verified":
         return {
           label: "Verified",
-          variant: "success" as const,
+          variant: "secondary" as const,
           icon: CheckCircle2
         };
       case "rejected":
@@ -23,7 +23,7 @@ export const VerificationStatus = ({ status }: VerificationStatusProps) => {
       default:
         return {
           label: "Pending",
-          variant: "secondary" as const,
+          variant: "outline" as const,
           icon: Clock
         };
     }
