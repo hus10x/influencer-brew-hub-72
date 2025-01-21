@@ -22,7 +22,7 @@ export const VerificationStatus = ({ status }: VerificationStatusProps) => {
         };
       default:
         return {
-          label: "Pending",
+          label: "Pending Story Verification",
           variant: "outline" as const,
           icon: Clock
         };

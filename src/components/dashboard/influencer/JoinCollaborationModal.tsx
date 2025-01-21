@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tables } from "@/integrations/supabase/types";
 import { CollaborationSpots } from "./CollaborationSpots";
-import { StorySubmissionForm } from "./StorySubmissionForm";
 
 interface JoinCollaborationModalProps {
   isOpen: boolean;
@@ -30,7 +29,6 @@ export const JoinCollaborationModal = ({
   collaboration,
 }: JoinCollaborationModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submissionId, setSubmissionId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const handleJoinCollaboration = async () => {
@@ -64,21 +62,19 @@ export const JoinCollaborationModal = ({
       }
 
       // Create submission
-      const { data: submission, error: submissionError } = await supabase
+      const { error: submissionError } = await supabase
         .from("collaboration_submissions")
         .insert({
           collaboration_id: collaboration.id,
           influencer_id: user.id,
           status: "pending"
-        })
-        .select()
-        .single();
+        });
 
       if (submissionError) throw submissionError;
 
-      setSubmissionId(submission.id);
-      toast.success("Successfully joined collaboration!");
+      toast.success("Successfully joined collaboration! Please create an Instagram story tagging " + collaboration.campaign.business.business_name);
       queryClient.invalidateQueries({ queryKey: ["open-collaborations"] });
+      onClose();
     } catch (error) {
       console.error("Error joining collaboration:", error);
       toast.error("Failed to join collaboration. Please try again.");
@@ -87,84 +83,67 @@ export const JoinCollaborationModal = ({
     }
   };
 
-  const handleClose = () => {
-    setSubmissionId(null);
-    onClose();
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>
-            {submissionId ? "Submit Story URL" : "Join Collaboration"}
-          </DialogTitle>
+          <DialogTitle>Join Collaboration</DialogTitle>
           <DialogDescription>
-            {submissionId 
-              ? "Submit your Instagram story URL for verification"
-              : "Apply to participate in this collaboration opportunity"
-            }
+            Apply to participate in this collaboration opportunity
           </DialogDescription>
         </DialogHeader>
 
-        {submissionId ? (
-          <StorySubmissionForm 
-            collaborationSubmissionId={submissionId}
-            onSuccess={handleClose}
-          />
-        ) : (
-          <div className="space-y-4">
-            <div>
-              <h4 className="text-sm font-medium mb-1">Business</h4>
-              <p className="text-sm text-muted-foreground">
-                {collaboration.campaign.business.business_name}
-              </p>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-medium mb-1">Campaign</h4>
-              <p className="text-sm text-muted-foreground">
-                {collaboration.campaign.title}
-              </p>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-medium mb-1">Requirements</h4>
-              <ul className="list-disc list-inside text-sm text-muted-foreground">
-                {collaboration.requirements.map((req, index) => (
-                  <li key={index}>{req}</li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-medium mb-1">Compensation</h4>
-              <p className="text-sm text-muted-foreground">
-                BHD {collaboration.compensation}
-              </p>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-medium mb-1">Available Spots</h4>
-              <CollaborationSpots 
-                filledSpots={collaboration.filled_spots} 
-                maxSpots={collaboration.max_spots} 
-              />
-            </div>
-
-            <div className="pt-4 space-x-2 flex justify-end">
-              <Button variant="outline" onClick={handleClose}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleJoinCollaboration}
-                disabled={isSubmitting || collaboration.filled_spots >= collaboration.max_spots}
-              >
-                {isSubmitting ? "Joining..." : "Join Collaboration"}
-              </Button>
-            </div>
+        <div className="space-y-4">
+          <div>
+            <h4 className="text-sm font-medium mb-1">Business</h4>
+            <p className="text-sm text-muted-foreground">
+              {collaboration.campaign.business.business_name}
+            </p>
           </div>
-        )}
+
+          <div>
+            <h4 className="text-sm font-medium mb-1">Campaign</h4>
+            <p className="text-sm text-muted-foreground">
+              {collaboration.campaign.title}
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium mb-1">Requirements</h4>
+            <ul className="list-disc list-inside text-sm text-muted-foreground">
+              {collaboration.requirements.map((req, index) => (
+                <li key={index}>{req}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium mb-1">Compensation</h4>
+            <p className="text-sm text-muted-foreground">
+              BHD {collaboration.compensation}
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium mb-1">Available Spots</h4>
+            <CollaborationSpots 
+              filledSpots={collaboration.filled_spots} 
+              maxSpots={collaboration.max_spots} 
+            />
+          </div>
+
+          <div className="pt-4 space-x-2 flex justify-end">
+            <Button variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleJoinCollaboration}
+              disabled={isSubmitting || collaboration.filled_spots >= collaboration.max_spots}
+            >
+              {isSubmitting ? "Joining..." : "Join Collaboration"}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
