@@ -54,11 +54,32 @@ export const JoinCollaborationModal = ({
         .select()
         .eq("collaboration_id", collaboration.id)
         .eq("influencer_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (existingSubmission) {
         toast.error("You have already applied for this collaboration");
         return;
+      }
+
+      // Ensure influencer record exists
+      const { data: existingInfluencer } = await supabase
+        .from("influencers")
+        .select()
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!existingInfluencer) {
+        // Create influencer record if it doesn't exist
+        const { error: influencerError } = await supabase
+          .from("influencers")
+          .insert({
+            id: user.id,
+            followers_count: 0,
+            engagement_rate: 0,
+            niche: []
+          });
+
+        if (influencerError) throw influencerError;
       }
 
       // Create submission
