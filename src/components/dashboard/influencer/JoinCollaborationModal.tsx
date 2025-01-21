@@ -72,7 +72,7 @@ export const JoinCollaborationModal = ({
 
       if (submissionError) throw submissionError;
 
-      toast.success("Successfully joined collaboration! Please create an Instagram story tagging " + collaboration.campaign.business.business_name);
+      toast.success(`Successfully joined collaboration! Please create an Instagram story tagging ${collaboration.campaign.business.business_name}`);
       queryClient.invalidateQueries({ queryKey: ["open-collaborations"] });
       onClose();
     } catch (error) {
