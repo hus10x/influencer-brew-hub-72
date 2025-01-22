@@ -3,6 +3,7 @@ import { Users } from "lucide-react";
 import { useState } from "react";
 import { CollaborationModal } from "@/components/dashboard/kanban/CollaborationModal";
 import { Tables } from "@/integrations/supabase/types";
+import { VerificationStatus } from "@/components/dashboard/influencer/VerificationStatus";
 
 interface CollaborationCardProps {
   collaboration: Tables<"collaborations">;
@@ -33,7 +34,10 @@ export const CollaborationCard = ({ collaboration }: CollaborationCardProps) => 
       >
         <div className="space-y-4">
           <div>
-            <h3 className="font-semibold">{collaboration.title}</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">{collaboration.title}</h3>
+              <VerificationStatus status={collaboration.status} />
+            </div>
             <p className="text-sm text-muted-foreground line-clamp-2">
               {collaboration.description}
             </p>
