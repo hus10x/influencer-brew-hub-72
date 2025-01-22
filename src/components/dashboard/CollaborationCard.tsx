@@ -1,16 +1,45 @@
 import { Progress } from "@/components/ui/progress";
 import { Users } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CollaborationModal } from "@/components/dashboard/kanban/CollaborationModal";
 import { Tables } from "@/integrations/supabase/types";
 import { VerificationStatus } from "@/components/dashboard/influencer/VerificationStatus";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CollaborationCardProps {
   collaboration: Tables<"collaborations">;
 }
 
-export const CollaborationCard = ({ collaboration }: CollaborationCardProps) => {
+export const CollaborationCard = ({ collaboration: initialCollaboration }: CollaborationCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [collaboration, setCollaboration] = useState(initialCollaboration);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'collaborations',
+          filter: `id=eq.${collaboration.id}`
+        },
+        (payload) => {
+          console.log('Collaboration update received:', payload);
+          if (payload.new) {
+            setCollaboration(payload.new as Tables<"collaborations">);
+          }
+        }
+      )
+      .subscribe(async (status) => {
+        console.log('Realtime subscription status:', status);
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [collaboration.id]);
 
   const fillPercentage = (collaboration.filled_spots / collaboration.max_spots) * 100;
 
