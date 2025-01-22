@@ -151,7 +151,7 @@ const SubmissionReviews = () => {
                     {submission.collaboration?.campaign?.business?.business_name}
                   </p>
                   <div className="flex items-center gap-2 mt-2">
-                    <Badge variant={submission.verified ? "success" : submission.status === "rejected" ? "destructive" : "secondary"}>
+                    <Badge variant={submission.verified ? "secondary" : submission.status === "rejected" ? "destructive" : "outline"}>
                       {submission.verified ? "Verified" : submission.status === "rejected" ? "Rejected" : "Pending"}
                     </Badge>
                     <span className="text-sm text-muted-foreground">
