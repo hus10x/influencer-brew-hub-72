@@ -1,4 +1,4 @@
 project_id = "ahtozhqhjdkivyaqskko"
 
-[instagram-webhooks]
-verify_jwt = false
+[verify-stories]
+verify_jwt = true

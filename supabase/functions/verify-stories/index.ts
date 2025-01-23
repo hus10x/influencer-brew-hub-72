@@ -1,168 +1,175 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-import { corsHeaders } from '../_shared/cors.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.47.0';
 
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
-interface StoryVerification {
-  id: string;
-  collaboration_submission_id: string;
-  story_id: string;
-  verification_status: string;
-  verification_details: any;
-}
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 5 * 60 * 1000; // 5 minutes in milliseconds
 
-async function verifyStory(storyId: string, accessToken: string) {
-  try {
-    const response = await fetch(
-      `https://graph.instagram.com/${storyId}?fields=id,media_type,media_url,timestamp&access_token=${accessToken}`
-    );
-
-    if (!response.ok) {
-      throw new Error(`Instagram API error: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return {
-      verified: true,
-      details: data
-    };
-  } catch (error) {
-    console.error('Error verifying story:', error);
-    return {
-      verified: false,
-      error: error.message
-    };
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    console.log('Handling CORS preflight request');
+    return new Response(null, { headers: corsHeaders });
   }
-}
 
-async function processVerification(verification: StoryVerification, supabase: any) {
   try {
-    // Get the influencer's Instagram access token
-    const { data: submission } = await supabase
-      .from('collaboration_submissions')
+    console.log('Starting story verification process');
+    
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Get pending verifications that haven't exceeded max retries
+    const { data: pendingVerifications, error: fetchError } = await supabase
+      .from('story_verifications')
       .select(`
-        influencer_id,
-        collaboration:collaborations (
-          campaign:campaigns (
-            business:businesses (
-              user_id
+        id,
+        story_id,
+        story_url,
+        verification_status,
+        verification_details,
+        collaboration_submission_id,
+        collaboration_submissions (
+          id,
+          influencer_id,
+          collaboration:collaborations (
+            id,
+            campaign:campaigns (
+              id,
+              business:businesses (
+                id,
+                user_id
+              )
             )
           )
         )
       `)
-      .eq('id', verification.collaboration_submission_id)
-      .single();
-
-    if (!submission) {
-      throw new Error('Submission not found');
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('instagram_access_token')
-      .eq('id', submission.influencer_id)
-      .single();
-
-    if (!profile?.instagram_access_token) {
-      throw new Error('Instagram access token not found');
-    }
-
-    // Verify the story
-    const verificationResult = await verifyStory(
-      verification.story_id,
-      profile.instagram_access_token
-    );
-
-    // Update verification status
-    const { error: updateError } = await supabase
-      .from('story_verifications')
-      .update({
-        verification_status: verificationResult.verified ? 'verified' : 'failed',
-        verification_details: verificationResult,
-        verified_at: verificationResult.verified ? new Date().toISOString() : null,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', verification.id);
-
-    if (updateError) throw updateError;
-
-    // If verified, update the collaboration submission
-    if (verificationResult.verified) {
-      const { error: submissionError } = await supabase
-        .from('collaboration_submissions')
-        .update({
-          verified: true,
-          verification_date: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', verification.collaboration_submission_id);
-
-      if (submissionError) throw submissionError;
-
-      // Create notification for business owner
-      await supabase
-        .from('notifications')
-        .insert({
-          user_id: submission.collaboration.campaign.business.user_id,
-          type: 'story_verified',
-          title: 'Story Verified',
-          message: 'An influencer story has been verified successfully',
-          data: {
-            verification_id: verification.id,
-            submission_id: verification.collaboration_submission_id
-          }
-        });
-    }
-
-    return verificationResult;
-  } catch (error) {
-    console.error('Error processing verification:', error);
-    return { error: error.message };
-  }
-}
-
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
-
-  try {
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    // Get pending verifications
-    const { data: pendingVerifications, error: fetchError } = await supabase
-      .from('story_verifications')
-      .select('*')
       .eq('verification_status', 'pending')
-      .order('created_at', { ascending: true })
-      .limit(10);
+      .lt('retry_count', MAX_RETRIES)
+      .is('verified_at', null);
 
-    if (fetchError) throw fetchError;
+    if (fetchError) {
+      console.error('Error fetching pending verifications:', fetchError);
+      throw fetchError;
+    }
 
-    // Process each verification
-    const results = await Promise.all(
-      pendingVerifications.map(verification => 
-        processVerification(verification, supabase)
-      )
-    );
+    console.log(`Found ${pendingVerifications?.length || 0} pending verifications`);
+
+    if (!pendingVerifications?.length) {
+      return new Response(
+        JSON.stringify({ message: 'No pending verifications to process' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    for (const verification of pendingVerifications) {
+      try {
+        console.log(`Processing verification ID: ${verification.id}`);
+
+        // Get Instagram access token for the business
+        const { data: businessProfile } = await supabase
+          .from('profiles')
+          .select('instagram_access_token')
+          .eq('id', verification.collaboration_submissions.collaboration.campaign.business.user_id)
+          .single();
+
+        if (!businessProfile?.instagram_access_token) {
+          throw new Error('Business Instagram access token not found');
+        }
+
+        // Verify story exists using Instagram Graph API
+        const response = await fetch(
+          `https://graph.facebook.com/v21.0/${verification.story_id}?fields=id,media_type&access_token=${businessProfile.instagram_access_token}`
+        );
+
+        const storyData = await response.json();
+
+        if (response.ok && storyData.id) {
+          // Story verified successfully
+          await supabase
+            .from('story_verifications')
+            .update({
+              verification_status: 'verified',
+              verified_at: new Date().toISOString(),
+              verification_details: storyData
+            })
+            .eq('id', verification.id);
+
+          // Create notification for successful verification
+          await supabase
+            .from('notifications')
+            .insert({
+              user_id: verification.collaboration_submissions.influencer_id,
+              type: 'story_verified',
+              title: 'Story Verified',
+              message: 'Your story has been successfully verified!',
+              data: { verification_id: verification.id }
+            });
+
+        } else {
+          // Handle verification failure
+          const retryCount = (verification.verification_details?.retry_count || 0) + 1;
+          const shouldRetry = retryCount < MAX_RETRIES;
+
+          await supabase
+            .from('story_verifications')
+            .update({
+              verification_status: shouldRetry ? 'pending' : 'failed',
+              verification_details: {
+                ...verification.verification_details,
+                retry_count: retryCount,
+                last_error: storyData.error || 'Story not found',
+                next_retry: shouldRetry ? new Date(Date.now() + RETRY_DELAY).toISOString() : null
+              }
+            })
+            .eq('id', verification.id);
+
+          if (!shouldRetry) {
+            // Create notification for failed verification
+            await supabase
+              .from('notifications')
+              .insert({
+                user_id: verification.collaboration_submissions.influencer_id,
+                type: 'story_verification_failed',
+                title: 'Story Verification Failed',
+                message: 'We were unable to verify your story after multiple attempts.',
+                data: { verification_id: verification.id }
+              });
+          }
+        }
+
+      } catch (verificationError) {
+        console.error(`Error processing verification ${verification.id}:`, verificationError);
+        
+        // Update verification with error details
+        await supabase
+          .from('story_verifications')
+          .update({
+            verification_details: {
+              ...verification.verification_details,
+              last_error: verificationError.message,
+              error_timestamp: new Date().toISOString()
+            }
+          })
+          .eq('id', verification.id);
+      }
+    }
 
     return new Response(
-      JSON.stringify({ success: true, results }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
+      JSON.stringify({ success: true, message: 'Verification process completed' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error in story verification process:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      { 
         status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }
