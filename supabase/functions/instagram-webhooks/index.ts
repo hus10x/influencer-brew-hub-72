@@ -6,6 +6,28 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const createNotification = async (supabase: any, userId: string, type: string, title: string, message: string, data?: any) => {
+  try {
+    const { error } = await supabase
+      .from('notifications')
+      .insert([
+        {
+          user_id: userId,
+          type,
+          title,
+          message,
+          data,
+          read: false
+        }
+      ]);
+
+    if (error) throw error;
+    console.log(`Created notification for user ${userId} of type ${type}`);
+  } catch (error) {
+    console.error('Error creating notification:', error);
+  }
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -20,6 +42,11 @@ serve(async (req) => {
     const mode = url.searchParams.get('hub.mode');
     const token = url.searchParams.get('hub.verify_token');
     const challenge = url.searchParams.get('hub.challenge');
+
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Handle subscription verification
     if (req.method === 'GET') {
@@ -56,15 +83,51 @@ serve(async (req) => {
           value: update.value
         });
 
+        // Find the associated user based on the Instagram ID
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('instagram_id', body.entry[0].id)
+          .single();
+
+        if (profileError) {
+          console.error('Error finding user profile:', profileError);
+          continue;
+        }
+
         switch (update.field) {
           case 'mentions':
             console.log('Mention received:', update.value);
+            await createNotification(
+              supabase,
+              profile.id,
+              'mention',
+              'New Instagram Mention',
+              'Your account was mentioned in a post',
+              update.value
+            );
             break;
           case 'comments':
             console.log('Comment received:', update.value);
+            await createNotification(
+              supabase,
+              profile.id,
+              'comment',
+              'New Instagram Comment',
+              'Someone commented on your post',
+              update.value
+            );
             break;
           case 'story_insights':
             console.log('Story insights received:', update.value);
+            await createNotification(
+              supabase,
+              profile.id,
+              'story_insights',
+              'Story Performance Update',
+              'Your story metrics have been updated',
+              update.value
+            );
             break;
           default:
             console.log('Unknown update type:', update.field);
