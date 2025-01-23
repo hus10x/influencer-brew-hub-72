@@ -1,42 +1,131 @@
-import { Link } from "react-router-dom";
-import { NotificationsPopover } from "@/components/notifications/NotificationsPopover";
-import { useUser } from "@/hooks/useUser";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { LogIn, UserPlus, Moon, Sun, LogOut, BookOpen, Monitor } from "lucide-react";
+import { useTheme } from "@/hooks/use-theme";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { MobileMenu } from "./MobileMenu";
 
 export const Navbar = () => {
-  const { user } = useUser();
+  const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [hasToggledTheme, setHasToggledTheme] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsLoggedIn(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    
+    setIsLoggingOut(true);
+    try {
+      // First clear any stored session data
+      localStorage.removeItem('supabase.auth.token');
+      
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error("Logout error:", error);
+        // If we get a user_not_found error, the session is already invalid
+        if (error.message.includes('user_not_found')) {
+          setIsLoggedIn(false);
+          navigate('/');
+          return;
+        }
+        toast.error("There was an issue with the logout");
+      } else {
+        setIsLoggedIn(false);
+        toast.success("Logged out successfully");
+      }
+    } catch (error) {
+      console.error("Error during logout:", error);
+      toast.error("There was an issue with the logout");
+    } finally {
+      setIsLoggingOut(false);
+      // Always redirect to home page after logout attempt
+      navigate("/");
+    }
+  };
+
+  const handleThemeToggle = () => {
+    if (!hasToggledTheme && theme === 'system') {
+      setTheme('dark');
+    } else {
+      setTheme(theme === 'dark' ? 'light' : 'dark');
+    }
+    setHasToggledTheme(true);
+  };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <nav className="container flex h-14 items-center">
-        <div className="mr-4 hidden md:flex">
-          <Link to="/" className="mr-6 flex items-center space-x-2">
-            <span className="hidden font-bold sm:inline-block">
-              Collab Now
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border shadow-sm dark:shadow-none">
+      <div className="container mx-auto px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div 
+            className="cursor-pointer flex items-center space-x-3" 
+            onClick={() => navigate("/")}
+          >
+            <BookOpen className="h-6 w-6 text-primary" />
+            <span className="font-sans text-2xl font-bold tracking-tight text-primary">
+              hikayat
             </span>
-          </Link>
-          <Link to="/about" className="mr-6">About</Link>
-          <Link to="/collaborations" className="mr-6">Collaborations</Link>
-          <Link to="/dashboard" className="mr-6">Dashboard</Link>
-        </div>
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <div className="w-full flex-1 md:w-auto md:flex-none">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full rounded-md border border-muted p-2"
-            />
           </div>
-          <div className="flex items-center gap-2">
-            {user && <NotificationsPopover />}
-            <Link to="/profile" className="flex items-center">
-              <span className="hidden md:inline">Profile</span>
-            </Link>
-            <Link to="/logout" className="flex items-center">
-              <span className="hidden md:inline">Logout</span>
-            </Link>
+          <div className="flex items-center gap-4">
+            {!isLoggedIn ? (
+              <>
+                <div className="hidden lg:flex items-center gap-4">
+                  <Button variant="outline" onClick={() => navigate("/login")}>
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Login
+                  </Button>
+                  <Button onClick={() => navigate("/signup")}>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Sign Up
+                  </Button>
+                </div>
+                <MobileMenu />
+              </>
+            ) : (
+              <Button 
+                variant="outline" 
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                {isLoggingOut ? "Logging out..." : "Logout"}
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleThemeToggle}
+            >
+              {!hasToggledTheme && theme === "system" ? (
+                <Monitor className="h-5 w-5" />
+              ) : theme === "dark" ? (
+                <Moon className="h-5 w-5" />
+              ) : (
+                <Sun className="h-5 w-5" />
+              )}
+            </Button>
           </div>
         </div>
-      </nav>
-    </header>
+      </div>
+    </nav>
   );
 };
