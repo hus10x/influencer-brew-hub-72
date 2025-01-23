@@ -19,69 +19,76 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Get story verification data
+    // Get pending verifications
     const { data: verifications, error: fetchError } = await supabaseClient
       .from('story_verifications')
       .select('*')
       .eq('verification_status', 'pending')
       .limit(10)
 
-    if (fetchError) throw fetchError
+    if (fetchError) {
+      console.error('Error fetching verifications:', fetchError)
+      throw fetchError
+    }
 
     // Process each verification
     for (const verification of verifications) {
-      try {
-        // Here we'll add the actual Instagram API verification logic later
-        // For now, we'll simulate the verification process
-        const isValid = true // This will be replaced with actual verification logic
-        
-        const verificationResult = {
-          verification_status: isValid ? 'verified' : 'failed',
-          verification_details: {
-            checked_at: new Date().toISOString(),
-            is_valid: isValid,
-          },
-        }
+      console.log('Processing verification:', verification.id)
+      
+      // Simulate verification process (to be replaced with actual Instagram API check)
+      const isValid = true
+      const verificationResult = {
+        verification_status: isValid ? 'verified' : 'failed',
+        verification_details: {
+          checked_at: new Date().toISOString(),
+          is_valid: isValid,
+        },
+      }
 
-        // Update verification status
-        const { error: updateError } = await supabaseClient
-          .from('story_verifications')
-          .update(verificationResult)
-          .eq('id', verification.id)
+      // Update verification status
+      const { error: updateError } = await supabaseClient
+        .from('story_verifications')
+        .update(verificationResult)
+        .eq('id', verification.id)
 
-        if (updateError) throw updateError
+      if (updateError) {
+        console.error('Error updating verification:', updateError)
+        continue
+      }
 
-        // Update related collaboration submission
-        const { error: submissionError } = await supabaseClient
-          .from('collaboration_submissions')
-          .update({
-            verified: isValid,
-            verification_date: new Date().toISOString(),
-            status: isValid ? 'verified' : 'rejected'
-          })
-          .eq('id', verification.collaboration_submission_id)
+      // Update related collaboration submission
+      const { error: submissionError } = await supabaseClient
+        .from('collaboration_submissions')
+        .update({
+          verified: isValid,
+          verification_date: new Date().toISOString(),
+          status: isValid ? 'verified' : 'rejected'
+        })
+        .eq('id', verification.collaboration_submission_id)
 
-        if (submissionError) throw submissionError
-
-      } catch (error) {
-        console.error(`Error processing verification ${verification.id}:`, error)
+      if (submissionError) {
+        console.error('Error updating submission:', submissionError)
       }
     }
 
     return new Response(
-      JSON.stringify({ message: 'Verification process completed' }),
-      {
+      JSON.stringify({ 
+        success: true, 
+        message: `Processed ${verifications.length} verifications` 
+      }),
+      { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
+        status: 200 
       }
     )
 
   } catch (error) {
+    console.error('Error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
-      {
+      { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: 400
       }
     )
   }

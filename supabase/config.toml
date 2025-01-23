@@ -19,19 +19,9 @@ port = 54324
 [storage]
 enabled = true
 
-[auth]
-enabled = true
-port = 54325
-
 [realtime]
 enabled = true
 
 [functions]
-[functions.instagram-auth-oauth-url]
+[functions.verify-story-submission]
 verify_jwt = true
-
-[functions.instagram-auth-callback]
-verify_jwt = false
-
-[functions.instagram-webhooks]
-verify_jwt = false
