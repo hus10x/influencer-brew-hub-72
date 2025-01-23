@@ -1,7 +1,8 @@
 import { Tables } from "@/integrations/supabase/types";
 import { useNotifications } from "@/hooks/useNotifications";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bell } from "lucide-react";
+import { Bell, Circle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export const NotificationsList = () => {
   const { notifications, isLoading, markAsRead } = useNotifications();
@@ -25,11 +26,15 @@ export const NotificationsList = () => {
         {notifications.map((notification) => (
           <div
             key={notification.id}
-            className={`p-4 rounded-lg border ${
-              notification.read ? 'bg-muted/50' : 'bg-card'
-            }`}
+            className={cn(
+              "p-4 rounded-lg border relative cursor-pointer transition-colors",
+              notification.read ? "bg-muted/50" : "bg-card hover:bg-accent/10"
+            )}
             onClick={() => !notification.read && markAsRead(notification.id)}
           >
+            {!notification.read && (
+              <Circle className="w-2 h-2 absolute top-4 right-4 fill-primary text-primary" />
+            )}
             <h4 className="font-medium mb-1">{notification.title}</h4>
             <p className="text-sm text-muted-foreground">{notification.message}</p>
             <div className="mt-2 text-xs text-muted-foreground">
