@@ -34,19 +34,10 @@ export const Navbar = () => {
     
     setIsLoggingOut(true);
     try {
-      // First clear any stored session data
-      localStorage.removeItem('supabase.auth.token');
-      
       const { error } = await supabase.auth.signOut();
       
       if (error) {
         console.error("Logout error:", error);
-        // If we get a user_not_found error, the session is already invalid
-        if (error.message.includes('user_not_found')) {
-          setIsLoggedIn(false);
-          navigate('/');
-          return;
-        }
         toast.error("There was an issue with the logout");
       } else {
         setIsLoggedIn(false);
@@ -57,8 +48,6 @@ export const Navbar = () => {
       toast.error("There was an issue with the logout");
     } finally {
       setIsLoggingOut(false);
-      // Always redirect to home page after logout attempt
-      navigate("/");
     }
   };
 
