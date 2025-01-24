@@ -59,6 +59,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (window.location.pathname === '/') {
               navigate(profile.user_type === 'influencer' ? '/influencer' : '/client');
             }
+          } else if (profileError) {
+            console.error('Error fetching profile:', profileError);
+            toast.error("Error loading user profile");
           }
         }
       } catch (error) {
@@ -78,11 +81,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
         setUserType(null);
-        navigate('/login');
+        navigate('/'); // Redirect to index page on logout
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         setIsAuthenticated(true);
+        if (!session?.user?.id) {
+          console.error('No user ID in session');
+          return;
+        }
         // Get user type for current user only
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('user_type')
           .eq('id', session.user.id)
@@ -90,7 +97,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           
         if (profile) {
           setUserType(profile.user_type);
-          navigate(profile.user_type === 'influencer' ? '/influencer' : '/client');
+          // Ensure proper routing based on user type
+          const dashboardPath = profile.user_type === 'influencer' ? '/influencer' : '/client';
+          navigate(dashboardPath);
+        } else if (profileError) {
+          console.error('Error fetching profile:', profileError);
+          toast.error("Error loading user profile");
         }
       }
     });
