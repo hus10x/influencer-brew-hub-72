@@ -87,8 +87,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUserType(null);
         setIsLoading(false);
         
-        // Always navigate to index on logout
-        navigate('/');
+        // Force navigation to index and prevent any redirects
+        window.location.href = '/';
+        return;
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         setIsLoading(true);
         try {
