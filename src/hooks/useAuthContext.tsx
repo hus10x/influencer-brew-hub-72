@@ -79,15 +79,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log('Auth state changed:', event, !!session);
       
       if (event === 'SIGNED_OUT') {
+        // Clear auth state first
         setIsAuthenticated(false);
         setUserType(null);
-        navigate('/'); // Redirect to index page on logout
+        // Ensure we're not already on the index page to prevent unnecessary navigation
+        if (window.location.pathname !== '/') {
+          navigate('/');
+        }
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        setIsAuthenticated(true);
         if (!session?.user?.id) {
           console.error('No user ID in session');
           return;
         }
+        
+        setIsAuthenticated(true);
+        
         // Get user type for current user only
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
@@ -97,9 +103,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           
         if (profile) {
           setUserType(profile.user_type);
-          // Ensure proper routing based on user type
+          // Only navigate if we're not already on the correct dashboard
           const dashboardPath = profile.user_type === 'influencer' ? '/influencer' : '/client';
-          navigate(dashboardPath);
+          if (window.location.pathname !== dashboardPath) {
+            navigate(dashboardPath);
+          }
         } else if (profileError) {
           console.error('Error fetching profile:', profileError);
           toast.error("Error loading user profile");
