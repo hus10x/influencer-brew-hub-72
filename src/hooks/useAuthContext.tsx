@@ -32,13 +32,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // Get session and user type in parallel
-        const [sessionResponse, profileResponse] = await Promise.all([
-          supabase.auth.getSession(),
-          supabase.from('profiles').select('user_type').single(),
-        ]);
-
-        const { data: { session }, error: sessionError } = sessionResponse;
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           if (sessionError.message.includes('refresh_token_not_found')) {
@@ -52,11 +46,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         if (session) {
           setIsAuthenticated(true);
-          if (!profileResponse.error && profileResponse.data) {
-            setUserType(profileResponse.data.user_type);
+          // Get user type for the current user only
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('user_type')
+            .eq('id', session.user.id)
+            .maybeSingle();
+
+          if (!profileError && profile) {
+            setUserType(profile.user_type);
             // Redirect to appropriate dashboard if on index
             if (window.location.pathname === '/') {
-              navigate(profileResponse.data.user_type === 'influencer' ? '/influencer' : '/client');
+              navigate(profile.user_type === 'influencer' ? '/influencer' : '/client');
             }
           }
         }
@@ -80,11 +81,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         navigate('/login');
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         setIsAuthenticated(true);
-        // Get user type
+        // Get user type for current user only
         const { data: profile } = await supabase
           .from('profiles')
           .select('user_type')
-          .single();
+          .eq('id', session.user.id)
+          .maybeSingle();
           
         if (profile) {
           setUserType(profile.user_type);
