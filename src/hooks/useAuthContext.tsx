@@ -47,7 +47,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
 
         if (session) {
-          // Get user type for the current user only
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('user_type')
@@ -57,7 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (!profileError && profile) {
             setIsAuthenticated(true);
             setUserType(profile.user_type);
-            // Redirect to appropriate dashboard if on index
+            // Only redirect if on index page
             if (window.location.pathname === '/') {
               navigate(profile.user_type === 'influencer' ? '/influencer' : '/client');
             }
@@ -79,24 +78,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     initializeAuth();
 
-    // Subscribe to auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, !!session);
       
       if (event === 'SIGNED_OUT') {
-        setIsLoading(true);
-        try {
-          // Clear auth state
-          setIsAuthenticated(false);
-          setUserType(null);
-          
-          // Only navigate if not already on index
-          if (window.location.pathname !== '/') {
-            navigate('/');
-          }
-        } finally {
-          setIsLoading(false);
-        }
+        // Clear auth state first
+        setIsAuthenticated(false);
+        setUserType(null);
+        setIsLoading(false);
+        
+        // Always navigate to index on logout
+        navigate('/');
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         setIsLoading(true);
         try {
@@ -107,7 +99,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           
           setIsAuthenticated(true);
           
-          // Get user type for current user only
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('user_type')

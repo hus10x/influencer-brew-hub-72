@@ -41,7 +41,7 @@ export const Navbar = () => {
         toast.error("There was an issue with the logout");
       } else {
         setIsLoggedIn(false);
-        toast.success("Logged out successfully");
+        // Let AuthContext handle the navigation
       }
     } catch (error) {
       console.error("Error during logout:", error);
