@@ -82,14 +82,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log('Auth state changed:', event, !!session);
       
       if (event === 'SIGNED_OUT') {
-        // Clear auth state first
         setIsAuthenticated(false);
         setUserType(null);
         setIsLoading(false);
-        
-        // Force navigation to index and prevent any redirects
-        window.location.href = '/';
-        return;
+        navigate('/', { replace: true });
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         setIsLoading(true);
         try {
@@ -108,7 +104,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             
           if (profile) {
             setUserType(profile.user_type);
-            // Only navigate if we're not already on the correct dashboard
             const dashboardPath = profile.user_type === 'influencer' ? '/influencer' : '/client';
             if (window.location.pathname !== dashboardPath) {
               navigate(dashboardPath);
