@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from "@/hooks/AuthProvider";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
+import { SkeletonLoader } from "@/components/SkeletonLoader"; // Your skeleton loader
 
 // Lazy load dashboard components
 const InfluencerDashboard = lazy(() => import("./pages/InfluencerDashboard"));
@@ -27,51 +28,70 @@ const queryClient = new QueryClient({
 const AppRoutes = () => {
   const { isLoggedIn, userType } = useAuth();
 
-  // Show loading state while checking auth
-  if (isLoggedIn === null) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="animate-pulse text-foreground">Loading...</div>
-      </div>
-    );
-  }
-
   return (
     <Routes>
       <Route 
         path="/" 
-        element={isLoggedIn ? <Navigate to={userType === 'influencer' ? '/influencer' : '/client'} replace /> : <Index />} 
+        element={
+          <Suspense fallback={<SkeletonLoader />}>
+            {isLoggedIn ? (
+              <Navigate to={userType === 'influencer' ? '/influencer' : '/client'} replace />
+            ) : <Index />}
+          </Suspense>
+        } 
       />
       <Route 
         path="/influencer" 
         element={
-          <Suspense fallback={<div>Loading...</div>}>
-            <InfluencerDashboard />
-          </Suspense>
+          <ProtectedRoute type="influencer">
+            <Suspense fallback={<SkeletonLoader />}>
+              <InfluencerDashboard />
+            </Suspense>
+          </ProtectedRoute>
         } 
       />
       <Route 
         path="/client" 
         element={
-          <Suspense fallback={<div>Loading...</div>}>
-            <ClientDashboard />
-          </Suspense>
+          <ProtectedRoute type="business">
+            <Suspense fallback={<SkeletonLoader />}>
+              <ClientDashboard />
+            </Suspense>
+          </ProtectedRoute>
         } 
       />
       <Route 
         path="/login" 
         element={
-          isLoggedIn ? <Navigate to="/" replace /> : <Login />
+          <Suspense fallback={<SkeletonLoader />}>
+            {isLoggedIn ? <Navigate to="/" replace /> : <Login />}
+          </Suspense>
         } 
       />
       <Route 
         path="/signup" 
         element={
-          isLoggedIn ? <Navigate to="/" replace /> : <SignUp />
+          <Suspense fallback={<SkeletonLoader />}>
+            {isLoggedIn ? <Navigate to="/" replace /> : <SignUp />}
+          </Suspense>
         } 
       />
     </Routes>
   );
+};
+
+const ProtectedRoute = ({ children, type }: { children: React.ReactNode; type: 'influencer' | 'business' }) => {
+  const { isLoggedIn, userType } = useAuth();
+
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (userType !== type) {
+    return <Navigate to={type === 'influencer' ? '/client' : '/influencer'} replace />;
+  }
+
+  return <>{children}</>;
 };
 
 const App = () => {
