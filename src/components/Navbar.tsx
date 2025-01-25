@@ -34,15 +34,7 @@ export const Navbar = () => {
     
     setIsLoggingOut(true);
     try {
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        console.error("Logout error:", error);
-        toast.error("There was an issue with the logout");
-      } else {
-        setIsLoggedIn(false);
-        // Let AuthContext handle the navigation
-      }
+      await supabase.auth.signOut();
     } catch (error) {
       console.error("Error during logout:", error);
       toast.error("There was an issue with the logout");

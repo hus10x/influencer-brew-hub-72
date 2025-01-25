@@ -32,44 +32,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          if (sessionError.message.includes('refresh_token_not_found')) {
-            await supabase.auth.signOut();
-            toast.error("Session expired. Please login again.");
-          }
-          setIsAuthenticated(false);
-          setUserType(null);
-          setIsLoading(false);
-          return;
-        }
-
         if (session) {
-          const { data: profile, error: profileError } = await supabase
+          const { data: profile } = await supabase
             .from('profiles')
             .select('user_type')
             .eq('id', session.user.id)
             .maybeSingle();
 
-          if (!profileError && profile) {
+          if (profile) {
             setIsAuthenticated(true);
             setUserType(profile.user_type);
             if (window.location.pathname === '/') {
               navigate(profile.user_type === 'influencer' ? '/influencer' : '/client');
             }
-          } else if (profileError) {
-            console.error('Error fetching profile:', profileError);
-            toast.error("Error loading user profile");
-            setIsAuthenticated(false);
-            setUserType(null);
           }
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
-        setIsAuthenticated(false);
-        setUserType(null);
       } finally {
         setIsLoading(false);
       }
@@ -78,36 +59,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, !!session);
+      console.log('Auth state changed:', event);
       
       if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
         setUserType(null);
-        setIsLoading(false);
         navigate('/', { replace: true });
-      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+      } else if (event === 'SIGNED_IN' && session) {
         setIsLoading(true);
         try {
-          if (!session?.user?.id) {
-            console.error('No user ID in session');
-            return;
-          }
-          
-          setIsAuthenticated(true);
-          
-          const { data: profile, error: profileError } = await supabase
+          const { data: profile } = await supabase
             .from('profiles')
             .select('user_type')
             .eq('id', session.user.id)
             .maybeSingle();
             
           if (profile) {
+            setIsAuthenticated(true);
             setUserType(profile.user_type);
             navigate(profile.user_type === 'influencer' ? '/influencer' : '/client', { replace: true });
-          } else if (profileError) {
-            console.error('Error fetching profile:', profileError);
-            toast.error("Error loading user profile");
           }
+        } catch (error) {
+          console.error('Error fetching profile:', error);
+          toast.error("Error loading user profile");
         } finally {
           setIsLoading(false);
         }
