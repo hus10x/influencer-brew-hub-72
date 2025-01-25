@@ -10,7 +10,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 
-// Lazy load dashboard components
+// Lazy load dashboard components (they already have their own skeleton loaders)
 const InfluencerDashboard = lazy(() => import("./pages/InfluencerDashboard"));
 const ClientDashboard = lazy(() => import("./pages/ClientDashboard"));
 
@@ -32,20 +32,16 @@ const AppRoutes = () => {
       <Route 
         path="/" 
         element={
-          <Suspense fallback={<SkeletonLoader />}>
-            {isLoggedIn ? (
-              <Navigate to={userType === 'influencer' ? '/influencer' : '/client'} replace />
-            ) : <Index />}
-          </Suspense>
+          isLoggedIn ? (
+            <Navigate to={userType === 'influencer' ? '/influencer' : '/client'} replace />
+          ) : <Index />
         } 
       />
       <Route 
         path="/influencer" 
         element={
           <ProtectedRoute type="influencer">
-            <Suspense fallback={<SkeletonLoader />}>
-              <InfluencerDashboard />
-            </Suspense>
+            <InfluencerDashboard />
           </ProtectedRoute>
         } 
       />
@@ -53,26 +49,20 @@ const AppRoutes = () => {
         path="/client" 
         element={
           <ProtectedRoute type="business">
-            <Suspense fallback={<SkeletonLoader />}>
-              <ClientDashboard />
-            </Suspense>
+            <ClientDashboard />
           </ProtectedRoute>
         } 
       />
       <Route 
         path="/login" 
         element={
-          <Suspense fallback={<SkeletonLoader />}>
-            {isLoggedIn ? <Navigate to="/" replace /> : <Login />}
-          </Suspense>
+          isLoggedIn ? <Navigate to="/" replace /> : <Login />
         } 
       />
       <Route 
         path="/signup" 
         element={
-          <Suspense fallback={<SkeletonLoader />}>
-            {isLoggedIn ? <Navigate to="/" replace /> : <SignUp />}
-          </Suspense>
+          isLoggedIn ? <Navigate to="/" replace /> : <SignUp />
         } 
       />
     </Routes>
