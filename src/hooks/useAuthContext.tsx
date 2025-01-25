@@ -56,7 +56,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (!profileError && profile) {
             setIsAuthenticated(true);
             setUserType(profile.user_type);
-            // Only redirect if on index page
             if (window.location.pathname === '/') {
               navigate(profile.user_type === 'influencer' ? '/influencer' : '/client');
             }
@@ -104,10 +103,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             
           if (profile) {
             setUserType(profile.user_type);
-            const dashboardPath = profile.user_type === 'influencer' ? '/influencer' : '/client';
-            if (window.location.pathname !== dashboardPath) {
-              navigate(dashboardPath);
-            }
+            navigate(profile.user_type === 'influencer' ? '/influencer' : '/client', { replace: true });
           } else if (profileError) {
             console.error('Error fetching profile:', profileError);
             toast.error("Error loading user profile");
