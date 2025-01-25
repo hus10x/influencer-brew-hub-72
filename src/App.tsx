@@ -9,7 +9,6 @@ import { AuthProvider, useAuth } from "@/hooks/AuthProvider";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
-import { SkeletonLoader } from "@/components/SkeletonLoader"; // Import the skeleton loader
 
 // Lazy load dashboard components
 const InfluencerDashboard = lazy(() => import("./pages/InfluencerDashboard"));
@@ -28,9 +27,13 @@ const queryClient = new QueryClient({
 const AppRoutes = () => {
   const { isLoggedIn, userType } = useAuth();
 
-  // Show skeleton loader while checking auth
+  // Show loading state while checking auth
   if (isLoggedIn === null) {
-    return <SkeletonLoader />;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="animate-pulse text-foreground">Loading...</div>
+      </div>
+    );
   }
 
   return (
@@ -42,7 +45,7 @@ const AppRoutes = () => {
       <Route 
         path="/influencer" 
         element={
-          <Suspense fallback={<SkeletonLoader />}>
+          <Suspense fallback={<div>Loading...</div>}>
             <InfluencerDashboard />
           </Suspense>
         } 
@@ -50,7 +53,7 @@ const AppRoutes = () => {
       <Route 
         path="/client" 
         element={
-          <Suspense fallback={<SkeletonLoader />}>
+          <Suspense fallback={<div>Loading...</div>}>
             <ClientDashboard />
           </Suspense>
         } 
