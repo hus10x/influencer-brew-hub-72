@@ -10,7 +10,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 
-// Lazy load dashboard components (they already have their own skeleton loaders)
+// Lazy load dashboard components
 const InfluencerDashboard = lazy(() => import("./pages/InfluencerDashboard"));
 const ClientDashboard = lazy(() => import("./pages/ClientDashboard"));
 
@@ -27,30 +27,35 @@ const queryClient = new QueryClient({
 const AppRoutes = () => {
   const { isLoggedIn, userType } = useAuth();
 
+  // Show loading state while checking auth
+  if (isLoggedIn === null) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="animate-pulse text-foreground">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <Routes>
       <Route 
         path="/" 
-        element={
-          isLoggedIn ? (
-            <Navigate to={userType === 'influencer' ? '/influencer' : '/client'} replace />
-          ) : <Index />
-        } 
+        element={isLoggedIn ? <Navigate to={userType === 'influencer' ? '/influencer' : '/client'} replace /> : <Index />} 
       />
       <Route 
         path="/influencer" 
         element={
-          <ProtectedRoute type="influencer">
+          <Suspense fallback={<div>Loading...</div>}>
             <InfluencerDashboard />
-          </ProtectedRoute>
+          </Suspense>
         } 
       />
       <Route 
         path="/client" 
         element={
-          <ProtectedRoute type="business">
+          <Suspense fallback={<div>Loading...</div>}>
             <ClientDashboard />
-          </ProtectedRoute>
+          </Suspense>
         } 
       />
       <Route 
@@ -67,20 +72,6 @@ const AppRoutes = () => {
       />
     </Routes>
   );
-};
-
-const ProtectedRoute = ({ children, type }: { children: React.ReactNode; type: 'influencer' | 'business' }) => {
-  const { isLoggedIn, userType } = useAuth();
-
-  if (!isLoggedIn) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (userType !== type) {
-    return <Navigate to={type === 'influencer' ? '/client' : '/influencer'} replace />;
-  }
-
-  return <>{children}</>;
 };
 
 const App = () => {
