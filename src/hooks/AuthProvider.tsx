@@ -21,6 +21,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
+        // Check local storage for cached session
+        const cachedSession = localStorage.getItem("supabase_session");
+        if (cachedSession) {
+          const { session, userType } = JSON.parse(cachedSession);
+          setIsLoggedIn(true);
+          setUserType(userType);
+          return;
+        }
+
+        // Fetch session from Supabase
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -43,6 +53,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (profile) {
             setIsLoggedIn(true);
             setUserType(profile.user_type);
+            // Cache the session and user type
+            localStorage.setItem("supabase_session", JSON.stringify({ session, userType: profile.user_type }));
           }
         } else {
           setIsLoggedIn(false);
@@ -59,6 +71,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (event === 'SIGNED_OUT') {
         setIsLoggedIn(false);
         setUserType(null);
+        localStorage.removeItem("supabase_session"); // Clear cached session
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         if (session) {
           const { data: profile } = await supabase
@@ -70,6 +83,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (profile) {
             setIsLoggedIn(true);
             setUserType(profile.user_type);
+            // Cache the session and user type
+            localStorage.setItem("supabase_session", JSON.stringify({ session, userType: profile.user_type }));
           }
         }
       }
