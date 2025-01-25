@@ -9,7 +9,6 @@ import { AuthProvider, useAuth } from "@/hooks/AuthProvider";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
-import { SkeletonLoader } from "@/components/SkeletonLoader"; // Your skeleton loader
 
 // Lazy load dashboard components
 const InfluencerDashboard = lazy(() => import("./pages/InfluencerDashboard"));
